@@ -82,7 +82,12 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::Move);
 
 		//Combat
-		EnhancedInputComponent->BindAction(CombatAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::Attack);
+		//quick mele
+		EnhancedInputComponent->BindAction(QckMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::QuickAttack);
+
+		//heavy mele
+		EnhancedInputComponent->BindAction(HvyMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::HeavyAttack);
+		
 		
 	}
 	else
@@ -119,39 +124,53 @@ void ASigurdCharacter::Move(const FInputActionValue& Value)
 	}
 }
 
-void ASigurdCharacter::Attack(const FInputActionValue& Value)
+void ASigurdCharacter::QuickAttack(const FInputActionValue& Value)
 {
 	if (CanAttack==false)
 	{
 		return;
 	}
+	
+	CanAttack = false;
+	FOutputDeviceNull ar;
+	this->CallFunctionByNameWithArguments(TEXT("MeleAttack"), ar, NULL, true);
+	
+}
 
-	//print to screen value of input
+void ASigurdCharacter::HeavyAttack(const FInputActionValue& Value)
+{
+	
 	UE_LOG(LogTemp, Warning, TEXT("Attack: %f"), Value.Get<float>());
 
-	//if value is 0 Normal Mele
-	if (Value.Get<float>() == 0)
+	if (Value.Get<float>() == 0 )
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Normal Attack"));
-		//Call Attack Function on blueprint
-		//get posesing actor
-		CanAttack = false;
-		FOutputDeviceNull ar;
-		this->CallFunctionByNameWithArguments(TEXT("MeleAttack"), ar, NULL, true);
 
-		
+		if (HeavyMeleValue > 0.2f)
+		{
+			//HeavyMeleValue = 1;
+			FOutputDeviceNull ar;
+			this->CallFunctionByNameWithArguments(TEXT("HeavyAttack"), ar, NULL, true);
+			HeavyMeleValue = 0;
+
+		}
+		else 
+		{
+			HeavyMeleValue = 0;
+		}
 		
 	}
-	//if value is 1 Heavy Mele
-	else if (Value.Get<float>() == 1)
+	else if( HeavyMeleValue < 1)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Heavy Attack"));
-		CanAttack = false;
-		CanMove = false;
-		FOutputDeviceNull ar;
-		this->CallFunctionByNameWithArguments(TEXT("MeleHeavyAttack"), ar, NULL, true);
 
+		//increase heavy attack value by delta time
+		HeavyMeleValue += GetWorld()->GetDeltaSeconds();
+		if (HeavyMeleValue > 0.2f)
+		{
+			CanMove = false;
+		}
+		
 	}
 	
-	
+	UE_LOG(LogTemp, Warning, TEXT("Value: %f"), HeavyMeleValue);
+
 }
