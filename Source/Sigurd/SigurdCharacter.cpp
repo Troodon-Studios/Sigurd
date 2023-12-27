@@ -159,7 +159,7 @@ void ASigurdCharacter::HeavyAttack(const FInputActionValue& Value)
 		}
 		
 	}
-	else if( HeavyMeleValue < 1)
+	else if( HeavyMeleValue < 1 && CanAttack==true)
 	{
 
 		//increase heavy attack value by delta time
