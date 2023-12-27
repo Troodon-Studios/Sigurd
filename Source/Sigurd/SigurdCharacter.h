@@ -46,6 +46,9 @@ class ASigurdCharacter : public ACharacter
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
 	bool CanAttack = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
+	bool MoveByClick = false;
 	
 
 public:

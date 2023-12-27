@@ -93,11 +93,11 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void ASigurdCharacter::Move(const FInputActionValue& Value)
 {
-	if (CanMove)
+	if (CanMove || MoveByClick==true)
 	{
 		return;
 	}
-	
+
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
