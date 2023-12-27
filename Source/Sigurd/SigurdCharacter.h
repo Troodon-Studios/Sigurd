@@ -53,7 +53,7 @@ class ASigurdCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
 	bool MoveByClick = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actions, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
 	float HeavyMeleValue = 0;
 
 public:
