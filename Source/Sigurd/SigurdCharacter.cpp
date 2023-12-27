@@ -93,7 +93,7 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void ASigurdCharacter::Move(const FInputActionValue& Value)
 {
-	if (CanMove || MoveByClick==true)
+	if (CanMove==false || MoveByClick==true)
 	{
 		return;
 	}
@@ -136,7 +136,6 @@ void ASigurdCharacter::Attack(const FInputActionValue& Value)
 		//Call Attack Function on blueprint
 		//get posesing actor
 		CanAttack = false;
-		CanMove = false;
 		FOutputDeviceNull ar;
 		this->CallFunctionByNameWithArguments(TEXT("MeleAttack"), ar, NULL, true);
 
