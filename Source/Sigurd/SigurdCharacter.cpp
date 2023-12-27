@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Misc/OutputDeviceNull.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -44,7 +45,7 @@ ASigurdCharacter::ASigurdCharacter()
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-
+	
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
@@ -76,16 +77,13 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 {
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::Move);
 
-		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::Look);
+		//Combat
+		EnhancedInputComponent->BindAction(CombatAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::Attack);
+		
 	}
 	else
 	{
@@ -95,6 +93,11 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void ASigurdCharacter::Move(const FInputActionValue& Value)
 {
+	if (CanMove)
+	{
+		return;
+	}
+	
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -116,7 +119,40 @@ void ASigurdCharacter::Move(const FInputActionValue& Value)
 	}
 }
 
-void ASigurdCharacter::Look(const FInputActionValue& Value)
+void ASigurdCharacter::Attack(const FInputActionValue& Value)
 {
+	if (CanAttack==false)
+	{
+		return;
+	}
 
+	//print to screen value of input
+	UE_LOG(LogTemp, Warning, TEXT("Attack: %f"), Value.Get<float>());
+
+	//if value is 0 Normal Mele
+	if (Value.Get<float>() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Normal Attack"));
+		//Call Attack Function on blueprint
+		//get posesing actor
+		CanAttack = false;
+		CanMove = false;
+		FOutputDeviceNull ar;
+		this->CallFunctionByNameWithArguments(TEXT("MeleAttack"), ar, NULL, true);
+
+		
+		
+	}
+	//if value is 1 Heavy Mele
+	else if (Value.Get<float>() == 1)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Heavy Attack"));
+		CanAttack = false;
+		CanMove = false;
+		FOutputDeviceNull ar;
+		this->CallFunctionByNameWithArguments(TEXT("MeleHeavyAttack"), ar, NULL, true);
+
+	}
+	
+	
 }
