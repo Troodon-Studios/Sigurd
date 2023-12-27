@@ -150,6 +150,8 @@ void ASigurdCharacter::HeavyAttack(const FInputActionValue& Value)
 			//HeavyMeleValue = 1;
 			FOutputDeviceNull ar;
 			this->CallFunctionByNameWithArguments(TEXT("HeavyAttack"), ar, NULL, true);
+			CanAttack = false;
+
 		}
 		else 
 		{
