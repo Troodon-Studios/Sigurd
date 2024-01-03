@@ -53,6 +53,9 @@ ASigurdCharacter::ASigurdCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	CachedDestination = FVector::ZeroVector;
+	FollowTime = 0.f;
 }
 
 void ASigurdCharacter::BeginPlay()
@@ -61,9 +64,11 @@ void ASigurdCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	//Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	if (APlayerController* playerController = Cast<APlayerController>(Controller))
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		playerController->bShowMouseCursor = true;
+		playerController->DefaultMouseCursor = EMouseCursor::Default;
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(playerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
@@ -79,16 +84,15 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 
 		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::Move);
+		EnhancedInputComponent->BindAction(MoveByClickAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::MoveClick);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::MoveAxis);
 
 		//Combat
 		//quick mele
 		EnhancedInputComponent->BindAction(QckMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::QuickAttack);
 
 		//heavy mele
-		EnhancedInputComponent->BindAction(HvyMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::HeavyAttack);
-		
-		
+		EnhancedInputComponent->BindAction(HvyMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::HeavyAttack);	
 	}
 	else
 	{
@@ -96,13 +100,13 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	}
 }
 
-void ASigurdCharacter::Move(const FInputActionValue& Value)
+void ASigurdCharacter::MoveAxis(const FInputActionValue& Value)
 {
 	if (CanMove==false || MoveByClick==true)
 	{
 		return;
 	}
-
+	
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -122,6 +126,41 @@ void ASigurdCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
+
+}
+
+void ASigurdCharacter::MoveClick(const FInputActionValue& Value)
+{
+	if (CanMove==false || MoveByClick==false)
+	{
+		return;
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("Move by click"));
+	// We flag that the input is being pressed
+	FollowTime += GetWorld()->GetDeltaSeconds();
+
+	// We look for the location in the world where the player has pressed the input
+	FHitResult Hit;
+	bool bHitSuccessful = false;
+	bHitSuccessful = GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), true, Hit);
+
+	// If we hit a surface, cache the location
+	if (bHitSuccessful)
+	{
+		CachedDestination = Hit.Location;
+	}
+
+	// Move towards mouse pointer or touch
+	ACharacter* ControlledCharacter = GetCharacterMovement()->GetCharacterOwner();
+	if (ControlledCharacter != nullptr)
+	{
+		FVector WorldDirection = (CachedDestination - ControlledCharacter->GetActorLocation()).GetSafeNormal();
+		ControlledCharacter->AddMovementInput(WorldDirection, 1.0, false);
+	}
+
+	return;
+
 }
 
 void ASigurdCharacter::QuickAttack(const FInputActionValue& Value)

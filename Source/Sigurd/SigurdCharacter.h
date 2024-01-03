@@ -36,6 +36,9 @@ class ASigurdCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* MoveByClickAction;
+
 	/** Combat Input Actions */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* QckMeleAction;
@@ -63,11 +66,11 @@ public:
 protected:
 
 	/** Called for movement input */
-	void Move(const FInputActionValue& Value);
+	void MoveAxis(const FInputActionValue& Value);
+	void MoveClick(const FInputActionValue& Value);
 
 	void QuickAttack(const FInputActionValue& Value);
-
-	void HeavyAttack(const FInputActionValue& Value);
+	void HeavyAttack(const FInputActionValue& Value);			
 
 protected:
 	// APawn interface
@@ -81,5 +84,9 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+private:
+	FVector CachedDestination;
+	float FollowTime; // For how long it has been pressed
 };
 
