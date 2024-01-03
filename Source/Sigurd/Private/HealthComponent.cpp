@@ -28,5 +28,10 @@ void UHealthComponent::Heal(float healAmount)
 	}
 }
 
+float UHealthComponent::GetHealthPercentage()
+{
+	return currentHealth / maxHealth;
+}
+
 
 

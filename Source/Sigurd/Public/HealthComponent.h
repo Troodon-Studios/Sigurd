@@ -22,7 +22,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health")
 	float currentHealth;
 
+	UFUNCTION(BlueprintCallable, Category = "Health")
 	void TakeDamage(float damage);
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
 	void Heal(float healAmount);
+
+	UFUNCTION(BlueprintCallable, Category = "Health")
+	float GetHealthPercentage();
 		
 };
