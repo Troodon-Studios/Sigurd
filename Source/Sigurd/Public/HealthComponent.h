@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Types.h"
 #include "Components/ActorComponent.h"
 #include "HealthComponent.generated.h"
 
@@ -22,8 +23,14 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health")
 	float currentHealth;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	EDamageType selfType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
+	UDataTable* damageTable;
+
 	UFUNCTION(BlueprintCallable, Category = "Health")
-	void TakeDamage(float damage);
+	void TakeDamage(float damage, EDamageType attackerType);
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void Heal(float healAmount);

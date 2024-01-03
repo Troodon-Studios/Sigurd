@@ -3,6 +3,8 @@
 
 #include "HealthComponent.h"
 
+#include "DamageData.h"
+
 // Sets default values for this component's properties
 UHealthComponent::UHealthComponent()
 {
@@ -10,9 +12,24 @@ UHealthComponent::UHealthComponent()
 	currentHealth = maxHealth;
 }
 
-void UHealthComponent::TakeDamage(float damage)
+void UHealthComponent::TakeDamage(float damage, EDamageType attackerType )
 {
-	currentHealth -= damage;
+	float damageMultiplier = 1.0f;
+
+	if(damageTable)
+	{
+		FDamageData* row = damageTable->FindRow<FDamageData>(
+				   FName(*FString::Printf(TEXT("%d_%d"), static_cast<int32>(attackerType), static_cast<int32>(selfType))), TEXT(""));
+
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%d_%d"), static_cast<int32>(attackerType), static_cast<int32>(selfType)));
+
+		if (row)
+		{
+			damageMultiplier = row->multiplier;
+		}
+	}
+
+	currentHealth -= damage * damageMultiplier;
 	if (currentHealth <= 0)
 	{
 		// Die
