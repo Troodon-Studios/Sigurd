@@ -61,7 +61,8 @@ public:
 protected:
 
 	/** Called for movement input */
-	void Move(const FInputActionValue& Value);
+	void MoveAxis(const FInputActionValue& Value);
+	void MoveClick(const FInputActionValue& Value);
 
 	void Attack(const FInputActionValue& Value);
 			

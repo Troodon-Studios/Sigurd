@@ -84,8 +84,8 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 
 		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::Move);
-		EnhancedInputComponent->BindAction(MoveByClickAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::Move);
+		EnhancedInputComponent->BindAction(MoveByClickAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::MoveClick);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::MoveAxis);
 
 		//Combat
 		EnhancedInputComponent->BindAction(CombatAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::Attack);
@@ -97,41 +97,13 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	}
 }
 
-void ASigurdCharacter::Move(const FInputActionValue& Value)
+void ASigurdCharacter::MoveAxis(const FInputActionValue& Value)
 {
-	if (CanMove==false)
+	if (CanMove==false || MoveByClick==true)
 	{
 		return;
 	}
-
-	if (MoveByClick == true)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Move by click"));
-		// We flag that the input is being pressed
-		FollowTime += GetWorld()->GetDeltaSeconds();
-
-		// We look for the location in the world where the player has pressed the input
-		FHitResult Hit;
-		bool bHitSuccessful = false;
-		bHitSuccessful = GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), true, Hit);
-
-		// If we hit a surface, cache the location
-		if (bHitSuccessful)
-		{
-			CachedDestination = Hit.Location;
-		}
-
-		// Move towards mouse pointer or touch
-		ACharacter* ControlledCharacter = GetCharacterMovement()->GetCharacterOwner();
-		if (ControlledCharacter != nullptr)
-		{
-			FVector WorldDirection = (CachedDestination - ControlledCharacter->GetActorLocation()).GetSafeNormal();
-			ControlledCharacter->AddMovementInput(WorldDirection, 1.0, false);
-		}
-
-		return;
-	}
-
+	
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -151,6 +123,41 @@ void ASigurdCharacter::Move(const FInputActionValue& Value)
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
+
+}
+
+void ASigurdCharacter::MoveClick(const FInputActionValue& Value)
+{
+	if (CanMove==false || MoveByClick==false)
+	{
+		return;
+	}
+	
+	UE_LOG(LogTemp, Warning, TEXT("Move by click"));
+	// We flag that the input is being pressed
+	FollowTime += GetWorld()->GetDeltaSeconds();
+
+	// We look for the location in the world where the player has pressed the input
+	FHitResult Hit;
+	bool bHitSuccessful = false;
+	bHitSuccessful = GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), true, Hit);
+
+	// If we hit a surface, cache the location
+	if (bHitSuccessful)
+	{
+		CachedDestination = Hit.Location;
+	}
+
+	// Move towards mouse pointer or touch
+	ACharacter* ControlledCharacter = GetCharacterMovement()->GetCharacterOwner();
+	if (ControlledCharacter != nullptr)
+	{
+		FVector WorldDirection = (CachedDestination - ControlledCharacter->GetActorLocation()).GetSafeNormal();
+		ControlledCharacter->AddMovementInput(WorldDirection, 1.0, false);
+	}
+
+	return;
+
 }
 
 void ASigurdCharacter::Attack(const FInputActionValue& Value)
@@ -172,9 +179,6 @@ void ASigurdCharacter::Attack(const FInputActionValue& Value)
 		CanAttack = false;
 		FOutputDeviceNull ar;
 		this->CallFunctionByNameWithArguments(TEXT("MeleAttack"), ar, NULL, true);
-
-		
-		
 	}
 	//if value is 1 Heavy Mele
 	else if (Value.Get<float>() == 1)
