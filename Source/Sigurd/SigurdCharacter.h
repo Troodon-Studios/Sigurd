@@ -39,10 +39,13 @@ class ASigurdCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MoveByClickAction;
 
-	/** Combat Input Action */
+	/** Combat Input Actions */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* CombatAction;
+	UInputAction* QckMeleAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* HvyMeleAction;
+	
 	/** CanMove and CanAttack booleans */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
 	bool CanMove = true;
@@ -52,7 +55,9 @@ class ASigurdCharacter : public ACharacter
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
 	bool MoveByClick = false;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
+	float HeavyMeleValue = 0;
 
 public:
 	ASigurdCharacter();
@@ -64,8 +69,8 @@ protected:
 	void MoveAxis(const FInputActionValue& Value);
 	void MoveClick(const FInputActionValue& Value);
 
-	void Attack(const FInputActionValue& Value);
-			
+	void QuickAttack(const FInputActionValue& Value);
+	void HeavyAttack(const FInputActionValue& Value);			
 
 protected:
 	// APawn interface
