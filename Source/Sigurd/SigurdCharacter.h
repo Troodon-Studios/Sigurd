@@ -58,7 +58,7 @@ class ASigurdCharacter : public ACharacter
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
 	float HeavyMeleValue = 0;
-
+	
 public:
 	ASigurdCharacter();
 	
