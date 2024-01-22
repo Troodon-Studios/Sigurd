@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "GameFramework/InputSettings.h"
 #include "Misc/OutputDeviceNull.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -89,7 +90,7 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		//Combat
 		//quick mele
-		EnhancedInputComponent->BindAction(QckMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::QuickAttack);
+		EnhancedInputComponent->BindAction(QckMeleAction, ETriggerEvent::Started, this, &ASigurdCharacter::QuickAttack);
 
 		//heavy mele
 		EnhancedInputComponent->BindAction(HvyMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::HeavyAttack);	
@@ -124,7 +125,7 @@ void ASigurdCharacter::MoveAxis(const FInputActionValue& Value)
 
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.X);
-		AddMovementInput(RightDirection, -MovementVector.Y);
+		AddMovementInput(RightDirection, MovementVector.Y);
 	}
 
 }
@@ -169,10 +170,24 @@ void ASigurdCharacter::QuickAttack(const FInputActionValue& Value)
 	{
 		return;
 	}
+
+	if (APlayerController* playerController = Cast<APlayerController>(Controller))
+	{
+		if (playerController->IsInputKeyDown(EKeys::Gamepad_FaceButton_Left))
+		{
+			CanAttack = false;
+			FOutputDeviceNull ar;
+			this->CallFunctionByNameWithArguments(TEXT("MeleAttack2"), ar, NULL, true);
+		}
+		else
+		{
+			CanAttack = false;
+			FOutputDeviceNull ar;
+			this->CallFunctionByNameWithArguments(TEXT("MeleAttack"), ar, NULL, true);
+		}
+	}
 	
-	CanAttack = false;
-	FOutputDeviceNull ar;
-	this->CallFunctionByNameWithArguments(TEXT("MeleAttack"), ar, NULL, true);
+
 	
 }
 
