@@ -175,13 +175,13 @@ void ASigurdCharacter::QuickAttack(const FInputActionValue& Value)
 	{
 		if (playerController->IsInputKeyDown(EKeys::Gamepad_FaceButton_Left))
 		{
-			CanAttack = false;
+			//CanAttack = false;
 			FOutputDeviceNull ar;
 			this->CallFunctionByNameWithArguments(TEXT("MeleAttack2"), ar, NULL, true);
 		}
 		else
 		{
-			CanAttack = false;
+			//CanAttack = false;
 			FOutputDeviceNull ar;
 			this->CallFunctionByNameWithArguments(TEXT("MeleAttack"), ar, NULL, true);
 		}
@@ -204,7 +204,7 @@ void ASigurdCharacter::HeavyAttack(const FInputActionValue& Value)
 			//HeavyMeleValue = 1;
 			FOutputDeviceNull ar;
 			this->CallFunctionByNameWithArguments(TEXT("HeavyAttack"), ar, NULL, true);
-			CanAttack = false;
+			//CanAttack = false;
 
 		}
 		else 
