@@ -9,6 +9,10 @@ UResourcesComponent::UResourcesComponent()
 {
 	maxHealth = 100;
 	currentHealth = maxHealth;
+	maxStamina = 100;
+	currentStamina = maxStamina;
+	staminaRegenRate = 10;
+	staminaDecayRate = 20;
 }
 
 
