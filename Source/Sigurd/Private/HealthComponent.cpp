@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "HealthComponent.h"
+#include "..\Public\HealthComponent.h"
 
 #include "DamageData.h"
 
@@ -20,9 +20,7 @@ void UHealthComponent::TakeDamage(float damage, EDamageType attackerType )
 	{
 		FDamageData* row = damageTable->FindRow<FDamageData>(
 				   FName(*FString::Printf(TEXT("%d_%d"), static_cast<int32>(attackerType), static_cast<int32>(selfType))), TEXT(""));
-
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("%d_%d"), static_cast<int32>(attackerType), static_cast<int32>(selfType)));
-
+		
 		if (row)
 		{
 			damageMultiplier = row->multiplier;
