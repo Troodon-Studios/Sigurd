@@ -20,19 +20,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float maxHealth;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float currentHealth;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
 	float maxStamina;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
 	float currentStamina;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
 	float staminaRegenRate;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
 	float staminaDecayRate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")

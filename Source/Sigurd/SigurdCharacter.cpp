@@ -93,7 +93,9 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(QckMeleAction, ETriggerEvent::Started, this, &ASigurdCharacter::QuickAttack);
 
 		//heavy mele
-		EnhancedInputComponent->BindAction(HvyMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::HeavyAttack);	
+		EnhancedInputComponent->BindAction(HvyMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::HeavyAttack);
+
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::Run);
 	}
 	else
 	{
