@@ -168,6 +168,7 @@ void ASigurdCharacter::MoveClick(const FInputActionValue& Value)
 
 void ASigurdCharacter::QuickAttack(const FInputActionValue& Value)
 {
+	// TODO check stamina and if can attack
 	if (CanAttack==false)
 	{
 		return;
