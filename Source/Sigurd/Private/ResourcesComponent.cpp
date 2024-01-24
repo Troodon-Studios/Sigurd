@@ -49,3 +49,23 @@ float UResourcesComponent::GetHealthPercentage()
 	return currentHealth / maxHealth;
 }
 
+float UResourcesComponent::GetStaminaPercentage(){
+	return currentStamina / maxStamina;
+}
+
+void UResourcesComponent::RegenStamina(float deltaTime){
+	currentStamina += staminaRegenRate * deltaTime;
+	if (currentStamina > maxStamina)
+	{
+		currentStamina = maxStamina;
+	}
+}
+
+void UResourcesComponent::DecayStamina(float deltaTime){
+	currentStamina -= staminaDecayRate * deltaTime;
+	if (currentStamina < 0)
+	{
+		currentStamina = 0;
+	}
+}
+

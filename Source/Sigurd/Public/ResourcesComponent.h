@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Types.h"
 #include "Components/ActorComponent.h"
 #include "ResourcesComponent.generated.h"
 
@@ -22,6 +23,18 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health")
 	float currentHealth;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float maxStamina;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float currentStamina;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float staminaRegenRate;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stamina")
+	float staminaDecayRate;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	EDamageType selfType;
 
@@ -36,5 +49,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	float GetHealthPercentage();
+
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	float GetStaminaPercentage();
+
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	void RegenStamina(float deltaTime);
+
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	void DecayStamina(float deltaTime);
 		
 };
