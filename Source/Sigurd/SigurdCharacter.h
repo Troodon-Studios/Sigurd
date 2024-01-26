@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ResourcesComponent.h"
+#include "Components/ResourcesComponent.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "SigurdCharacter.generated.h"
@@ -33,7 +33,7 @@ class ASigurdCharacter : public ACharacter
 	TSubclassOf<UResourcesComponent> BP_ResourcesComponentClass;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resources", meta = (AllowPrivateAccess = "true"))
-	UResourcesComponent* ResourcesComponentC;
+	UResourcesComponent* ResourcesComponent;
 	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -82,6 +82,9 @@ protected:
 	void QuickAttack(const FInputActionValue& Value);
 	void HeavyAttack(const FInputActionValue& Value);
 
+	UFUNCTION(Category = "Combat")
+	void TakeDamage(AActor *DamagedActor, float Damage, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser);
+	
 	UFUNCTION(BlueprintImplementableEvent, Category = "Movement")
 	void StartRunning();
 

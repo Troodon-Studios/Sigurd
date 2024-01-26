@@ -22,6 +22,8 @@ ASigurdCharacter::ASigurdCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+
+	ResourcesComponent = CreateDefaultSubobject<UResourcesComponent>(TEXT("ResourcesComponent"));
 		
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -65,14 +67,11 @@ void ASigurdCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
-	if (BP_ResourcesComponentClass)
-	{
-		ResourcesComponentC = NewObject<UResourcesComponent>(this, BP_ResourcesComponentClass);
-		if (ResourcesComponentC)
-		{
-			ResourcesComponentC->RegisterComponent();
-		}
+	if (ResourcesComponent) {
+		ResourcesComponent->RegisterComponent();
 	}
+
+	OnTakeAnyDamage.AddDynamic(this, &ASigurdCharacter::TakeDamage);
 
 	//Add Input Mapping Context
 	if (APlayerController* playerController = Cast<APlayerController>(Controller))
@@ -242,3 +241,12 @@ void ASigurdCharacter::HeavyAttack(const FInputActionValue& Value)
 	UE_LOG(LogTemp, Warning, TEXT("Value: %f"), HeavyMeleValue);
 
 }
+
+void ASigurdCharacter::TakeDamage(AActor *DamagedActor, float Damage, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser) {
+	if (ResourcesComponent)
+	{
+		UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
+		ResourcesComponent->TakeDamageWithType(ObjectInstance ,Damage);
+	}
+}
+
