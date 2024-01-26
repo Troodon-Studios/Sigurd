@@ -7,12 +7,21 @@
 
 UResourcesComponent::UResourcesComponent()
 {
+	PrimaryComponentTick.bCanEverTick = true;
 	maxHealth = 100;
 	currentHealth = maxHealth;
 	maxStamina = 100;
 	currentStamina = maxStamina;
 	staminaRegenRate = 10;
 	staminaDecayRate = 20;
+	canDecayStamina = false;
+	canRegenStamina = false;
+}
+void UResourcesComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	RegenStamina(DeltaTime);
+	DecayStamina(DeltaTime);
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
 
@@ -58,18 +67,43 @@ float UResourcesComponent::GetStaminaPercentage(){
 }
 
 void UResourcesComponent::RegenStamina(float deltaTime){
-	currentStamina += staminaRegenRate * deltaTime;
-	if (currentStamina > maxStamina)
-	{
-		currentStamina = maxStamina;
+	if (canRegenStamina && currentStamina < maxStamina){
+		currentStamina += staminaRegenRate * deltaTime;
+		if (currentStamina > maxStamina)
+		{
+			currentStamina = maxStamina;
+		}
 	}
 }
 
+
+
 void UResourcesComponent::DecayStamina(float deltaTime){
-	currentStamina -= staminaDecayRate * deltaTime;
-	if (currentStamina < 0)
+	if (canDecayStamina)
 	{
-		currentStamina = 0;
+		currentStamina -= staminaDecayRate * deltaTime;
+		if (currentStamina < 0)
+		{
+			currentStamina = 0;
+		}
 	}
 }
+
+void UResourcesComponent::StartRunning(){
+	canDecayStamina = true;
+	canRegenStamina = false;
+}
+
+void UResourcesComponent::StopRunning(){
+	canDecayStamina = false;
+	canRegenStamina = true;
+}
+
+void UResourcesComponent::Attack(float attackCost){
+
+
+	
+}
+
+
 

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ResourcesComponent.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "SigurdCharacter.generated.h"
@@ -27,6 +28,12 @@ class ASigurdCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resources", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UResourcesComponent> BP_ResourcesComponentClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resources", meta = (AllowPrivateAccess = "true"))
+	UResourcesComponent* ResourcesComponentC;
 	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -76,7 +83,10 @@ protected:
 	void HeavyAttack(const FInputActionValue& Value);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Movement")
-	void Run();
+	void StartRunning();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Movement")
+	void StopRunning();
 
 protected:
 	// APawn interface

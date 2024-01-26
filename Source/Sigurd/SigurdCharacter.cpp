@@ -57,12 +57,22 @@ ASigurdCharacter::ASigurdCharacter()
 
 	CachedDestination = FVector::ZeroVector;
 	FollowTime = 0.f;
+	
 }
 
 void ASigurdCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	if (BP_ResourcesComponentClass)
+	{
+		ResourcesComponentC = NewObject<UResourcesComponent>(this, BP_ResourcesComponentClass);
+		if (ResourcesComponentC)
+		{
+			ResourcesComponentC->RegisterComponent();
+		}
+	}
 
 	//Add Input Mapping Context
 	if (APlayerController* playerController = Cast<APlayerController>(Controller))
@@ -95,7 +105,8 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		//heavy mele
 		EnhancedInputComponent->BindAction(HvyMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::HeavyAttack);
 
-		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::Run);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::StartRunning);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &ASigurdCharacter::StopRunning);
 	}
 	else
 	{
