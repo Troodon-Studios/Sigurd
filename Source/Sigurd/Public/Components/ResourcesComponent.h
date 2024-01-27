@@ -5,7 +5,10 @@
 #include "CoreMinimal.h"
 #include "Types.h"
 #include "Components/ActorComponent.h"
+#include "GameplayTagContainer.h"
+
 #include "ResourcesComponent.generated.h"
+
 
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -18,7 +21,7 @@ public:
 	UResourcesComponent();
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float maxHealth;
 
@@ -66,7 +69,6 @@ public:
 	
 	void RegenStamina(float deltaTime);
 
-
 	void DecayStamina(float deltaTime);
 	
 	UFUNCTION(BlueprintCallable, Category = "Stamina")
@@ -74,7 +76,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Stamina")
 	void StopRunning();
-
 
 	UFUNCTION(BlueprintCallable, Category = "Stamina")
 	void Attack(float attackCost);

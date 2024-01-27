@@ -243,6 +243,7 @@ void ASigurdCharacter::HeavyAttack(const FInputActionValue& Value)
 }
 
 void ASigurdCharacter::TakeDamage(AActor *DamagedActor, float Damage, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser) {
+
 	if (ResourcesComponent)
 	{
 		UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));

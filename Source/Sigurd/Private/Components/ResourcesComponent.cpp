@@ -73,7 +73,6 @@ void UResourcesComponent::TakeDamageWithType(UObject* DamageType, float damage) 
 	 	EDamageType tempDamageType = IDamageTypeInterface::Execute_ProcessDamage(DamageType);
 		TakeDamage(damage, tempDamageType);
 	}
-
 	
 }
 
