@@ -23,16 +23,19 @@ public:
     virtual void Tick(float DeltaTime) override;
 
     // Static mesh component
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
+    UPROPERTY(BlueprintReadOnly, BlueprintReadOnly, Category = "Modules")
     UStaticMeshComponent* StaticMeshModule;
-
+    
     // static mesh
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
-    UStaticMesh* ModuleMesh;
+    TArray<UStaticMesh*> ModuleMesh;
     
     // Grid dimensions
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
     FIntVector ModulesSize;
+
+    // Array to store the number of each module for generating the grid
+    TArray<TArray<int>> ModuleNumbers;
     
     // Grid dimensions
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
@@ -46,5 +49,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Grid")
     void GenerateGrid();
 
+    // Function to generate the grid
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    void FillGrid();
+    
 };
 

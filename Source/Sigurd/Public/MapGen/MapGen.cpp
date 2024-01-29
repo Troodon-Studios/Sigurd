@@ -1,7 +1,7 @@
 ﻿#include "MapGen.h"
 
 // Sets default values
-AMapGen::AMapGen(): StaticMeshModule(nullptr), ModuleMesh(nullptr)
+AMapGen::AMapGen(): StaticMeshModule(nullptr)
 {
     // Set this actor to call Tick() every frame
     PrimaryActorTick.bCanEverTick = true;
@@ -28,10 +28,45 @@ void AMapGen::Tick(const float DeltaTime)
 }
 
 
-// Function to generate the grid
 void AMapGen::GenerateGrid()
 {
+    // Resize the outer array to match the grid size
+    ModuleNumbers.SetNum(GridSize.X);
 
+    // Iterate over each cell in the grid
+    for (int x = 0; x < GridSize.X; x++)
+    {
+        // Resize the inner array to match the grid size
+        ModuleNumbers[x].SetNum(GridSize.Y);
+
+        for (int y = 0; y < GridSize.Y; y++)
+        {
+            // Check if the cell is on the edge of the grid
+            if (x == 0 || y == 0 || x == GridSize.X - 1 || y == GridSize.Y - 1)
+            {
+                // Check if the cell is in one of the four corners of the grid
+                if ((x == 0 && y == 0) || (x == 0 && y == GridSize.Y - 1) || (x == GridSize.X - 1 && y == 0) || (x == GridSize.X - 1 && y == GridSize.Y - 1))
+                {
+                    // If it is, set the corresponding cell in ModuleNumbers to 3
+                    ModuleNumbers[x][y] = 2;
+                }
+                else
+                {
+                    // If it's not, set the corresponding cell in ModuleNumbers to 1
+                    ModuleNumbers[x][y] = 1;
+                }
+            }
+            else
+            {
+                // If it's not on the edge, set the corresponding cell in ModuleNumbers to 0
+                ModuleNumbers[x][y] = 0;
+            }
+        }
+    }
+}
+
+void AMapGen::FillGrid()
+{
     const int Pos_X = GridSize.X;
     const int Pos_Y = GridSize.Y;
 
@@ -45,9 +80,12 @@ void AMapGen::GenerateGrid()
         {
             // Calculate the position of the module
             const FVector Position = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset;
-                
+
+            //make Text module[x,y]
+            FString ModuleName = FString::Printf(TEXT("Module[%d,%d]"), x, y);
+            
             // Create a new static mesh component
-            StaticMeshModule = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), ("Position: %s", *Position.ToString()));
+            StaticMeshModule = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), FName(ModuleName));
             if (StaticMeshModule)
             {
                 StaticMeshModule->RegisterComponent();
@@ -58,12 +96,32 @@ void AMapGen::GenerateGrid()
 
                 StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
 
-                if (ModuleMesh)
+
+                StaticMeshModule->SetStaticMesh(ModuleMesh[ModuleNumbers[x][y]]);
+                
+
+                // Rotate the module based on its position in the grid
+                if (x == 0)
                 {
-                    StaticMeshModule->SetStaticMesh(ModuleMesh);
+                    // If the module is on the left side of the grid, rotate it 0 degrees on the Z axis
+                    StaticMeshModule->SetRelativeRotation(FRotator(0, -90, 0));
+                }
+                else if (y == 0)
+                {
+                    // If the module is on the bottom side of the grid, rotate it -90 degrees on the Z axis
+                    StaticMeshModule->SetRelativeRotation(FRotator(0, 0, 0));
+                }
+                else if (x == Pos_X - 1)
+                {
+                    // If the module is on the right side of the grid, rotate it 180 degrees on the Z axis
+                    StaticMeshModule->SetRelativeRotation(FRotator(0, 90, 0));
+                }
+                else if (y == Pos_Y - 1)
+                {
+                    // If the module is on the top side of the grid, rotate it 90 degrees on the Z axis
+                    StaticMeshModule->SetRelativeRotation(FRotator(0, 180, 0));
                 }
             }
         }
     }
-    
 }
