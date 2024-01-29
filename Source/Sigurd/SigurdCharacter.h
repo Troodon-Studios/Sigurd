@@ -45,6 +45,9 @@ class ASigurdCharacter : public ACharacter
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* HvyMeleAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* RunAction;
 	
 	/** CanMove and CanAttack booleans */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
@@ -70,7 +73,10 @@ protected:
 	void MoveClick(const FInputActionValue& Value);
 
 	void QuickAttack(const FInputActionValue& Value);
-	void HeavyAttack(const FInputActionValue& Value);			
+	void HeavyAttack(const FInputActionValue& Value);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Movement")
+	void Run();
 
 protected:
 	// APawn interface

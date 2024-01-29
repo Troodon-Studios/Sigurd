@@ -93,7 +93,9 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(QckMeleAction, ETriggerEvent::Started, this, &ASigurdCharacter::QuickAttack);
 
 		//heavy mele
-		EnhancedInputComponent->BindAction(HvyMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::HeavyAttack);	
+		EnhancedInputComponent->BindAction(HvyMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::HeavyAttack);
+
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::Run);
 	}
 	else
 	{
@@ -166,6 +168,7 @@ void ASigurdCharacter::MoveClick(const FInputActionValue& Value)
 
 void ASigurdCharacter::QuickAttack(const FInputActionValue& Value)
 {
+	// TODO check stamina and if can attack
 	if (CanAttack==false)
 	{
 		return;
@@ -175,13 +178,13 @@ void ASigurdCharacter::QuickAttack(const FInputActionValue& Value)
 	{
 		if (playerController->IsInputKeyDown(EKeys::Gamepad_FaceButton_Left))
 		{
-			CanAttack = false;
+			//CanAttack = false;
 			FOutputDeviceNull ar;
 			this->CallFunctionByNameWithArguments(TEXT("MeleAttack2"), ar, NULL, true);
 		}
 		else
 		{
-			CanAttack = false;
+			//CanAttack = false;
 			FOutputDeviceNull ar;
 			this->CallFunctionByNameWithArguments(TEXT("MeleAttack"), ar, NULL, true);
 		}
@@ -204,7 +207,7 @@ void ASigurdCharacter::HeavyAttack(const FInputActionValue& Value)
 			//HeavyMeleValue = 1;
 			FOutputDeviceNull ar;
 			this->CallFunctionByNameWithArguments(TEXT("HeavyAttack"), ar, NULL, true);
-			CanAttack = false;
+			//CanAttack = false;
 
 		}
 		else 
