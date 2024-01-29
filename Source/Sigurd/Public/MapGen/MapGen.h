@@ -22,9 +22,13 @@ public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
 
-    // actor to spawn
+    // Static mesh component
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
-    TSubclassOf<AActor> Module;
+    UStaticMeshComponent* StaticMeshModule;
+
+    // static mesh
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
+    UStaticMesh* ModuleMesh;
     
     // Grid dimensions
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
@@ -40,5 +44,7 @@ public:
 
     // Function to generate the grid
     UFUNCTION(BlueprintCallable, Category = "Grid")
-    void GenerateGrid() const;
+    void GenerateGrid();
+
 };
+
