@@ -1,5 +1,7 @@
 ﻿#include "MapGen.h"
 
+#include "ColorSpace.h"
+
 // Sets default values
 AMapGen::AMapGen(): StaticMeshModule(nullptr), ModuleMaterial(nullptr), ModuleTiles(nullptr)
 {
@@ -77,7 +79,48 @@ void AMapGen::GenerateGrid()
 
     // After all Grid Generation
     FillGrid();
+    
+    //Debug test
+    Test();
 }
+
+void AMapGen::Test()
+{
+    
+    PrintMatrix(ModuleTiles->Matrix[95]);
+    TArray<TArray<bool>> newMatrix = RotateMatrix(ModuleTiles->Matrix[95]);
+    PrintMatrix(newMatrix);
+    newMatrix = RotateMatrix(newMatrix);
+    PrintMatrix(newMatrix);
+    newMatrix = RotateMatrix(newMatrix);
+    PrintMatrix(newMatrix);
+    
+}
+
+void AMapGen::PrintMatrix( TArray<TArray<bool>> matrix)
+{
+    for (int i = 0; i < matrix.Num(); i++)
+    {
+        FString Line = "";
+        for (int j = 0; j < matrix[i].Num(); j++)
+        {
+            if (matrix[i][j])
+            {
+                Line += "o";
+            }
+            else
+            {
+                Line += "x";
+            }
+        }
+        UE_LOG(LogTemp, Warning, TEXT("%s"), *Line);
+    }
+    
+    UE_LOG(LogTemp, Warning, TEXT(" "));
+    
+}
+
+
 
 void AMapGen::DeleteSmallPlots()
 {
@@ -221,6 +264,63 @@ Case 4:
 */
 
 
+int AMapGen::GetNeighboursCount(int x, int y) const
+{
+
+    int Neighbors = 0;
+    
+    if (x > 0 && ModuleNumbers[x - 1][y] != 0)
+    {
+        Neighbors++;
+    }
+    if (x < GridSize.X - 1 && ModuleNumbers[x + 1][y] != 0)
+    {
+        Neighbors++;
+    }
+    if (y > 0 && ModuleNumbers[x][y - 1] != 0)
+    {
+        Neighbors++;
+    }
+    if (y < GridSize.Y - 1 && ModuleNumbers[x][y + 1] != 0)
+    {
+        Neighbors++;
+    }
+
+    return Neighbors;
+    
+}
+
+TArray<TArray<bool>> AMapGen::RotateMatrix (TArray<TArray<bool>> Matrix)
+{
+    TArray<TArray<bool>> RotatedMatrix;
+    RotatedMatrix.SetNum(Matrix.Num());
+    for (int i = 0; i < Matrix.Num(); i++)
+    {
+        RotatedMatrix[i].SetNum(Matrix.Num());
+    }
+    
+    for (int i = 0; i < Matrix.Num(); i++)
+    {
+        for (int j = 0; j < Matrix.Num(); j++)
+        {
+            RotatedMatrix[i][j] = Matrix[Matrix.Num() - j - 1][i];
+        }
+    }
+    return RotatedMatrix;
+}
+
+
+bool CanConnect(TArray<TArray<bool>> startMatrix, TArray<TArray<bool>> secondMatrix, int pos )
+{
+
+    
+    
+    
+    return false;
+}
+
+
+
 // all nums 1,5,7,17,21,23,29,31,85,87,95,119,127,255
 void AMapGen::FigureModulesPosition()
 {
@@ -231,51 +331,61 @@ void AMapGen::FigureModulesPosition()
         return;
     }
 
+    TArray<TArray<TArray<int>>> ModuleOptions;
+    ModuleOptions.SetNum(GridSize.X);
+    for (int i = 0; i < GridSize.X; i++)
+    {
+        ModuleOptions[i].SetNum(GridSize.Y);
+    }
+    //initialize ModuleOptions z
+    for (int x = 0; x < GridSize.X; x++)
+    {
+        for (int y = 0; y < GridSize.Y; y++)
+        {
+            ModuleOptions[x][y].SetNum(24);
+        }
+    }
+
     for (int x = 0; x < GridSize.X; x++)
     {
         for (int y = 0; y < GridSize.Y; y++)
         {
             if (ModuleNumbers[x][y] != 0)
             {
-                // cuenta la cantida de vecinos distintos de 0
-                int Neighbors = 0;
-                if (x > 0 && ModuleNumbers[x - 1][y] != 0)
-                {
-                    Neighbors++;
-                }
-                if (x < GridSize.X - 1 && ModuleNumbers[x + 1][y] != 0)
-                {
-                    Neighbors++;
-                }
-                if (y > 0 && ModuleNumbers[x][y - 1] != 0)
-                {
-                    Neighbors++;
-                }
-                if (y < GridSize.Y - 1 && ModuleNumbers[x][y + 1] != 0)
-                {
-                    Neighbors++;
-                }
-
-                switch (Neighbors)
+                
+                switch (GetNeighboursCount(x, y))
                 {
                 case 0:
                     break;
                 case 1:
                     ModuleNumbers[x][y] = 1;
+                    ModuleOptions[x][y][0] = 1;
                     break;
                 case 2:
-                    ModuleNumbers[x][y] = 127;
+                    ModuleNumbers[x][y] = 5;
+                    ModuleOptions[x][y][0] = 5;
+                    ModuleOptions[x][y][1] = 7;
+                    ModuleOptions[x][y][2] = 17;
                     break;
                 case 3:
-                    ModuleNumbers[x][y] = 31;
+                    ModuleNumbers[x][y] = 21;
+                    ModuleOptions[x][y][0] = 21;
+                    ModuleOptions[x][y][1] = 23;
+                    ModuleOptions[x][y][2] = 29;
+                    ModuleOptions[x][y][3] = 31;
                     break;
                 case 4:
                     ModuleNumbers[x][y] = 255;
+                    ModuleOptions[x][y][0] = 85;
+                    ModuleOptions[x][y][1] = 87;
+                    ModuleOptions[x][y][2] = 95;
+                    ModuleOptions[x][y][3] = 119;
+                    ModuleOptions[x][y][4] = 127;
+                    ModuleOptions[x][y][5] = 255;
                     break;
                 default: break;
                 }
             }
-                
         }
     }
 }
@@ -336,3 +446,5 @@ void AMapGen::FillGrid()
         }
     }
 }
+
+

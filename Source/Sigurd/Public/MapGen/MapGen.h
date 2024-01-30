@@ -1,11 +1,14 @@
 ﻿#pragma once
+#include <vector>
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/StaticMeshComponent.h"
 #include "ModuleTile.h"
+#include "Blueprint/UserWidgetBlueprint.h"
 #include "MapGen.generated.h"
 
+using namespace std;
 
 UCLASS()
 class AMapGen : public AActor
@@ -28,6 +31,10 @@ private:
     
     // Functions
     void FillGrid();
+    static TArray<TArray<bool>> RotateMatrix (TArray<TArray<bool>> Matrix);
+    void Test();
+    void PrintMatrix( TArray<TArray<bool>> matrix);
+    int GetNeighboursCount(int I, int J) const;
     auto GetDesiredRotation(int X, int Y) const -> FRotator;
     void DeleteSmallPlots();
     void Dfs(int I, int J, TArray<TArray<bool>>& Visited, TArray<FVector2D>& CurrentIsland);
@@ -93,6 +100,8 @@ public:
     // Use color on each module
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
     bool UseColor = false;
+
+//// DEBUG
     
 };
 
