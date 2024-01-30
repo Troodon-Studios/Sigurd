@@ -24,6 +24,7 @@ ASigurdCharacter::ASigurdCharacter()
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
 	ResourcesComponent = CreateDefaultSubobject<UResourcesComponent>(TEXT("ResourcesComponent"));
+	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
 		
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -71,6 +72,10 @@ void ASigurdCharacter::BeginPlay()
 		ResourcesComponent->RegisterComponent();
 	}
 
+	if (StaminaComponent) {
+		StaminaComponent->RegisterComponent();
+	}
+
 	OnTakeAnyDamage.AddDynamic(this, &ASigurdCharacter::TakeDamage);
 
 	//Add Input Mapping Context
@@ -97,6 +102,10 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(MoveByClickAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::MoveClick);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::MoveAxis);
 
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartRunning);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::CheckExhaustion);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &ASigurdCharacter::StopRunning);
+
 		//Combat
 		//quick mele
 		EnhancedInputComponent->BindAction(QckMeleAction, ETriggerEvent::Started, this, &ASigurdCharacter::QuickAttack);
@@ -104,8 +113,7 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		//heavy mele
 		EnhancedInputComponent->BindAction(HvyMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::HeavyAttack);
 
-		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::StartRunning);
-		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &ASigurdCharacter::StopRunning);
+
 	}
 	else
 	{
@@ -248,6 +256,27 @@ void ASigurdCharacter::TakeDamage(AActor *DamagedActor, float Damage, const clas
 	{
 		UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
 		ResourcesComponent->TakeDamageWithType(ObjectInstance ,Damage);
+	}
+}
+
+void ASigurdCharacter::StartRunning(){
+	if (!StaminaComponent->statusTags.HasTag(Tags::Exhausted)){
+		StaminaComponent->StartRunning();
+		GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+	}
+	
+}
+
+void ASigurdCharacter::StopRunning(){
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	if (!StaminaComponent->statusTags.HasTag(Tags::Exhausted)){
+		StaminaComponent->StopStaminaDecay();
+	}
+}
+
+void ASigurdCharacter::CheckExhaustion(){
+	if (StaminaComponent->statusTags.HasTag(Tags::Exhausted)){
+		StopRunning();
 	}
 }
 

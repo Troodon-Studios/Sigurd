@@ -77,6 +77,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Stamina")
 	void StopRunning();
 
+	
+
 	UFUNCTION(BlueprintCallable, Category = "Stamina")
 	void Attack(float attackCost);
 };

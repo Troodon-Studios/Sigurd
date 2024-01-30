@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ResourcesComponent.h"
+#include "Components/StaminaComponent.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "SigurdCharacter.generated.h"
@@ -34,6 +35,9 @@ class ASigurdCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resources", meta = (AllowPrivateAccess = "true"))
 	UResourcesComponent* ResourcesComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
+	UStaminaComponent* StaminaComponent;
 	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -85,11 +89,10 @@ protected:
 	UFUNCTION(Category = "Combat")
 	void TakeDamage(AActor *DamagedActor, float Damage, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser);
 	
-	UFUNCTION(BlueprintImplementableEvent, Category = "Movement")
-	void StartRunning();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Movement")
+	void StartRunning();
 	void StopRunning();
+	void CheckExhaustion();
 
 protected:
 	// APawn interface
