@@ -25,13 +25,8 @@ private:
 
     // Variables
     TArray<TArray<int>> ModuleNumbers;
-
-    //tmap of colors
-    TMap<int, FColor> ModuleColors;
-
     
     // Functions
-    void InitializeTiles();
     void FillGrid();
     auto GetDesiredRotation(int X, int Y) const -> FRotator;
     void DeleteSmallPlots();

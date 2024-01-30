@@ -1,7 +1,7 @@
 ﻿#include "MapGen.h"
 
 // Sets default values
-AMapGen::AMapGen(): StaticMeshModule(nullptr), ModuleMaterial(nullptr)
+AMapGen::AMapGen(): StaticMeshModule(nullptr), ModuleMaterial(nullptr), ModuleTiles(nullptr)
 {
     // Set this actor to call Tick() every frame
     PrimaryActorTick.bCanEverTick = true;
@@ -12,33 +12,7 @@ AMapGen::AMapGen(): StaticMeshModule(nullptr), ModuleMaterial(nullptr)
     GridSize = FVector2D(10, 10);
     ModulesSize = FIntVector(10, 10, 10);
     Seed = 0;
-    InitializeTiles();
-    
 }
-
-void AMapGen::InitializeTiles()
-{
-    /*
-    ModuleTiles.Add(255,FModuleTile(255)); // 255 remains white
-    ModuleTiles.Add(-1,FModuleTile(255)); // 255 remains white
-
-    // For the rest of the keys, assign a random color
-    ModuleTiles.Add(127, FModuleTile(127));
-    ModuleTiles.Add(119, FModuleTile(119));
-    ModuleTiles.Add(95, FModuleTile(95));
-    ModuleTiles.Add(87, FModuleTile(87));
-    ModuleTiles.Add(85, FModuleTile(85));
-    ModuleTiles.Add(31, FModuleTile(31));
-    ModuleTiles.Add(29, FModuleTile(29));
-    ModuleTiles.Add(23, FModuleTile(23));
-    ModuleTiles.Add(21, FModuleTile(21));
-    ModuleTiles.Add(17, FModuleTile(17));
-    ModuleTiles.Add(7, FModuleTile(7));
-    ModuleTiles.Add(5, FModuleTile(5));
-    ModuleTiles.Add(1, FModuleTile(1));
-*/
-}
-
 
 // Called when the game starts or when spawned
 void AMapGen::BeginPlay()
@@ -311,17 +285,17 @@ void AMapGen::FillGrid()
                     UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
 
                     
-                    /*
-                    if (ModuleTiles.Contains(ModuleNumbers[x][y]))
+                    
+                    if (ModuleTiles->ModuleColor.Contains(ModuleNumbers[x][y]))
                     {
-                        DynamicMaterial->SetVectorParameterValue("Color", ModuleTiles[ModuleNumbers[x][y]].Color);
+                        DynamicMaterial->SetVectorParameterValue("Color",ModuleTiles->ModuleColor[ModuleNumbers[x][y]]);
 
                     }
                         else
                         {
                             DynamicMaterial->SetVectorParameterValue("Color", FColor::White);
                         }
-                    */
+                    
                     StaticMeshModule->SetMaterial(0, DynamicMaterial);
                 }
                 

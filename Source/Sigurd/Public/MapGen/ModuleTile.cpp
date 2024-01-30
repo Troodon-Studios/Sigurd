@@ -3,70 +3,16 @@
 UModuleTile::UModuleTile()
 {
 	const int Values[] = { 255, 127, 119, 95, 87, 85, 31, 29, 23, 21, 17, 7, 5, 1 };
+	const FColor Colors[] = { FColor::White, FColor::Red, FColor::Green, FColor::Blue, FColor::Yellow, FColor::Cyan, FColor::Magenta, FColor::Orange, FColor::Purple, FColor::Turquoise, FColor::Silver, FColor::Emerald, FColor(0,128,128), FColor(128,128,0) };
 	for (int i = 0; i < 14; i++)
 	{
 		Matrix.Add(Values[i], SetUpMatrix(Values[i]));
 		ModuleMesh.Add(Values[i], nullptr);
-		ModuleColor.Add(Values[i], SetUpColors(Values[i]));
+		ModuleColor.Add(Values[i], Colors[i]);
 	}
 
 	UsedColors.Empty();
 	
-}
-
-FColor UModuleTile::SetUpColors(const int ModuleNumber)
-{
-	FColor NewColor;
-
-	switch (ModuleNumber)
-	{
-	case 255:
-		NewColor = FColor::White;
-		break;
-	case 127:
-		NewColor = FColor::Red;
-		break;
-	case 119:
-		NewColor = FColor::Green;
-		break;
-	case 95:
-		NewColor = FColor::Blue;
-		break;
-	case 87:
-		NewColor = FColor::Yellow;
-		break;
-	case 85:
-		NewColor = FColor::Cyan;
-		break;
-	case 31:
-		NewColor = FColor::Magenta;
-		break;
-	case 29:
-		NewColor = FColor::Orange;
-		break;
-	case 23:
-		NewColor = FColor::Purple;
-		break;
-	case 21:
-		NewColor = FColor::Turquoise;
-		break;
-	case 17:
-		NewColor = FColor::Silver;
-		break;
-	case 7:
-		NewColor = FColor::Emerald;
-		break;
-	case 5:
-		NewColor = FColor(0,128,128); // Teal
-		break;
-	case 1:
-		NewColor = FColor(128,128,0); // Olive
-		break;
-	default:
-		NewColor = FColor::Black;
-	}
-
-	return NewColor;
 }
 
 TArray<TArray<bool>> UModuleTile::SetUpMatrix(const int ModuleNumber)

@@ -12,11 +12,11 @@ public:
 	TMap<int,TArray<TArray<bool>>> Matrix;
 
 	//Tmapo de static mesh por numero de modulo seteadas a null de inicio
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<int, UStaticMesh*> ModuleMesh;
 
 	// Colors
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<int, FColor> ModuleColor;
 	
 	// Constructor
@@ -28,7 +28,6 @@ private:
 	TArray<FColor> UsedColors;
 	
 	// Functions
-	static FColor SetUpColors(const int ModuleNumber);
 	static TArray<TArray<bool>> SetUpMatrix(int ModuleNumber);
 
 };
