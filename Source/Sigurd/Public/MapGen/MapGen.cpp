@@ -63,7 +63,67 @@ void AMapGen::GenerateGrid()
             }
         }
     }
+
+    FillGrid();
+    
 }
+
+
+FRotator AMapGen::GetDesiredRotation(const int X, const int Y) const
+{
+
+    // Rotate the module based on its position in the grid
+    if (X == 0)
+    {
+        // If the module is on the left side of the grid, rotate it 0 degrees on the Z axis
+        return FRotator(0, -90, 0);
+    }
+    else if (Y == 0)
+    {
+        // If the module is on the bottom side of the grid, rotate it -90 degrees on the Z axis
+        return FRotator(0, 0, 0);
+    }
+    else if (X == GridSize.X - 1)
+    {
+        // If the module is on the right side of the grid, rotate it 180 degrees on the Z axis
+        return FRotator(0, 90, 0);
+    }
+    else if (Y == GridSize.Y - 1)
+    {
+        // If the module is on the top side of the grid, rotate it 90 degrees on the Z axis
+        return FRotator(0, 180, 0);
+    }
+
+    return FRotator(0, 0, 0);
+    
+}
+
+auto AMapGen::GetDesiredColor(const int Pos) -> FLinearColor
+{
+
+    switch (Pos)
+    {
+    case 0:
+        // Cambiar el color del material a blanco
+            return FLinearColor::White;
+        break;
+    case 1:
+        // Cambiar el color del material a negro
+            return FLinearColor::Gray;
+        break;
+    case 2:
+        // Cambiar el color del material a rojo
+            return FLinearColor::Blue;
+        break;
+    default:
+        // En caso de que el valor no sea 0, 1 o 2, establecer el color a gris
+            return FLinearColor::White;
+        break;
+    }
+
+    return  FLinearColor::White;
+}
+
 
 void AMapGen::FillGrid()
 {
@@ -96,31 +156,26 @@ void AMapGen::FillGrid()
 
                 StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
 
-
-                StaticMeshModule->SetStaticMesh(ModuleMesh[ModuleNumbers[x][y]]);
                 
+                // Set the static mesh of the static mesh component to the module mesh
+                //StaticMeshModule->SetStaticMesh(ModuleMesh[ModuleNumbers[x][y]]);
 
-                // Rotate the module based on its position in the grid
-                if (x == 0)
-                {
-                    // If the module is on the left side of the grid, rotate it 0 degrees on the Z axis
-                    StaticMeshModule->SetRelativeRotation(FRotator(0, -90, 0));
-                }
-                else if (y == 0)
-                {
-                    // If the module is on the bottom side of the grid, rotate it -90 degrees on the Z axis
-                    StaticMeshModule->SetRelativeRotation(FRotator(0, 0, 0));
-                }
-                else if (x == Pos_X - 1)
-                {
-                    // If the module is on the right side of the grid, rotate it 180 degrees on the Z axis
-                    StaticMeshModule->SetRelativeRotation(FRotator(0, 90, 0));
-                }
-                else if (y == Pos_Y - 1)
-                {
-                    // If the module is on the top side of the grid, rotate it 90 degrees on the Z axis
-                    StaticMeshModule->SetRelativeRotation(FRotator(0, 180, 0));
-                }
+                //Set Mesh 0 with colors
+                StaticMeshModule->SetStaticMesh(ModuleMesh[0]);
+                
+                // Crear un nuevo material dinámico a partir de un material base
+                UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
+
+
+                // Set the color parameter of the dynamic material to the desired color
+                DynamicMaterial->SetVectorParameterValue("Color", GetDesiredColor(ModuleNumbers[x][y]));
+                
+                // Establecer el material del componente de malla estática
+                StaticMeshModule->SetMaterial(0, DynamicMaterial);
+
+                //SetRotation
+                StaticMeshModule->SetRelativeRotation(GetDesiredRotation(x,y));
+                
             }
         }
     }

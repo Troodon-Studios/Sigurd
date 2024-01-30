@@ -18,6 +18,13 @@ protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
 
+private:
+
+    // Function to generate the grid
+    void FillGrid();
+    auto GetDesiredRotation(int X, int Y) const -> FRotator;
+    static auto GetDesiredColor(int Pos) -> FLinearColor;
+    
 public:	
     // Called every frame
     virtual void Tick(float DeltaTime) override;
@@ -29,6 +36,11 @@ public:
     // static mesh
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
     TArray<UStaticMesh*> ModuleMesh;
+
+
+    //Material
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
+    UMaterial* ModuleMaterial;
     
     // Grid dimensions
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
@@ -49,9 +61,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Grid")
     void GenerateGrid();
 
-    // Function to generate the grid
-    UFUNCTION(BlueprintCallable, Category = "Grid")
-    void FillGrid();
     
 };
 
