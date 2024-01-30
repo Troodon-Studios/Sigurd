@@ -17,6 +17,11 @@ AMapGen::AMapGen(): StaticMeshModule(nullptr)
 // Called when the game starts or when spawned
 void AMapGen::BeginPlay()
 {
+    if (RandomizeSeed)
+    {
+        Seed = FMath::RandRange(0, 1000);
+    }
+    
     Super::BeginPlay();
     
 }
@@ -30,42 +35,120 @@ void AMapGen::Tick(const float DeltaTime)
 
 void AMapGen::GenerateGrid()
 {
-    // Resize the outer array to match the grid size
+    // Resize the ModuleNumbers array to match the GridSize
     ModuleNumbers.SetNum(GridSize.X);
+    for (int i = 0; i < GridSize.X; i++)
+    {
+        ModuleNumbers[i].SetNum(GridSize.Y);
+    }
 
-    // Iterate over each cell in the grid
+    // Fill the ModuleNumbers array with 0s and 1s based on Perlin noise
     for (int x = 0; x < GridSize.X; x++)
     {
-        // Resize the inner array to match the grid size
-        ModuleNumbers[x].SetNum(GridSize.Y);
-
         for (int y = 0; y < GridSize.Y; y++)
         {
-            // Check if the cell is on the edge of the grid
-            if (x == 0 || y == 0 || x == GridSize.X - 1 || y == GridSize.Y - 1)
+            // Generate Perlin noise value based on cell position and seed
+            const float NoiseValue = FMath::PerlinNoise2D(FVector2D((x / 10.0f) + Seed, (y / 10.0f) + Seed));
+
+            // Map the noise value to the range [0, 1]
+            const float MappedValue = (NoiseValue + 1) / 2.0f; // This line is changed
+
+            // Set the corresponding cell in ModuleNumbers to 1 if noise value is greater than 0.5, otherwise 0
+            ModuleNumbers[x][y] = (MappedValue > 0.5) ? 1 : 0;
+
+            // print on screen the MappedValue
+        }
+    }
+
+    // Call the FillGrid function to create the grid based on ModuleNumbers
+    DeleteSmallPlots();
+    FillGrid();
+}
+
+void AMapGen::DeleteSmallPlots()
+{
+    if (!DeletePlots) return;
+
+    int rows = GridSize.X;
+    int cols = GridSize.Y;
+
+    // Step 1
+    TArray<TArray<bool>> visited;
+    visited.SetNum(rows);
+    for (int i = 0; i < rows; i++)
+    {
+        visited[i].SetNum(cols, false);
+    }
+
+    // Step 2
+    int maxSize = 0;
+    TArray<FVector2D> largestIsland;
+
+    // Step 3
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            if (!visited[i][j] && ModuleNumbers[i][j] != 0)
             {
-                // Check if the cell is in one of the four corners of the grid
-                if ((x == 0 && y == 0) || (x == 0 && y == GridSize.Y - 1) || (x == GridSize.X - 1 && y == 0) || (x == GridSize.X - 1 && y == GridSize.Y - 1))
+                TArray<FVector2D> currentIsland;
+                DFS(i, j, visited, currentIsland);
+
+                // Step 6
+                if (currentIsland.Num() > maxSize)
                 {
-                    // If it is, set the corresponding cell in ModuleNumbers to 3
-                    ModuleNumbers[x][y] = 2;
+                    maxSize = currentIsland.Num();
+                    largestIsland = currentIsland;
                 }
-                else
-                {
-                    // If it's not, set the corresponding cell in ModuleNumbers to 1
-                    ModuleNumbers[x][y] = 1;
-                }
-            }
-            else
-            {
-                // If it's not on the edge, set the corresponding cell in ModuleNumbers to 0
-                ModuleNumbers[x][y] = 0;
             }
         }
     }
 
-    FillGrid();
-    
+    // Step 7
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            if (!IsInLargestIsland(i, j, largestIsland))
+            {
+                ModuleNumbers[i][j] = 0;
+            }
+        }
+    }
+}
+
+void AMapGen::DFS(int i, int j, TArray<TArray<bool>>& visited, TArray<FVector2D>& currentIsland)
+{
+    int rows = GridSize.X;
+    int cols = GridSize.Y;
+
+    // Check if (i, j) is a valid cell
+    if (i < 0 || i >= rows || j < 0 || j >= cols || visited[i][j] || ModuleNumbers[i][j] == 0)
+    {
+        return;
+    }
+
+    // Step 4
+    visited[i][j] = true;
+    currentIsland.Add(FVector2D(i, j));
+
+    // Step 5
+    DFS(i - 1, j, visited, currentIsland);
+    DFS(i + 1, j, visited, currentIsland);
+    DFS(i, j - 1, visited, currentIsland);
+    DFS(i, j + 1, visited, currentIsland);
+}
+
+bool AMapGen::IsInLargestIsland(int i, int j, const TArray<FVector2D>& largestIsland)
+{
+    for (const FVector2D& cell : largestIsland)
+    {
+        if (cell.X == i && cell.Y == j)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 
@@ -125,58 +208,37 @@ auto AMapGen::GetDesiredColor(const int Pos) -> FLinearColor
 }
 
 
+
 void AMapGen::FillGrid()
 {
-    const int Pos_X = GridSize.X;
-    const int Pos_Y = GridSize.Y;
-
-    // Calculate the offset based on the size of the modules
     const FVector Offset = FVector(ModulesSize.X / 2.0f, ModulesSize.Y / 2.0f, ModulesSize.Z / 2.0f);
 
-    // Loop to spawn each module
-    for (int x = 0; x < Pos_X; x++)
+    for (int x = 0; x < GridSize.X; x++)
     {
-        for (int y = 0; y < Pos_Y; y++)
+        for (int y = 0; y < GridSize.Y; y++)
         {
-            // Calculate the position of the module
-            const FVector Position = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset;
-
-            //make Text module[x,y]
-            FString ModuleName = FString::Printf(TEXT("Module[%d,%d]"), x, y);
-            
-            // Create a new static mesh component
-            StaticMeshModule = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), FName(ModuleName));
-            if (StaticMeshModule)
+            if(ModuleNumbers[x][y] != 0)
             {
-                StaticMeshModule->RegisterComponent();
-                StaticMeshModule->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
-                // Set the local position of the static mesh to the calculated position
-                StaticMeshModule->SetRelativeLocation(Position);
+                const FVector Position = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset;
+                FString ModuleName = FString::Printf(TEXT("Module[%d,%d]-%d"), x, y, ModuleNumbers[x][y]);
 
-                StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
+                StaticMeshModule = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), FName(ModuleName));
+                if (StaticMeshModule)
+                {
+                    StaticMeshModule->RegisterComponent();
+                    StaticMeshModule->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+                    StaticMeshModule->SetRelativeLocation(Position);
+                    StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
+                    StaticMeshModule->SetStaticMesh(ModuleMesh[0]);
 
-                
-                // Set the static mesh of the static mesh component to the module mesh
-                //StaticMeshModule->SetStaticMesh(ModuleMesh[ModuleNumbers[x][y]]);
-
-                //Set Mesh 0 with colors
-                StaticMeshModule->SetStaticMesh(ModuleMesh[0]);
-                
-                // Crear un nuevo material dinámico a partir de un material base
-                UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
-
-
-                // Set the color parameter of the dynamic material to the desired color
-                DynamicMaterial->SetVectorParameterValue("Color", GetDesiredColor(ModuleNumbers[x][y]));
-                
-                // Establecer el material del componente de malla estática
-                StaticMeshModule->SetMaterial(0, DynamicMaterial);
-
-                //SetRotation
-                StaticMeshModule->SetRelativeRotation(GetDesiredRotation(x,y));
+                    UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
+                    DynamicMaterial->SetVectorParameterValue("Color", GetDesiredColor(ModuleNumbers[x][y]));
+                    StaticMeshModule->SetMaterial(0, DynamicMaterial);
+                }
                 
             }
+            
         }
     }
 }

@@ -24,6 +24,9 @@ private:
     void FillGrid();
     auto GetDesiredRotation(int X, int Y) const -> FRotator;
     static auto GetDesiredColor(int Pos) -> FLinearColor;
+    void DeleteSmallPlots();
+    void DFS(int i, int j, TArray<TArray<bool>>& visited, TArray<FVector2D>& currentIsland);
+    bool IsInLargestIsland(int i, int j, const TArray<FVector2D>& largestIsland);
     
 public:	
     // Called every frame
@@ -36,8 +39,7 @@ public:
     // static mesh
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
     TArray<UStaticMesh*> ModuleMesh;
-
-
+    
     //Material
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
     UMaterial* ModuleMaterial;
@@ -57,6 +59,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
     int Seed;
 
+    // Randomize seed for generation
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
+    bool RandomizeSeed = false;
+
+    // Randomize seed for generation
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
+    bool DeletePlots = false;
+    
+    
     // Function to generate the grid
     UFUNCTION(BlueprintCallable, Category = "Grid")
     void GenerateGrid();
