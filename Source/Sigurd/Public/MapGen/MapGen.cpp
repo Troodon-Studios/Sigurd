@@ -1,7 +1,7 @@
 ﻿#include "MapGen.h"
 
 // Sets default values
-AMapGen::AMapGen(): StaticMeshModule(nullptr)
+AMapGen::AMapGen(): StaticMeshModule(nullptr), ModuleMaterial(nullptr)
 {
     // Set this actor to call Tick() every frame
     PrimaryActorTick.bCanEverTick = true;
@@ -12,7 +12,33 @@ AMapGen::AMapGen(): StaticMeshModule(nullptr)
     GridSize = FVector2D(10, 10);
     ModulesSize = FIntVector(10, 10, 10);
     Seed = 0;
+    InitializeTiles();
+    
 }
+
+void AMapGen::InitializeTiles()
+{
+    /*
+    ModuleTiles.Add(255,FModuleTile(255)); // 255 remains white
+    ModuleTiles.Add(-1,FModuleTile(255)); // 255 remains white
+
+    // For the rest of the keys, assign a random color
+    ModuleTiles.Add(127, FModuleTile(127));
+    ModuleTiles.Add(119, FModuleTile(119));
+    ModuleTiles.Add(95, FModuleTile(95));
+    ModuleTiles.Add(87, FModuleTile(87));
+    ModuleTiles.Add(85, FModuleTile(85));
+    ModuleTiles.Add(31, FModuleTile(31));
+    ModuleTiles.Add(29, FModuleTile(29));
+    ModuleTiles.Add(23, FModuleTile(23));
+    ModuleTiles.Add(21, FModuleTile(21));
+    ModuleTiles.Add(17, FModuleTile(17));
+    ModuleTiles.Add(7, FModuleTile(7));
+    ModuleTiles.Add(5, FModuleTile(5));
+    ModuleTiles.Add(1, FModuleTile(1));
+*/
+}
+
 
 // Called when the game starts or when spawned
 void AMapGen::BeginPlay()
@@ -62,6 +88,9 @@ void AMapGen::GenerateGrid()
 
     // Call the FillGrid function to create the grid based on ModuleNumbers
     DeleteSmallPlots();
+    FigureModulesPosition();
+
+    // After all Grid Generation
     FillGrid();
 }
 
@@ -69,47 +98,47 @@ void AMapGen::DeleteSmallPlots()
 {
     if (!DeletePlots) return;
 
-    int rows = GridSize.X;
-    int cols = GridSize.Y;
+    const int Rows = GridSize.X;
+    const int Cols = GridSize.Y;
 
     // Step 1
-    TArray<TArray<bool>> visited;
-    visited.SetNum(rows);
-    for (int i = 0; i < rows; i++)
+    TArray<TArray<bool>> Visited;
+    Visited.SetNum(Rows);
+    for (int i = 0; i < Rows; i++)
     {
-        visited[i].SetNum(cols, false);
+        Visited[i].SetNum(Cols, false);
     }
 
     // Step 2
-    int maxSize = 0;
-    TArray<FVector2D> largestIsland;
+    int MaxSize = 0;
+    TArray<FVector2D> LargestIsland;
 
     // Step 3
-    for (int i = 0; i < rows; i++)
+    for (int i = 0; i < Rows; i++)
     {
-        for (int j = 0; j < cols; j++)
+        for (int j = 0; j < Cols; j++)
         {
-            if (!visited[i][j] && ModuleNumbers[i][j] != 0)
+            if (!Visited[i][j] && ModuleNumbers[i][j] != 0)
             {
-                TArray<FVector2D> currentIsland;
-                DFS(i, j, visited, currentIsland);
+                TArray<FVector2D> CurrentIsland;
+                Dfs(i, j, Visited, CurrentIsland);
 
                 // Step 6
-                if (currentIsland.Num() > maxSize)
+                if (CurrentIsland.Num() > MaxSize)
                 {
-                    maxSize = currentIsland.Num();
-                    largestIsland = currentIsland;
+                    MaxSize = CurrentIsland.Num();
+                    LargestIsland = CurrentIsland;
                 }
             }
         }
     }
 
     // Step 7
-    for (int i = 0; i < rows; i++)
+    for (int i = 0; i < Rows; i++)
     {
-        for (int j = 0; j < cols; j++)
+        for (int j = 0; j < Cols; j++)
         {
-            if (!IsInLargestIsland(i, j, largestIsland))
+            if (!IsInLargestIsland(i, j, LargestIsland))
             {
                 ModuleNumbers[i][j] = 0;
             }
@@ -117,33 +146,32 @@ void AMapGen::DeleteSmallPlots()
     }
 }
 
-void AMapGen::DFS(int i, int j, TArray<TArray<bool>>& visited, TArray<FVector2D>& currentIsland)
+void AMapGen::Dfs(const int I, const int J, TArray<TArray<bool>>& Visited, TArray<FVector2D>& CurrentIsland)
 {
-    int rows = GridSize.X;
-    int cols = GridSize.Y;
+    const int Rows = GridSize.X;
 
     // Check if (i, j) is a valid cell
-    if (i < 0 || i >= rows || j < 0 || j >= cols || visited[i][j] || ModuleNumbers[i][j] == 0)
+    if (const int Cols = GridSize.Y; I < 0 || I >= Rows || J < 0 || J >= Cols || Visited[I][J] || ModuleNumbers[I][J] == 0)
     {
         return;
     }
 
     // Step 4
-    visited[i][j] = true;
-    currentIsland.Add(FVector2D(i, j));
+    Visited[I][J] = true;
+    CurrentIsland.Add(FVector2D(I, J));
 
     // Step 5
-    DFS(i - 1, j, visited, currentIsland);
-    DFS(i + 1, j, visited, currentIsland);
-    DFS(i, j - 1, visited, currentIsland);
-    DFS(i, j + 1, visited, currentIsland);
+    Dfs(I - 1, J, Visited, CurrentIsland);
+    Dfs(I + 1, J, Visited, CurrentIsland);
+    Dfs(I, J - 1, Visited, CurrentIsland);
+    Dfs(I, J + 1, Visited, CurrentIsland);
 }
 
-bool AMapGen::IsInLargestIsland(int i, int j, const TArray<FVector2D>& largestIsland)
+bool AMapGen::IsInLargestIsland(const int I, const int J, const TArray<FVector2D>& LargestIsland)
 {
-    for (const FVector2D& cell : largestIsland)
+    for (const FVector2D& Cell : LargestIsland)
     {
-        if (cell.X == i && cell.Y == j)
+        if (Cell.X == I && Cell.Y == J)
         {
             return true;
         }
@@ -181,33 +209,81 @@ FRotator AMapGen::GetDesiredRotation(const int X, const int Y) const
     
 }
 
-auto AMapGen::GetDesiredColor(const int Pos) -> FLinearColor
-{
+// Tileset Location:
+/*
 
-    switch (Pos)
+1: (1, c!=0), (3, c==0)
+5: (2, c!=0) contiguous, (2, c==0)
+7: (1, c!=0), (3, c==0)
+17: (1, c!=0), (3, c==0)
+21: (1, c!=0), (3, c==0)
+23: (1, c!=0), (3, c==0)
+29: (1, c!=0), (3, c==0)
+31: (1, c!=0), (3, c==0)
+85: (1, c!=0), (3, c==0)
+87: (1, c!=0), (3, c==0)
+95: (1, c!=0), (3, c==0)
+119: (1, c!=0), (3, c==0)
+127: (1, c!=0), (3, c==0)
+255: (4, c!=0), (0, c==0)
+
+
+
+ */
+
+// all nums 1,5,7,17,21,23,29,31,85,87,95,119,127,255
+void AMapGen::FigureModulesPosition()
+{
+    // Create a copy of ModuleNumbers to avoid modifying it while iterating
+    TArray<TArray<int>> newModuleNumbers = ModuleNumbers;
+
+    // Directions for the neighboring cells (up, down, left, right)
+    TArray<FVector2D> directions = {FVector2D(-1, 0), FVector2D(1, 0), FVector2D(0, -1), FVector2D(0, 1)};
+
+    for (int i = 0; i < ModuleNumbers.Num(); i++)
     {
-    case 0:
-        // Cambiar el color del material a blanco
-            return FLinearColor::White;
-        break;
-    case 1:
-        // Cambiar el color del material a negro
-            return FLinearColor::Gray;
-        break;
-    case 2:
-        // Cambiar el color del material a rojo
-            return FLinearColor::Blue;
-        break;
-    default:
-        // En caso de que el valor no sea 0, 1 o 2, establecer el color a gris
-            return FLinearColor::White;
-        break;
+        for (int j = 0; j < ModuleNumbers[i].Num(); j++)
+        {
+            // Count the number of neighboring modules that are not zero
+            int count = 0;
+            for (const FVector2D& dir : directions)
+            {
+                int ni = i + dir.X;
+                int nj = j + dir.Y;
+
+                // Check if the neighboring cell is within the grid and is not zero
+                if (ni >= 0 && ni < ModuleNumbers.Num() && nj >= 0 && nj < ModuleNumbers[i].Num() && ModuleNumbers[ni][nj] != 0)
+                {
+                    count++;
+                }
+            }
+
+            // Assign a number to the current cell based on the count
+            switch (count)
+            {
+            case 1:
+                newModuleNumbers[i][j] = 1;
+                break;
+            case 2:
+                newModuleNumbers[i][j] = 5;
+                break;
+            case 3:
+                newModuleNumbers[i][j] = 7;
+                break;
+            case 4:
+                newModuleNumbers[i][j] = 255;
+                break;
+            default:
+                break;
+            }
+        }
     }
 
-    return  FLinearColor::White;
+    // Update ModuleNumbers with the new values
+    ModuleNumbers = newModuleNumbers;
 }
 
-
+// After all Grid Generation
 
 void AMapGen::FillGrid()
 {
@@ -233,7 +309,19 @@ void AMapGen::FillGrid()
                     StaticMeshModule->SetStaticMesh(ModuleMesh[0]);
 
                     UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
-                    DynamicMaterial->SetVectorParameterValue("Color", GetDesiredColor(ModuleNumbers[x][y]));
+
+                    
+                    /*
+                    if (ModuleTiles.Contains(ModuleNumbers[x][y]))
+                    {
+                        DynamicMaterial->SetVectorParameterValue("Color", ModuleTiles[ModuleNumbers[x][y]].Color);
+
+                    }
+                        else
+                        {
+                            DynamicMaterial->SetVectorParameterValue("Color", FColor::White);
+                        }
+                    */
                     StaticMeshModule->SetMaterial(0, DynamicMaterial);
                 }
                 

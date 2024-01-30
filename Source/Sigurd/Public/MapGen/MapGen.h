@@ -3,7 +3,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/StaticMeshComponent.h"
+#include "ModuleTile.h"
 #include "MapGen.generated.h"
+
 
 UCLASS()
 class AMapGen : public AActor
@@ -20,14 +22,23 @@ protected:
 
 private:
 
-    // Function to generate the grid
+
+    // Variables
+    TArray<TArray<int>> ModuleNumbers;
+
+    //tmap of colors
+    TMap<int, FColor> ModuleColors;
+
+    
+    // Functions
+    void InitializeTiles();
     void FillGrid();
     auto GetDesiredRotation(int X, int Y) const -> FRotator;
-    static auto GetDesiredColor(int Pos) -> FLinearColor;
     void DeleteSmallPlots();
-    void DFS(int i, int j, TArray<TArray<bool>>& visited, TArray<FVector2D>& currentIsland);
-    bool IsInLargestIsland(int i, int j, const TArray<FVector2D>& largestIsland);
-    
+    void Dfs(int I, int J, TArray<TArray<bool>>& Visited, TArray<FVector2D>& CurrentIsland);
+    static bool IsInLargestIsland(int I, int J, const TArray<FVector2D>& LargestIsland);
+    void FigureModulesPosition();
+
 public:	
     // Called every frame
     virtual void Tick(float DeltaTime) override;
@@ -47,9 +58,10 @@ public:
     // Grid dimensions
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
     FIntVector ModulesSize;
-
-    // Array to store the number of each module for generating the grid
-    TArray<TArray<int>> ModuleNumbers;
+    
+    // UModuleTile DataAsset
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
+    UModuleTile* ModuleTiles;
     
     // Grid dimensions
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
