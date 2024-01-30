@@ -37,9 +37,12 @@ void AMapGen::GenerateGrid()
 {
     // Resize the ModuleNumbers array to match the GridSize
     ModuleNumbers.SetNum(GridSize.X);
+    ModuleRotations.SetNum(GridSize.X);
+    
     for (int i = 0; i < GridSize.X; i++)
     {
         ModuleNumbers[i].SetNum(GridSize.Y);
+        ModuleRotations[i].SetNum(GridSize.Y);
     }
 
     // Fill the ModuleNumbers array with 0s and 1s based on Perlin noise
@@ -47,16 +50,24 @@ void AMapGen::GenerateGrid()
     {
         for (int y = 0; y < GridSize.Y; y++)
         {
-            // Generate Perlin noise value based on cell position and seed
-            const float NoiseValue = FMath::PerlinNoise2D(FVector2D((x / 10.0f) + Seed, (y / 10.0f) + Seed));
+            if (x == 0 || y == 0 || x == GridSize.X - 1 || y == GridSize.Y - 1)
+            {
+                ModuleNumbers[x][y] = 0;
+                ModuleRotations[x][y] = 0;
+            }else
+            {
+                // Generate Perlin noise value based on cell position and seed
+                const float NoiseValue = FMath::PerlinNoise2D(FVector2D((x / 10.0f) + Seed, (y / 10.0f) + Seed));
 
-            // Map the noise value to the range [0, 1]
-            const float MappedValue = (NoiseValue + 1) / 2.0f; // This line is changed
+                // Map the noise value to the range [0, 1]
+                const float MappedValue = (NoiseValue + 1) / 2.0f; // This line is changed
 
-            // Set the corresponding cell in ModuleNumbers to 1 if noise value is greater than 0.5, otherwise 0
-            ModuleNumbers[x][y] = (MappedValue > 0.5) ? 1 : 0;
+                // Set the corresponding cell in ModuleNumbers to 1 if noise value is greater than 0.5, otherwise 0
+                ModuleNumbers[x][y] = (MappedValue > 0.5) ? 1 : 0;
 
-            // print on screen the MappedValue
+                ModuleRotations[x][y] = 0;
+            }
+            
         }
     }
 
@@ -183,78 +194,90 @@ FRotator AMapGen::GetDesiredRotation(const int X, const int Y) const
     
 }
 
-// Tileset Location:
+
 /*
+Case 1:
+1
 
-1: (1, c!=0), (3, c==0)
-5: (2, c!=0) contiguous, (2, c==0)
-7: (1, c!=0), (3, c==0)
-17: (1, c!=0), (3, c==0)
-21: (1, c!=0), (3, c==0)
-23: (1, c!=0), (3, c==0)
-29: (1, c!=0), (3, c==0)
-31: (1, c!=0), (3, c==0)
-85: (1, c!=0), (3, c==0)
-87: (1, c!=0), (3, c==0)
-95: (1, c!=0), (3, c==0)
-119: (1, c!=0), (3, c==0)
-127: (1, c!=0), (3, c==0)
-255: (4, c!=0), (0, c==0)
+Case 2:
+5
+7
+17
 
+Case 3:
+21
+23
+29
+31
 
+Case 4:
+85
+87
+95
+119
+127
+255
 
- */
+*/
+
 
 // all nums 1,5,7,17,21,23,29,31,85,87,95,119,127,255
 void AMapGen::FigureModulesPosition()
 {
-    // Create a copy of ModuleNumbers to avoid modifying it while iterating
-    TArray<TArray<int>> newModuleNumbers = ModuleNumbers;
-
-    // Directions for the neighboring cells (up, down, left, right)
-    TArray<FVector2D> directions = {FVector2D(-1, 0), FVector2D(1, 0), FVector2D(0, -1), FVector2D(0, 1)};
-
-    for (int i = 0; i < ModuleNumbers.Num(); i++)
+    // Ensure ModuleNumbers is properly initialized
+    if (ModuleNumbers.Num() == 0 || ModuleNumbers[0].Num() == 0)
     {
-        for (int j = 0; j < ModuleNumbers[i].Num(); j++)
-        {
-            // Count the number of neighboring modules that are not zero
-            int count = 0;
-            for (const FVector2D& dir : directions)
-            {
-                int ni = i + dir.X;
-                int nj = j + dir.Y;
-
-                // Check if the neighboring cell is within the grid and is not zero
-                if (ni >= 0 && ni < ModuleNumbers.Num() && nj >= 0 && nj < ModuleNumbers[i].Num() && ModuleNumbers[ni][nj] != 0)
-                {
-                    count++;
-                }
-            }
-
-            // Assign a number to the current cell based on the count
-            switch (count)
-            {
-            case 1:
-                newModuleNumbers[i][j] = 1;
-                break;
-            case 2:
-                newModuleNumbers[i][j] = 5;
-                break;
-            case 3:
-                newModuleNumbers[i][j] = 7;
-                break;
-            case 4:
-                newModuleNumbers[i][j] = 255;
-                break;
-            default:
-                break;
-            }
-        }
+        // Handle error, perhaps throw an exception or return early
+        return;
     }
 
-    // Update ModuleNumbers with the new values
-    ModuleNumbers = newModuleNumbers;
+    for (int x = 0; x < GridSize.X; x++)
+    {
+        for (int y = 0; y < GridSize.Y; y++)
+        {
+            if (ModuleNumbers[x][y] != 0)
+            {
+                // cuenta la cantida de vecinos distintos de 0
+                int Neighbors = 0;
+                if (x > 0 && ModuleNumbers[x - 1][y] != 0)
+                {
+                    Neighbors++;
+                }
+                if (x < GridSize.X - 1 && ModuleNumbers[x + 1][y] != 0)
+                {
+                    Neighbors++;
+                }
+                if (y > 0 && ModuleNumbers[x][y - 1] != 0)
+                {
+                    Neighbors++;
+                }
+                if (y < GridSize.Y - 1 && ModuleNumbers[x][y + 1] != 0)
+                {
+                    Neighbors++;
+                }
+
+                switch (Neighbors)
+                {
+                case 0:
+                    break;
+                case 1:
+                    ModuleNumbers[x][y] = 1;
+                    break;
+                case 2:
+                    ModuleNumbers[x][y] = 127;
+                    break;
+                case 3:
+                    ModuleNumbers[x][y] = 31;
+                    break;
+                case 4:
+                    ModuleNumbers[x][y] = 255;
+                    break;
+                default: break;
+                }
+            }
+                
+        }
+    }
 }
 
 // After all Grid Generation
@@ -267,11 +290,11 @@ void AMapGen::FillGrid()
     {
         for (int y = 0; y < GridSize.Y; y++)
         {
-            if(ModuleNumbers[x][y] != 0)
+            if(true)
             {
 
                 const FVector Position = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset;
-                FString ModuleName = FString::Printf(TEXT("Module[%d,%d]-%d"), x, y, ModuleNumbers[x][y]);
+                FString ModuleName = FString::Printf(TEXT("Module[%d,%d]_%d"), x, y, ModuleNumbers[x][y]);
 
                 StaticMeshModule = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), FName(ModuleName));
                 if (StaticMeshModule)
@@ -280,21 +303,30 @@ void AMapGen::FillGrid()
                     StaticMeshModule->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
                     StaticMeshModule->SetRelativeLocation(Position);
                     StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
-                    StaticMeshModule->SetStaticMesh(ModuleMesh[0]);
 
+                    if (ModuleTiles->ModuleMesh.Contains(ModuleNumbers[x][y]) && ModuleTiles->ModuleMesh[ModuleNumbers[x][y]] != nullptr && UseMesh)
+                    {
+                        StaticMeshModule->SetStaticMesh(ModuleTiles->ModuleMesh[ModuleNumbers[x][y]]);
+
+                    }
+                    else
+                    {
+                        StaticMeshModule->SetStaticMesh(ModuleMesh[0]);
+                    }
+                    
                     UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
 
                     
                     
-                    if (ModuleTiles->ModuleColor.Contains(ModuleNumbers[x][y]))
+                    if (ModuleTiles->ModuleColor.Contains(ModuleNumbers[x][y]) && UseColor)
                     {
                         DynamicMaterial->SetVectorParameterValue("Color",ModuleTiles->ModuleColor[ModuleNumbers[x][y]]);
 
                     }
-                        else
-                        {
-                            DynamicMaterial->SetVectorParameterValue("Color", FColor::White);
-                        }
+                    else
+                    {
+                        DynamicMaterial->SetVectorParameterValue("Color", FColor::White);
+                    }
                     
                     StaticMeshModule->SetMaterial(0, DynamicMaterial);
                 }

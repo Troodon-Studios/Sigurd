@@ -21,10 +21,10 @@ protected:
     virtual void BeginPlay() override;
 
 private:
-
-
+    
     // Variables
     TArray<TArray<int>> ModuleNumbers;
+    TArray<TArray<int>> ModuleRotations;
     
     // Functions
     void FillGrid();
@@ -37,6 +37,8 @@ private:
 public:	
     // Called every frame
     virtual void Tick(float DeltaTime) override;
+
+//// Modules
 
     // Static mesh component
     UPROPERTY(BlueprintReadOnly, BlueprintReadOnly, Category = "Modules")
@@ -57,7 +59,9 @@ public:
     // UModuleTile DataAsset
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
     UModuleTile* ModuleTiles;
-    
+
+//// Grid
+
     // Grid dimensions
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
     FVector2D GridSize;
@@ -66,10 +70,7 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
     int Seed;
 
-    // Randomize seed for generation
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
-    bool RandomizeSeed = false;
-
+    
     // Randomize seed for generation
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
     bool DeletePlots = false;
@@ -78,7 +79,20 @@ public:
     // Function to generate the grid
     UFUNCTION(BlueprintCallable, Category = "Grid")
     void GenerateGrid();
+    
+//// Settings
 
+    // Randomize seed for generation
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+    bool RandomizeSeed = false;
+
+    // Use mesh on each module
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+    bool UseMesh = false;
+
+    // Use color on each module
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+    bool UseColor = false;
     
 };
 
