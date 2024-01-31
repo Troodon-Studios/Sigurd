@@ -32,6 +32,40 @@ void AMapGen::Tick(const float DeltaTime)
     Super::Tick(DeltaTime);
 }
 
+void AMapGen::Generate()
+{
+
+    UE_LOG(LogTemp, Warning, TEXT("Generating a new grid"));
+    
+    GenerateGrid();
+    
+    DeleteSmallPlots();
+    
+    FigureModulesPosition();
+
+    FillGrid();
+    
+}
+
+
+int AMapGen::GetMapSize()
+{
+    int Size = 0;
+
+    // count how many modules are in the ModuleNumbers array
+    for (int x = 0; x < GridSize.X; x++)
+    {
+        for (int y = 0; y < GridSize.Y; y++)
+        {
+            if (ModuleNumbers[x][y] != 0)
+            {
+                Size++;
+            }
+        }
+    }
+    
+    return Size;
+}
 
 void AMapGen::GenerateGrid()
 {
@@ -70,13 +104,6 @@ void AMapGen::GenerateGrid()
             
         }
     }
-
-    // Call the FillGrid function to create the grid based on ModuleNumbers
-    DeleteSmallPlots();
-    FigureModulesPosition();
-
-    // After all Grid Generation
-    FillGrid();
     
 }
 
@@ -278,7 +305,7 @@ TArray<TArray<int>> AMapGen::RotateMatrix(const TArray<TArray<int>>& Matrix)
     return RotatedMatrix;
 }
 
-bool AMapGen::CompareMatrix(TArray<TArray<int>> Matrix1, const int PlotNum, int X, int Y) const
+bool AMapGen::CompareMatrix(TArray<TArray<int>> Matrix1, const int PlotNum, int X, int Y) 
 {
     TArray<TArray<int>> Matrix2 = ModuleTiles->Matrix[PlotNum];
     Matrix1[1][1] = false;
@@ -305,7 +332,7 @@ bool AMapGen::CompareMatrix(TArray<TArray<int>> Matrix1, const int PlotNum, int 
         }
         if (isEqual)
         {
-            //ModuleRotations[X][Y] = i;
+            ModuleRotations[X][Y] += 1-i;
             return true;
         }
         Matrix2 = RotateMatrix(Matrix2);
@@ -358,7 +385,7 @@ void AMapGen::FigureModulesPosition()
 
                 ModuleNumbers[x][y] = AllNums[N];
 
-                UE_LOG(LogTemp, Warning, TEXT("Conseguido en %d iteraciones"), N);
+                //UE_LOG(LogTemp, Warning, TEXT("Conseguido en %d iteraciones"), N);
                 
             }
         }

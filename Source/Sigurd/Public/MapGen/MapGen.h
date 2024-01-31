@@ -30,9 +30,10 @@ private:
     
     // Functions
     void FillGrid();
+    int GetMapSize();
     static auto PrintMatrix(TArray<TArray<int>> Matrix) -> void;
     TArray<TArray<int>> GetNeighbours(int I, int J) const;
-    bool CompareMatrix(TArray<TArray<int>> Matrix1, int PlotNum,int X, int Y) const;
+    bool CompareMatrix(TArray<TArray<int>> Matrix1, int PlotNum,int X, int Y);
     static TArray<TArray<int>> RotateMatrix(const TArray<TArray<int>>& Matrix);
     static int GetNeighboursCount(TArray<TArray<int>> Matrix);
     void DeleteSmallPlots();
@@ -75,16 +76,21 @@ public:
     // Seed for random generation
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
     int Seed;
-
     
     // Randomize seed for generation
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
     bool DeletePlots = false;
     
-    
     // Function to generate the grid
     UFUNCTION(BlueprintCallable, Category = "Grid")
     void GenerateGrid();
+
+    // Function to generate the grid
+    UFUNCTION(BlueprintCallable, Category = "Grid")
+    void Generate();
+
+    
+    
     
 //// Settings
 
@@ -99,6 +105,11 @@ public:
     // Use color on each module
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
     bool UseColor = false;
+
+    // Min numer of plots walkable
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+    int MinPlots;
+
 
 //// DEBUG
     
