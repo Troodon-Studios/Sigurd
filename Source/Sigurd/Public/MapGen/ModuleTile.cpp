@@ -15,110 +15,111 @@ UModuleTile::UModuleTile()
 	
 }
 
-TArray<TArray<bool>> UModuleTile::SetUpMatrix(const int ModuleNumber)
+TArray<TArray<int>> UModuleTile::SetUpMatrix(const int ModuleNumber)
 {
 
-	bool o = true;
-	bool x = false;
-	TArray<TArray<bool>> NewMatrix;
+	int o = 1;
+	int x = 0;
+	int i = 2;
+	TArray<TArray<int>> NewMatrix;
 	
 	switch (ModuleNumber)
 	{
 	case 255:
 		NewMatrix = {
 		{o,o,o},
-		{o,o,o},
+		{o,x,o},
 		{o,o,o}
 		};
 		break;
 	case 127:
 		NewMatrix = {
 		{x,o,o},
-		{o,o,o},
+		{o,x,o},
 		{o,o,o}
 		};
 		break;
 	case 119:
 		NewMatrix = {
 		{x,o,o},
-		{o,o,o},
+		{o,x,o},
 		{o,o,x}
 		};
 		break;
 	case 95:
 		NewMatrix = {
 		{x,o,o},
-		{o,o,o},
+		{o,x,o},
 		{x,o,o}
 		};
 		break;
 	case 87:
 		NewMatrix = {
 		{x,o,o},
-		{o,o,o},
+		{o,x,o},
 		{x,o,x}
 		};
 		break;
 	case 85:
 		NewMatrix = {
 		{x,o,x},
-		{o,o,o},
+		{o,x,o},
 		{x,o,x}
 		};
 		break;
 	case 31:
 		NewMatrix = {
-		{x,o,o},
-		{x,o,o},
-		{x,o,o}
+		{i,o,o},
+		{x,x,o},
+		{i,o,o}
 		};
 		break;
 	case 29:
 		NewMatrix = {
-		{x,o,x},
-		{x,o,o},
-		{x,o,o}
+		{i,o,x},
+		{x,x,o},
+		{i,o,o}
 		};
 		break;
 	case 23:
 		NewMatrix = {
-		{x,o,o},
-		{x,o,o},
-		{x,o,x}
+		{i,o,o},
+		{x,x,o},
+		{i,o,x}
 		};
 		break;
 	case 21:
 		NewMatrix = {
-		{x,o,x},
-		{x,o,o},
-		{x,o,x}
+		{i,o,x},
+		{x,x,o},
+		{i,o,x}
 		};
 		break;
 	case 17:
 		NewMatrix = {
-		{x,o,x},
-		{x,o,x},
-		{x,o,x}
+		{i,o,i},
+		{x,x,x},
+		{i,o,i}
 		};
 		break;
 	case 7:
 		NewMatrix = {
-		{x,o,o},
-		{x,o,o},
-		{x,x,x}
+		{i,o,o},
+		{x,x,o},
+		{x,x,i}
 		};
 		break;
 	case 5:
 		NewMatrix = {
-		{x,o,x},
-		{x,o,o},
-		{x,x,x}
+		{i,o,x},
+		{x,x,o},
+		{x,x,i}
 		};
 		break;
 	case 1:
 		NewMatrix = {
-		{x,o,x},
-		{x,o,x},
+		{i,o,i},
+		{x,x,x},
 		{x,x,x}
 		};
 	default:

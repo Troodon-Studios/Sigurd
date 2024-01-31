@@ -1,7 +1,5 @@
 ﻿#include "MapGen.h"
 
-#include "ColorSpace.h"
-
 // Sets default values
 AMapGen::AMapGen(): StaticMeshModule(nullptr), ModuleMaterial(nullptr), ModuleTiles(nullptr)
 {
@@ -80,37 +78,26 @@ void AMapGen::GenerateGrid()
     // After all Grid Generation
     FillGrid();
     
-    //Debug test
-    Test();
 }
 
-void AMapGen::Test()
+void AMapGen::PrintMatrix( TArray<TArray<int>> Matrix)
 {
-    
-    PrintMatrix(ModuleTiles->Matrix[95]);
-    TArray<TArray<bool>> newMatrix = RotateMatrix(ModuleTiles->Matrix[95]);
-    PrintMatrix(newMatrix);
-    newMatrix = RotateMatrix(newMatrix);
-    PrintMatrix(newMatrix);
-    newMatrix = RotateMatrix(newMatrix);
-    PrintMatrix(newMatrix);
-    
-}
-
-void AMapGen::PrintMatrix( TArray<TArray<bool>> matrix)
-{
-    for (int i = 0; i < matrix.Num(); i++)
+    for (int i = 0; i < Matrix.Num(); i++)
     {
         FString Line = "";
-        for (int j = 0; j < matrix[i].Num(); j++)
+        for (int j = 0; j < Matrix[i].Num(); j++)
         {
-            if (matrix[i][j])
+            if (Matrix[i][j] == 1)
             {
                 Line += "o";
             }
-            else
+            else if (Matrix[i][j] == 0)
             {
                 Line += "x";
+
+            }else
+            {
+                Line += "i";
             }
         }
         UE_LOG(LogTemp, Warning, TEXT("%s"), *Line);
@@ -207,184 +194,172 @@ bool AMapGen::IsInLargestIsland(const int I, const int J, const TArray<FVector2D
     return false;
 }
 
-
-FRotator AMapGen::GetDesiredRotation(const int X, const int Y) const
+int AMapGen::GetNeighboursCount(TArray<TArray<int>> Matrix) 
 {
-
-    // Rotate the module based on its position in the grid
-    if (X == 0)
-    {
-        // If the module is on the left side of the grid, rotate it 0 degrees on the Z axis
-        return FRotator(0, -90, 0);
-    }
-    else if (Y == 0)
-    {
-        // If the module is on the bottom side of the grid, rotate it -90 degrees on the Z axis
-        return FRotator(0, 0, 0);
-    }
-    else if (X == GridSize.X - 1)
-    {
-        // If the module is on the right side of the grid, rotate it 180 degrees on the Z axis
-        return FRotator(0, 90, 0);
-    }
-    else if (Y == GridSize.Y - 1)
-    {
-        // If the module is on the top side of the grid, rotate it 90 degrees on the Z axis
-        return FRotator(0, 180, 0);
-    }
-
-    return FRotator(0, 0, 0);
-    
-}
-
-
-/*
-Case 1:
-1
-
-Case 2:
-5
-7
-17
-
-Case 3:
-21
-23
-29
-31
-
-Case 4:
-85
-87
-95
-119
-127
-255
-
-*/
-
-
-int AMapGen::GetNeighboursCount(int x, int y) const
-{
-
     int Neighbors = 0;
-    
-    if (x > 0 && ModuleNumbers[x - 1][y] != 0)
+    for (int i = 0; i < Matrix.Num(); i++)
     {
-        Neighbors++;
+        for (int j = 0; j < Matrix[i].Num(); j++)
+        {
+            if (Matrix[i][j])
+            {
+                Neighbors++;
+            }
+        }
     }
-    if (x < GridSize.X - 1 && ModuleNumbers[x + 1][y] != 0)
-    {
-        Neighbors++;
-    }
-    if (y > 0 && ModuleNumbers[x][y - 1] != 0)
-    {
-        Neighbors++;
-    }
-    if (y < GridSize.Y - 1 && ModuleNumbers[x][y + 1] != 0)
-    {
-        Neighbors++;
-    }
-
     return Neighbors;
-    
 }
 
-TArray<TArray<bool>> AMapGen::RotateMatrix (TArray<TArray<bool>> Matrix)
+
+TArray<TArray<int>> AMapGen::GetNeighbours(const int I, const int J) const
 {
-    TArray<TArray<bool>> RotatedMatrix;
-    RotatedMatrix.SetNum(Matrix.Num());
-    for (int i = 0; i < Matrix.Num(); i++)
+
+    TArray<TArray<int>> Matrix;
+    Matrix.SetNum(3);
+    for (int i = 0; i < 3; i++)
     {
-        RotatedMatrix[i].SetNum(Matrix.Num());
+        Matrix[i].SetNum(3, false);
+    }
+    //set all matrix to false
+    
+    
+    // Vecinos arriba, abajo, izquierda y derecha
+    if (I > 0 && ModuleNumbers[I - 1][J] != 0)
+    {
+        Matrix[0][1] = 1;
+    }
+    if (I < GridSize.X - 1 && ModuleNumbers[I + 1][J] != 0)
+    {
+        Matrix[2][1] = 1;
+    }
+    if (J > 0 && ModuleNumbers[I][J - 1] != 0)
+    {
+        Matrix[1][0] = 1;
+    }
+    if (J < GridSize.Y - 1 && ModuleNumbers[I][J + 1] != 0)
+    {
+        Matrix[1][2] = 1;
+    }
+
+    // Vecinos en las esquinas superior derecha, inferior derecha, inferior izquierda y superior izquierda
+    if (I > 0 && J < GridSize.Y - 1 && ModuleNumbers[I - 1][J + 1] != 0)
+    {
+        Matrix[0][2] = 1;
+    }
+    if (I < GridSize.X - 1 && J < GridSize.Y - 1 && ModuleNumbers[I + 1][J + 1] != 0)
+    {
+        Matrix[2][2] = 1;
+    }
+    if (I < GridSize.X - 1 && J > 0 && ModuleNumbers[I + 1][J - 1] != 0)
+    {
+        Matrix[2][0] = 1;
+    }
+    if (I > 0 && J > 0 && ModuleNumbers[I - 1][J - 1] != 0)
+    {
+        Matrix[0][0] = 1;
     }
     
-    for (int i = 0; i < Matrix.Num(); i++)
+    return Matrix;
+}
+
+TArray<TArray<int>> AMapGen::RotateMatrix(const TArray<TArray<int>>& Matrix)
+{
+    int N = Matrix.Num();
+    TArray<TArray<int>> RotatedMatrix;
+    RotatedMatrix.SetNum(N);
+    for (int i = 0; i < N; i++)
     {
-        for (int j = 0; j < Matrix.Num(); j++)
+        RotatedMatrix[i].SetNum(N);
+        for (int j = 0; j < N; j++)
         {
-            RotatedMatrix[i][j] = Matrix[Matrix.Num() - j - 1][i];
+            RotatedMatrix[i][j] = Matrix[N - j - 1][i];
         }
     }
     return RotatedMatrix;
 }
 
-
-bool CanConnect(TArray<TArray<bool>> startMatrix, TArray<TArray<bool>> secondMatrix, int pos )
+bool AMapGen::CompareMatrix(TArray<TArray<int>> Matrix1, const int PlotNum, int X, int Y) const
 {
+    TArray<TArray<int>> Matrix2 = ModuleTiles->Matrix[PlotNum];
+    Matrix1[1][1] = false;
+    Matrix2[1][1] = false;
 
-    
-    
-    
+    for (int i = 0; i <= 3; i++)
+    {
+        bool isEqual = true;
+        for (int j = 0; j < Matrix1.Num(); j++)
+        {
+            for (int k = 0; k < Matrix1[j].Num(); k++)
+            {
+                // If the element is 0 or 1, then check if they are equal
+                if ((Matrix2[j][k] == 0 || Matrix2[j][k] == 1) && Matrix1[j][k] != Matrix2[j][k])
+                {
+                    isEqual = false;
+                    break;
+                }
+            }
+            if (!isEqual)
+            {
+                break;
+            }
+        }
+        if (isEqual)
+        {
+            //ModuleRotations[X][Y] = i;
+            return true;
+        }
+        Matrix2 = RotateMatrix(Matrix2);
+    }
+
     return false;
 }
-
-
 
 // all nums 1,5,7,17,21,23,29,31,85,87,95,119,127,255
 void AMapGen::FigureModulesPosition()
 {
+    TArray<int> AllNums = { 255,127,119,95,87,85,31,29,23,21,17,7,5,1 };
+    
     // Ensure ModuleNumbers is properly initialized
     if (ModuleNumbers.Num() == 0 || ModuleNumbers[0].Num() == 0)
     {
         // Handle error, perhaps throw an exception or return early
         return;
     }
-
-    TArray<TArray<TArray<int>>> ModuleOptions;
-    ModuleOptions.SetNum(GridSize.X);
-    for (int i = 0; i < GridSize.X; i++)
-    {
-        ModuleOptions[i].SetNum(GridSize.Y);
-    }
-    //initialize ModuleOptions z
-    for (int x = 0; x < GridSize.X; x++)
-    {
-        for (int y = 0; y < GridSize.Y; y++)
-        {
-            ModuleOptions[x][y].SetNum(24);
-        }
-    }
-
+    
     for (int x = 0; x < GridSize.X; x++)
     {
         for (int y = 0; y < GridSize.Y; y++)
         {
             if (ModuleNumbers[x][y] != 0)
             {
+
+                TArray<TArray<int>> Mat = GetNeighbours(x, y);
+
+                bool done = false;
+                int N = 0;
                 
-                switch (GetNeighboursCount(x, y))
+                do
                 {
-                case 0:
-                    break;
-                case 1:
-                    ModuleNumbers[x][y] = 1;
-                    ModuleOptions[x][y][0] = 1;
-                    break;
-                case 2:
-                    ModuleNumbers[x][y] = 5;
-                    ModuleOptions[x][y][0] = 5;
-                    ModuleOptions[x][y][1] = 7;
-                    ModuleOptions[x][y][2] = 17;
-                    break;
-                case 3:
-                    ModuleNumbers[x][y] = 21;
-                    ModuleOptions[x][y][0] = 21;
-                    ModuleOptions[x][y][1] = 23;
-                    ModuleOptions[x][y][2] = 29;
-                    ModuleOptions[x][y][3] = 31;
-                    break;
-                case 4:
-                    ModuleNumbers[x][y] = 255;
-                    ModuleOptions[x][y][0] = 85;
-                    ModuleOptions[x][y][1] = 87;
-                    ModuleOptions[x][y][2] = 95;
-                    ModuleOptions[x][y][3] = 119;
-                    ModuleOptions[x][y][4] = 127;
-                    ModuleOptions[x][y][5] = 255;
-                    break;
-                default: break;
+                    done = CompareMatrix(Mat,AllNums[N],x,y);
+                    N++;
+
+                    if (N == AllNums.Num())
+                    {
+                        UE_LOG(LogTemp, Error, TEXT("---------"));
+                        UE_LOG(LogTemp, Error, TEXT("Module %d %d does not fit"), x, y);
+                        PrintMatrix(Mat);
+                        UE_LOG(LogTemp, Error, TEXT("---------"));
+
+                        done = true;    
+                    }
                 }
+                while (done == false);
+                N--;
+
+                ModuleNumbers[x][y] = AllNums[N];
+
+                UE_LOG(LogTemp, Warning, TEXT("Conseguido en %d iteraciones"), N);
+                
             }
         }
     }
@@ -400,7 +375,7 @@ void AMapGen::FillGrid()
     {
         for (int y = 0; y < GridSize.Y; y++)
         {
-            if(true)
+            if(ModuleNumbers[x][y] != 0)
             {
 
                 const FVector Position = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset;
@@ -412,6 +387,7 @@ void AMapGen::FillGrid()
                     StaticMeshModule->RegisterComponent();
                     StaticMeshModule->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
                     StaticMeshModule->SetRelativeLocation(Position);
+                    StaticMeshModule->SetRelativeRotation(FRotator(0, 90 * ModuleRotations[x][y], 0));
                     StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
 
                     if (ModuleTiles->ModuleMesh.Contains(ModuleNumbers[x][y]) && ModuleTiles->ModuleMesh[ModuleNumbers[x][y]] != nullptr && UseMesh)
@@ -425,8 +401,6 @@ void AMapGen::FillGrid()
                     }
                     
                     UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
-
-                    
                     
                     if (ModuleTiles->ModuleColor.Contains(ModuleNumbers[x][y]) && UseColor)
                     {

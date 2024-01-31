@@ -1,4 +1,5 @@
-﻿#include "CoreMinimal.h"
+﻿#pragma once
+#include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "ModuleTile.generated.h"
 
@@ -9,7 +10,7 @@ class UModuleTile : public UDataAsset
 
 public:
 
-	TMap<int,TArray<TArray<bool>>> Matrix;
+	TMap<int,TArray<TArray<int>>> Matrix;
 
 	//Tmapo de static mesh por numero de modulo seteadas a null de inicio
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -28,7 +29,7 @@ private:
 	TArray<FColor> UsedColors;
 	
 	// Functions
-	static TArray<TArray<bool>> SetUpMatrix(int ModuleNumber);
+	static TArray<TArray<int>> SetUpMatrix(int ModuleNumber);
 
 };
 

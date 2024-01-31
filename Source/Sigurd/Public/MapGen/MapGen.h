@@ -5,7 +5,6 @@
 #include "GameFramework/Actor.h"
 #include "Components/StaticMeshComponent.h"
 #include "ModuleTile.h"
-#include "Blueprint/UserWidgetBlueprint.h"
 #include "MapGen.generated.h"
 
 using namespace std;
@@ -31,11 +30,11 @@ private:
     
     // Functions
     void FillGrid();
-    static TArray<TArray<bool>> RotateMatrix (TArray<TArray<bool>> Matrix);
-    void Test();
-    void PrintMatrix( TArray<TArray<bool>> matrix);
-    int GetNeighboursCount(int I, int J) const;
-    auto GetDesiredRotation(int X, int Y) const -> FRotator;
+    static auto PrintMatrix(TArray<TArray<int>> Matrix) -> void;
+    TArray<TArray<int>> GetNeighbours(int I, int J) const;
+    bool CompareMatrix(TArray<TArray<int>> Matrix1, int PlotNum,int X, int Y) const;
+    static TArray<TArray<int>> RotateMatrix(const TArray<TArray<int>>& Matrix);
+    static int GetNeighboursCount(TArray<TArray<int>> Matrix);
     void DeleteSmallPlots();
     void Dfs(int I, int J, TArray<TArray<bool>>& Visited, TArray<FVector2D>& CurrentIsland);
     static bool IsInLargestIsland(int I, int J, const TArray<FVector2D>& LargestIsland);
