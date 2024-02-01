@@ -5,9 +5,7 @@ AMapGen::AMapGen(): StaticMeshModule(nullptr), ModuleMaterial(nullptr), ModuleTi
 {
     // Set this actor to call Tick() every frame
     PrimaryActorTick.bCanEverTick = true;
-
-    // initialize the static mesh component
-
+    
     // Initialize grid dimensions and seed
     GridSize = FVector2D(10, 10);
     ModulesSize = FIntVector(10, 10, 10);
@@ -35,16 +33,19 @@ void AMapGen::Tick(const float DeltaTime)
 void AMapGen::Generate()
 {
 
+    UE_LOG(LogTemp, Warning, TEXT("Started..."));
+    Offset = FVector(ModulesSize.X / 2.0f, ModulesSize.Y / 2.0f, ModulesSize.Z / 2.0f);
+
     UE_LOG(LogTemp, Warning, TEXT("Generating a new grid"));
-    
     GenerateGrid();
-    
+
+    UE_LOG(LogTemp, Warning, TEXT("Grid Generated, deleting small plots"));
     DeleteSmallPlots();
-    
+
+    UE_LOG(LogTemp, Warning, TEXT("Small plots deleted, figuring modules position"));
     FigureModulesPosition();
 
-    FillGrid();
-    
+    UE_LOG(LogTemp, Warning, TEXT("Modules positioned"));
 }
 
 void AMapGen::GenerateGrid()
@@ -172,108 +173,77 @@ bool AMapGen::IsInLargestIsland(const int I, const int J, const TArray<FVector2D
     return false;
 }
 
-// all nums 1,5,7,17,21,23,29,31,85,87,95,119,127,255
+
 void AMapGen::FigureModulesPosition()
 {
+    const auto Start = std::chrono::high_resolution_clock::now();
     TArray<int> AllNums = { 255,127,119,95,87,85,31,29,23,21,17,7,5,1 };
-    
-    // Ensure ModuleNumbers is properly initialized
-    if (ModuleNumbers.Num() == 0 || ModuleNumbers[0].Num() == 0)
-    {
-        // Handle error, perhaps throw an exception or return early
-        return;
-    }
-    
+
+    if (ModuleNumbers.Num() == 0 || ModuleNumbers[0].Num() == 0) return;
+
+    TArray<TFuture<void>> Futures;
+    int ThreadCount = 0;
+
     for (int x = 0; x < GridSize.X; x++)
     {
         for (int y = 0; y < GridSize.Y; y++)
         {
             if (ModuleNumbers[x][y] != 0)
             {
-                const TArray<TArray<int>> Mat = MatrixFunctions.GetNeighbours(GridSize,x, y,ModuleNumbers);
-
-                bool bDone;
-                int N = 0;
-                
-                do
+                Futures.Add(Async(EAsyncExecution::ThreadPool, [this, x, y, AllNums]()
                 {
-                    bDone = MatrixFunctions.CompareMatrix(Mat,AllNums[N],x,y,ModuleRotations);
-                    N++;
-
+                    const TArray<TArray<int>> Mat = MatrixFunctions.GetNeighbours(GridSize,x, y,ModuleNumbers);
+                    int N = 0;
+                    while (N < AllNums.Num() && !MatrixFunctions.CompareMatrix(Mat,AllNums[N],x,y,ModuleRotations)) N++;
                     if (N == AllNums.Num())
                     {
-                        UE_LOG(LogTemp, Error, TEXT("---------"));
                         UE_LOG(LogTemp, Error, TEXT("Module %d %d does not fit"), x, y);
                         MatrixFunctions.PrintMatrix(Mat);
-                        UE_LOG(LogTemp, Error, TEXT("---------"));
-
-                        bDone = true;    
                     }
-                }
-                while (bDone == false);
-                N--;
-
-                ModuleNumbers[x][y] = AllNums[N];
-                
+                    else ModuleNumbers[x][y] = AllNums[N];
+                }));
+                ThreadCount++;
+                SpawnModule(x, y);
             }
         }
     }
+
+    for(auto& Future : Futures) Future.Get();
+
+    const auto Stop = std::chrono::high_resolution_clock::now();
+    const auto Duration = std::chrono::duration_cast<std::chrono::microseconds>(Stop - Start);
+
+    UE_LOG(LogTemp, Warning, TEXT("Execution time: %lld microseconds"), Duration.count());
+    UE_LOG(LogTemp, Warning, TEXT("Number of threads used: %d"), ThreadCount);
 }
 
-// After all Grid Generation
-
-void AMapGen::FillGrid()
+void AMapGen::SpawnModule(const int X, const int Y)
 {
-    const FVector Offset = FVector(ModulesSize.X / 2.0f, ModulesSize.Y / 2.0f, ModulesSize.Z / 2.0f);
+    const FVector Position = FVector(X * ModulesSize.X, Y * ModulesSize.Y, 0) - Offset;
+    const FString ModuleName = FString::Printf(TEXT("Module[%d,%d]_%d"), X, Y, ModuleNumbers[X][Y]);
 
-    for (int x = 0; x < GridSize.X; x++)
+    StaticMeshModule = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), FName(ModuleName));
+    if (!StaticMeshModule) return;
+
+    StaticMeshModule->RegisterComponent();
+    StaticMeshModule->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+    StaticMeshModule->SetRelativeLocation(Position);
+    StaticMeshModule->SetRelativeRotation(FRotator(0, 90 * ModuleRotations[X][Y], 0));
+    StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
+
+    UStaticMesh* MeshToUse = ModuleMesh[0];
+    if (ModuleTiles->ModuleMesh.Contains(ModuleNumbers[X][Y]) && ModuleTiles->ModuleMesh[ModuleNumbers[X][Y]] != nullptr && UseMesh)
     {
-        for (int y = 0; y < GridSize.Y; y++)
-        {
-            if(ModuleNumbers[x][y] != 0)
-            {
-
-                const FVector Position = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset;
-                FString ModuleName = FString::Printf(TEXT("Module[%d,%d]_%d"), x, y, ModuleNumbers[x][y]);
-
-                StaticMeshModule = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), FName(ModuleName));
-                if (StaticMeshModule)
-                {
-                    StaticMeshModule->RegisterComponent();
-                    StaticMeshModule->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-                    StaticMeshModule->SetRelativeLocation(Position);
-                    StaticMeshModule->SetRelativeRotation(FRotator(0, 90 * ModuleRotations[x][y], 0));
-                    StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
-
-                    if (ModuleTiles->ModuleMesh.Contains(ModuleNumbers[x][y]) && ModuleTiles->ModuleMesh[ModuleNumbers[x][y]] != nullptr && UseMesh)
-                    {
-                        StaticMeshModule->SetStaticMesh(ModuleTiles->ModuleMesh[ModuleNumbers[x][y]]);
-
-                    }
-                    else
-                    {
-                        StaticMeshModule->SetStaticMesh(ModuleMesh[0]);
-                    }
-                    
-                    UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
-                    
-                    if (ModuleTiles->ModuleColor.Contains(ModuleNumbers[x][y]) && UseColor)
-                    {
-                        DynamicMaterial->SetVectorParameterValue("Color",ModuleTiles->ModuleColor[ModuleNumbers[x][y]]);
-
-                    }
-                    else
-                    {
-                        DynamicMaterial->SetVectorParameterValue("Color", FColor::White);
-                    }
-                    
-                    StaticMeshModule->SetMaterial(0, DynamicMaterial);
-                }
-                
-            }
-            
-        }
+        MeshToUse = ModuleTiles->ModuleMesh[ModuleNumbers[X][Y]];
     }
+    StaticMeshModule->SetStaticMesh(MeshToUse);
+
+    UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
+    FColor ColorToUse = FColor::White;
+    if (ModuleTiles->ModuleColor.Contains(ModuleNumbers[X][Y]) && UseColor)
+    {
+        ColorToUse = ModuleTiles->ModuleColor[ModuleNumbers[X][Y]];
+    }
+    DynamicMaterial->SetVectorParameterValue("Color", ColorToUse);
+    StaticMeshModule->SetMaterial(0, DynamicMaterial);
 }
-
-

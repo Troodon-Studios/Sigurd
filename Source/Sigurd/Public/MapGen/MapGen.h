@@ -4,8 +4,10 @@
 #include "CoreMinimal.h"
 #include "MatrixFunctions.h"
 #include "GameFramework/Actor.h"
+#include "Async/Async.h"
 #include "Components/StaticMeshComponent.h"
 #include "ModuleTile.h"
+#include <chrono>
 #include "MapGen.generated.h"
 
 using namespace std;
@@ -29,13 +31,14 @@ private:
     TArray<TArray<int>> ModuleNumbers;
     TArray<TArray<int>> ModuleRotations;
     FMatrixFunctions MatrixFunctions = FMatrixFunctions();
+    FVector Offset;
     
     // Functions
-    void FillGrid();
     void DeleteSmallPlots();
     void Dfs(int I, int J, TArray<TArray<bool>>& Visited, TArray<FVector2D>& CurrentIsland);
     static bool IsInLargestIsland(int I, int J, const TArray<FVector2D>& LargestIsland);
     void FigureModulesPosition();
+    void SpawnModule(int X, int Y);
 
 public:	
     // Called every frame
