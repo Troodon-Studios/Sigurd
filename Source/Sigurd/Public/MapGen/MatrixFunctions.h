@@ -5,7 +5,7 @@ class FMatrixFunctions
 {
 	
 public:
-	static auto PrintMatrix(TArray<TArray<int>> Matrix) -> void;
+	static auto PrintMatrix(TArray<TArray<int>> Matrix, bool IsError) -> void;
 	static bool CompareMatrix(TArray<TArray<int>> Matrix1, const int PlotNum, int X, int Y, TArray<TArray<int>>& ModuleRotations);
 	static TArray<TArray<int>> RotateMatrix(const TArray<TArray<int>>& Matrix);
 	static TArray<TArray<int>> GetNeighbours(FVector2D GridSize ,const int I, const int J,TArray<TArray<int>>& ModuleNumbers);

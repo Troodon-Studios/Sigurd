@@ -1,6 +1,6 @@
 ﻿#include "MatrixFunctions.h"
 
-void FMatrixFunctions::PrintMatrix(TArray<TArray<int>> Matrix)
+void FMatrixFunctions::PrintMatrix(TArray<TArray<int>> Matrix, const bool IsError)
 {
     for (int i = 0; i < Matrix.Num(); i++)
     {
@@ -9,8 +9,17 @@ void FMatrixFunctions::PrintMatrix(TArray<TArray<int>> Matrix)
         {
             Line += FString::Printf(TEXT("%d "), Matrix[i][j]);
         }
-        UE_LOG(LogTemp, Warning, TEXT("%s"), *Line);
+
+        if (IsError)
+        {
+        	UE_LOG(LogTemp, Error, TEXT("%s"), *Line);
+        }
+        else
+        {
+        	UE_LOG(LogTemp, Warning, TEXT("%s"), *Line);
+        }
     }
+
     UE_LOG(LogTemp, Warning, TEXT(" "));
 }
 

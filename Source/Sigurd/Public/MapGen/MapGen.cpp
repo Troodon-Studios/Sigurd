@@ -47,7 +47,8 @@ void AMapGen::Generate()
     
     UE_LOG(LogTemp, Warning, TEXT("Modules positioned"));
 
-    MatrixFunctions.PrintMatrix(ModuleNumbers);
+    // Print the ModuleNumbers array
+    //MatrixFunctions.PrintMatrix(ModuleNumbers);
     
 }
 
@@ -195,7 +196,7 @@ void AMapGen::FigureModulesPosition()
                 if (N == AllNums.Num())
                 {
                     UE_LOG(LogTemp, Error, TEXT("Module %d %d does not fit"), x, y);
-                    MatrixFunctions.PrintMatrix(Mat);
+                    MatrixFunctions.PrintMatrix(Mat, true);
                 }
                 else
                 {
@@ -216,12 +217,7 @@ void AMapGen::FigureModulesPosition()
 
 void AMapGen::SpawnModule(const int ModuleNumber, const FVector& Position, const FRotator& Rotation)
 {
-
-    //UE_LOG(LogTemp, Warning, TEXT("Spawning module at %d %d"), X, Y);
-    //UE_LOG(LogTemp, Warning, TEXT("Module number: %d"), ModuleNumbers[X][Y]);
     
-    //const FString ModuleName = FString::Printf(TEXT("Module[%d,%d]_%d"), X, Y, ModuleNumber);
-    //const FString ModuleName = FString::Printf(TEXT("Module"));
     const FString ModuleName = FString::Printf(TEXT("Module[%d,%d]_%d"), static_cast<int>(Position.X), static_cast<int>(Position.Y), ModuleNumber);
     
     StaticMeshModule = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), FName(ModuleName));
