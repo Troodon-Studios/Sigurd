@@ -1,5 +1,7 @@
 ﻿#include "MapGen.h"
 
+
+
 // Sets default values
 AMapGen::AMapGen(): StaticMeshModule(nullptr), ModuleMaterial(nullptr), ModuleTiles(nullptr)
 {
@@ -21,7 +23,7 @@ void AMapGen::BeginPlay()
     }
     
     Super::BeginPlay();
-    
+    Generate();
 }
 
 // Called every frame
@@ -45,8 +47,11 @@ void AMapGen::Generate()
     UE_LOG(LogTemp, Warning, TEXT("Small plots deleted, figuring modules position"));
     FigureModulesPosition();
     
-    UE_LOG(LogTemp, Warning, TEXT("Modules positioned"));
+    UE_LOG(LogTemp, Warning, TEXT("Modules positioned, generating extras"));
+    GenerateExtras();
 
+    UE_LOG(LogTemp, Warning, TEXT("Extras generated, MapGen finished"));
+    
     // Print the ModuleNumbers array
     //MatrixFunctions.PrintMatrix(ModuleNumbers);
     
@@ -254,4 +259,49 @@ void AMapGen::SpawnModule(const int ModuleNumber, const FVector& Position, const
         StaticMeshModule->SetMaterial(0, DynamicMaterial);
     }
                 
+}
+
+void AMapGen::GenerateExtras()
+{
+    // Obtener el Pawn del jugador
+    APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
+    if (!PlayerPawn) return;
+
+    // Inicializar la distancia mínima con un valor muy grande
+    float MinDistance = FLT_MAX;
+
+    //ModuleNumbers[x][y];
+    FVector NearestModule = FVector(0,0,0);
+    bool Found = false;
+    
+    // Iterar a través de todos los módulos para encontrar el más cercano al origen
+    for (int x = 0; x < GridSize.X; x++)
+    {
+        for (int y = 0; y < GridSize.Y; y++)
+        {
+            if (ModuleNumbers[x][y] == 255)
+            {
+                // Calcular la distancia entre el módulo actual y el origen
+
+                // Si la distancia es menor que la distancia mínima actual, actualizar la distancia mínima y el módulo más cercano
+                if (const FVector Distance = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset; Distance.Size() < MinDistance)
+                {
+                    MinDistance = Distance.Size();
+                    NearestModule = FVector(x, y, 0);
+                    Found = true;
+                }
+            }
+        }
+    }
+    
+    // Si encontramos un módulo 255
+    if (Found)
+    {
+        // Mover el Pawn del jugador 100 unidades por encima del módulo 255 más cercano al origen
+        const FVector Position = FVector(NearestModule.X * ModulesSize.X, NearestModule.Y * ModulesSize.Y, 500) - Offset;
+        const FRotator Rotation = FRotator(0, 90 * ModuleRotations[NearestModule.X][NearestModule.Y], 0);
+
+        PlayerPawn->SetActorLocation(Position);
+        //PlayerPawn->SetActorRotation(Rotation);
+    }
 }

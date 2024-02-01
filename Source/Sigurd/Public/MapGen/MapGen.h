@@ -7,6 +7,9 @@
 #include "Async/Async.h"
 #include "Components/StaticMeshComponent.h"
 #include "ModuleTile.h"
+#include "GameFramework/PlayerStart.h"
+#include "EngineUtils.h"
+#include "Kismet/GameplayStatics.h"
 #include <chrono>
 #include "MapGen.generated.h"
 
@@ -16,10 +19,6 @@ UCLASS()
 class AMapGen : public AActor
 {
     GENERATED_BODY()
-
-public:	
-    // Sets default values for this actor's properties
-    AMapGen();
 
 protected:
     // Called when the game starts or when spawned
@@ -39,11 +38,15 @@ private:
     static bool IsInLargestIsland(int I, int J, const TArray<FVector2D>& LargestIsland);
     void FigureModulesPosition();
     void SpawnModule(const int ModuleNumber, const FVector& Position, const FRotator& Rotation);
-
-public:	
+    void GenerateExtras();
+    
+public:
+    
     // Called every frame
     virtual void Tick(float DeltaTime) override;
-
+    // Sets default values for this actor's properties
+    AMapGen();
+    
 //// Modules
 
     // Static mesh component
