@@ -38,7 +38,7 @@ private:
     void Dfs(int I, int J, TArray<TArray<bool>>& Visited, TArray<FVector2D>& CurrentIsland);
     static bool IsInLargestIsland(int I, int J, const TArray<FVector2D>& LargestIsland);
     void FigureModulesPosition();
-    void SpawnModule(int X, int Y);
+    void SpawnModule(const int ModuleNumber, const FVector& Position, const FRotator& Rotation);
 
 public:	
     // Called every frame

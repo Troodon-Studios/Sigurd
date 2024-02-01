@@ -44,7 +44,7 @@ void AMapGen::Generate()
 
     UE_LOG(LogTemp, Warning, TEXT("Small plots deleted, figuring modules position"));
     FigureModulesPosition();
-
+    
     UE_LOG(LogTemp, Warning, TEXT("Modules positioned"));
 
     MatrixFunctions.PrintMatrix(ModuleNumbers);
@@ -180,83 +180,82 @@ void AMapGen::FigureModulesPosition()
 {
     const auto Start = std::chrono::high_resolution_clock::now();
 
-    // Create a map associating the number of neighbors with the corresponding numbers
-    TMap<int, TArray<int>> NeighborsNumbersMap;
-    NeighborsNumbersMap.Add(1, {1});
-    NeighborsNumbersMap.Add(2, {5, 17, 1});
-    NeighborsNumbersMap.Add(3, {7, 21, 5, 1, 17});
-    NeighborsNumbersMap.Add(4, {29, 85, 23, 5, 7, 17, 21});
-    NeighborsNumbersMap.Add(5, {31, 87, 7, 17, 21, 23, 29});
-    NeighborsNumbersMap.Add(6, {95, 119, 17, 23, 29, 31});
-    NeighborsNumbersMap.Add(7, {127, 31});
-    NeighborsNumbersMap.Add(8, {255});
-
     if (ModuleNumbers.Num() == 0 || ModuleNumbers[0].Num() == 0) return;
-
-    TArray<TFuture<void>> Futures;
-    int ThreadCount = 0;
-
+    
     for (int x = 0; x < GridSize.X; x++)
     {
         for (int y = 0; y < GridSize.Y; y++)
         {
             if (ModuleNumbers[x][y] != 0)
             {
-                Futures.Add(Async(EAsyncExecution::ThreadPool, [this, x, y, &NeighborsNumbersMap]()
+                const TArray<TArray<int>> Mat = MatrixFunctions.GetNeighbours(GridSize, x, y, ModuleNumbers);
+                int N = 0;
+                const TArray<int>& AllNums = MatrixFunctions.NeighborsNumbersMap[MatrixFunctions.GetNeighboursCount(Mat)]; // Get the corresponding numbers from the map
+                while (N < AllNums.Num() && !MatrixFunctions.CompareMatrix(Mat,AllNums[N],x,y,ModuleRotations)) N++;
+                if (N == AllNums.Num())
                 {
-                    const TArray<TArray<int>> Mat = MatrixFunctions.GetNeighbours(GridSize,x, y,ModuleNumbers);
-                    int N = 0;
-                    const TArray<int>& AllNums = NeighborsNumbersMap[MatrixFunctions.GetNeighboursCount(Mat)]; // Get the corresponding numbers from the map
-                    while (N < AllNums.Num() && !MatrixFunctions.CompareMatrix(Mat,AllNums[N],x,y,ModuleRotations)) N++;
-                    if (N == AllNums.Num())
-                    {
-                        UE_LOG(LogTemp, Error, TEXT("Module %d %d does not fit"), x, y);
-                        MatrixFunctions.PrintMatrix(Mat);
-                    }
-                    else ModuleNumbers[x][y] = AllNums[N];
-                }));
-                ThreadCount++;
-                SpawnModule(x, y);
+                    UE_LOG(LogTemp, Error, TEXT("Module %d %d does not fit"), x, y);
+                    MatrixFunctions.PrintMatrix(Mat);
+                }
+                else
+                {
+                    ModuleNumbers[x][y] = AllNums[N];
+                    const FVector Position = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset;
+                    const FRotator Rotation = FRotator(0, 90 * ModuleRotations[x][y], 0);
+                    SpawnModule(AllNums[N],Position, Rotation);
+                }
             }
         }
     }
-
-    for(auto& Future : Futures) Future.Get();
 
     const auto Stop = std::chrono::high_resolution_clock::now();
     const auto Duration = std::chrono::duration_cast<std::chrono::microseconds>(Stop - Start);
 
     UE_LOG(LogTemp, Warning, TEXT("Execution time: %lld microseconds"), Duration.count());
-    UE_LOG(LogTemp, Warning, TEXT("Number of threads used: %d"), ThreadCount);
 }
 
-void AMapGen::SpawnModule(const int X, const int Y)
+void AMapGen::SpawnModule(const int ModuleNumber, const FVector& Position, const FRotator& Rotation)
 {
-    const FVector Position = FVector(X * ModulesSize.X, Y * ModulesSize.Y, 0) - Offset;
-    const FString ModuleName = FString::Printf(TEXT("Module[%d,%d]_%d"), X, Y, ModuleNumbers[X][Y]);
 
+    //UE_LOG(LogTemp, Warning, TEXT("Spawning module at %d %d"), X, Y);
+    //UE_LOG(LogTemp, Warning, TEXT("Module number: %d"), ModuleNumbers[X][Y]);
+    
+    //const FString ModuleName = FString::Printf(TEXT("Module[%d,%d]_%d"), X, Y, ModuleNumber);
+    //const FString ModuleName = FString::Printf(TEXT("Module"));
+    const FString ModuleName = FString::Printf(TEXT("Module[%d,%d]_%d"), static_cast<int>(Position.X), static_cast<int>(Position.Y), ModuleNumber);
+    
     StaticMeshModule = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), FName(ModuleName));
-    if (!StaticMeshModule) return;
-
-    StaticMeshModule->RegisterComponent();
-    StaticMeshModule->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-    StaticMeshModule->SetRelativeLocation(Position);
-    StaticMeshModule->SetRelativeRotation(FRotator(0, 90 * ModuleRotations[X][Y], 0));
-    StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
-
-    UStaticMesh* MeshToUse = ModuleMesh[0];
-    if (ModuleTiles->ModuleMesh.Contains(ModuleNumbers[X][Y]) && ModuleTiles->ModuleMesh[ModuleNumbers[X][Y]] != nullptr && UseMesh)
+    if (StaticMeshModule)
     {
-        MeshToUse = ModuleTiles->ModuleMesh[ModuleNumbers[X][Y]];
-    }
-    StaticMeshModule->SetStaticMesh(MeshToUse);
+        StaticMeshModule->RegisterComponent();
+        StaticMeshModule->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+        StaticMeshModule->SetRelativeLocation(Position);
+        StaticMeshModule->SetRelativeRotation(Rotation);
+        StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
 
-    UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
-    FColor ColorToUse = FColor::White;
-    if (ModuleTiles->ModuleColor.Contains(ModuleNumbers[X][Y]) && UseColor)
-    {
-        ColorToUse = ModuleTiles->ModuleColor[ModuleNumbers[X][Y]];
+        if (ModuleTiles->ModuleMesh.Contains(ModuleNumber) && ModuleTiles->ModuleMesh[ModuleNumber] != nullptr && UseMesh)
+        {
+            StaticMeshModule->SetStaticMesh(ModuleTiles->ModuleMesh[ModuleNumber]);
+
+        }
+        else
+        {
+            StaticMeshModule->SetStaticMesh(ModuleMesh[0]);
+        }
+                    
+        UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
+                    
+        if (ModuleTiles->ModuleColor.Contains(ModuleNumber) && UseColor)
+        {
+            DynamicMaterial->SetVectorParameterValue("Color",ModuleTiles->ModuleColor[ModuleNumber]);
+
+        }
+        else
+        {
+            DynamicMaterial->SetVectorParameterValue("Color", FColor::White);
+        }
+                    
+        StaticMeshModule->SetMaterial(0, DynamicMaterial);
     }
-    DynamicMaterial->SetVectorParameterValue("Color", ColorToUse);
-    StaticMeshModule->SetMaterial(0, DynamicMaterial);
+                
 }

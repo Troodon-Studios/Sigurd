@@ -12,7 +12,9 @@ public:
 	static int GetNeighboursCount(TArray<TArray<int>> Matrix);
 	
 	inline static TMap<int,TArray<TArray<int>>> FilterMatrix = TMap<int,TArray<TArray<int>>>();
+	inline static TMap<int, TArray<int>> NeighborsNumbersMap = TMap<int, TArray<int>>();
 
+	
 	// Constructor
 	FMatrixFunctions()
 	{
@@ -35,6 +37,15 @@ public:
 		FilterMatrix.Add(5,   {{i,o,x},{x,x,o},{x,x,i}});
 		FilterMatrix.Add(1,   {{i,o,i},{x,x,x},{x,x,x}});
 		FilterMatrix.Add(0,   {{x,x,x},{x,x,x},{x,x,x}});
+		
+		NeighborsNumbersMap.Add(1, {1});
+		NeighborsNumbersMap.Add(2, {5, 17, 1});
+		NeighborsNumbersMap.Add(3, {7, 21, 5, 1, 17});
+		NeighborsNumbersMap.Add(4, {29, 85, 23, 5, 7, 17, 21});
+		NeighborsNumbersMap.Add(5, {31, 87, 7, 17, 21, 23, 29});
+		NeighborsNumbersMap.Add(6, {95, 119, 17, 23, 29, 31});
+		NeighborsNumbersMap.Add(7, {127, 31});
+		NeighborsNumbersMap.Add(8, {255});
 	}
 	
 };
