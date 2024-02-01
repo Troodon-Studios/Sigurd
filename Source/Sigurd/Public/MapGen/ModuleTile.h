@@ -9,10 +9,8 @@ class UModuleTile : public UDataAsset
 	GENERATED_BODY()
 
 public:
-
-	TMap<int,TArray<TArray<int>>> Matrix;
-
-	//Tmapo de static mesh por numero de modulo seteadas a null de inicio
+	
+	// Meshes
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<int, UStaticMesh*> ModuleMesh;
 
@@ -27,9 +25,5 @@ private:
 
 	// Variables
 	TArray<FColor> UsedColors;
-	
-	// Functions
-	static TArray<TArray<int>> SetUpMatrix(int ModuleNumber);
-
 };
 

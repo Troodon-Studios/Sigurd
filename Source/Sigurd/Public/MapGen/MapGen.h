@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "CoreMinimal.h"
+#include "MatrixFunctions.h"
 #include "GameFramework/Actor.h"
 #include "Components/StaticMeshComponent.h"
 #include "ModuleTile.h"
@@ -27,15 +28,10 @@ private:
     // Variables
     TArray<TArray<int>> ModuleNumbers;
     TArray<TArray<int>> ModuleRotations;
+    FMatrixFunctions MatrixFunctions = FMatrixFunctions();
     
     // Functions
     void FillGrid();
-    int GetMapSize();
-    static auto PrintMatrix(TArray<TArray<int>> Matrix) -> void;
-    TArray<TArray<int>> GetNeighbours(int I, int J) const;
-    bool CompareMatrix(TArray<TArray<int>> Matrix1, int PlotNum,int X, int Y);
-    static TArray<TArray<int>> RotateMatrix(const TArray<TArray<int>>& Matrix);
-    static int GetNeighboursCount(TArray<TArray<int>> Matrix);
     void DeleteSmallPlots();
     void Dfs(int I, int J, TArray<TArray<bool>>& Visited, TArray<FVector2D>& CurrentIsland);
     static bool IsInLargestIsland(int I, int J, const TArray<FVector2D>& LargestIsland);
@@ -88,9 +84,6 @@ public:
     // Function to generate the grid
     UFUNCTION(BlueprintCallable, Category = "Grid")
     void Generate();
-
-    
-    
     
 //// Settings
 
@@ -105,11 +98,6 @@ public:
     // Use color on each module
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
     bool UseColor = false;
-
-    // Min numer of plots walkable
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-    int MinPlots;
-
 
 //// DEBUG
     
