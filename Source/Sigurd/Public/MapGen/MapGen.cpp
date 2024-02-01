@@ -177,7 +177,17 @@ bool AMapGen::IsInLargestIsland(const int I, const int J, const TArray<FVector2D
 void AMapGen::FigureModulesPosition()
 {
     const auto Start = std::chrono::high_resolution_clock::now();
-    TArray<int> AllNums = { 255,127,119,95,87,85,31,29,23,21,17,7,5,1 };
+
+    // Create a map associating the number of neighbors with the corresponding numbers
+    TMap<int, TArray<int>> NeighborsNumbersMap;
+    NeighborsNumbersMap.Add(1, {1});
+    NeighborsNumbersMap.Add(2, {5, 17, 1});
+    NeighborsNumbersMap.Add(3, {7, 21, 5, 1, 17});
+    NeighborsNumbersMap.Add(4, {29, 85, 23, 5, 7, 17, 21});
+    NeighborsNumbersMap.Add(5, {31, 87, 7, 17, 21, 23, 29});
+    NeighborsNumbersMap.Add(6, {95, 119, 17, 23, 29, 31});
+    NeighborsNumbersMap.Add(7, {127, 31});
+    NeighborsNumbersMap.Add(8, {255});
 
     if (ModuleNumbers.Num() == 0 || ModuleNumbers[0].Num() == 0) return;
 
@@ -190,10 +200,11 @@ void AMapGen::FigureModulesPosition()
         {
             if (ModuleNumbers[x][y] != 0)
             {
-                Futures.Add(Async(EAsyncExecution::ThreadPool, [this, x, y, AllNums]()
+                Futures.Add(Async(EAsyncExecution::ThreadPool, [this, x, y, &NeighborsNumbersMap]()
                 {
                     const TArray<TArray<int>> Mat = MatrixFunctions.GetNeighbours(GridSize,x, y,ModuleNumbers);
                     int N = 0;
+                    const TArray<int>& AllNums = NeighborsNumbersMap[MatrixFunctions.GetNeighboursCount(Mat)]; // Get the corresponding numbers from the map
                     while (N < AllNums.Num() && !MatrixFunctions.CompareMatrix(Mat,AllNums[N],x,y,ModuleRotations)) N++;
                     if (N == AllNums.Num())
                     {
