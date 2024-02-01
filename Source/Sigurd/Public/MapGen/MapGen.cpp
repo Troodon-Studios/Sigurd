@@ -173,7 +173,6 @@ bool AMapGen::IsInLargestIsland(const int I, const int J, const TArray<FVector2D
     return false;
 }
 
-
 void AMapGen::FigureModulesPosition()
 {
     const auto Start = std::chrono::high_resolution_clock::now();
