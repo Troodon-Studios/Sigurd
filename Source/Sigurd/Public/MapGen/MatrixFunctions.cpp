@@ -1,30 +1,17 @@
 ﻿#include "MatrixFunctions.h"
 
-void FMatrixFunctions::PrintMatrix( TArray<TArray<int>> Matrix)
+void FMatrixFunctions::PrintMatrix(TArray<TArray<int>> Matrix)
 {
-	for (int i = 0; i < Matrix.Num(); i++)
-	{
-		FString Line = "";
-		for (int j = 0; j < Matrix[i].Num(); j++)
-		{
-			if (Matrix[i][j] == 1)
-			{
-				Line += "o";
-			}
-			else if (Matrix[i][j] == 0)
-			{
-				Line += "x";
-
-			}else
-			{
-				Line += "i";
-			}
-		}
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *Line);
-	}
-    
-	UE_LOG(LogTemp, Warning, TEXT(" "));
-    
+    for (int i = 0; i < Matrix.Num(); i++)
+    {
+        FString Line = "";
+        for (int j = 0; j < Matrix[i].Num(); j++)
+        {
+            Line += FString::Printf(TEXT("%d "), Matrix[i][j]);
+        }
+        UE_LOG(LogTemp, Warning, TEXT("%s"), *Line);
+    }
+    UE_LOG(LogTemp, Warning, TEXT(" "));
 }
 
 int FMatrixFunctions::GetNeighboursCount(TArray<TArray<int>> Matrix) 

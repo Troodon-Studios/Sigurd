@@ -46,6 +46,9 @@ void AMapGen::Generate()
     FigureModulesPosition();
 
     UE_LOG(LogTemp, Warning, TEXT("Modules positioned"));
+
+    MatrixFunctions.PrintMatrix(ModuleNumbers);
+    
 }
 
 void AMapGen::GenerateGrid()
