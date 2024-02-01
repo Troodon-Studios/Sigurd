@@ -33,8 +33,6 @@ void AMapGen::Tick(const float DeltaTime)
 void AMapGen::Generate()
 {
 
-    const auto Start = std::chrono::high_resolution_clock::now();
-
     UE_LOG(LogTemp, Warning, TEXT("Started..."));
     Offset = FVector(ModulesSize.X / 2.0f, ModulesSize.Y / 2.0f, ModulesSize.Z / 2.0f);
 
@@ -46,11 +44,8 @@ void AMapGen::Generate()
 
     UE_LOG(LogTemp, Warning, TEXT("Small plots deleted, figuring modules position"));
     FigureModulesPosition();
-    
-    const auto Stop = std::chrono::high_resolution_clock::now();
-    const auto Duration = std::chrono::duration_cast<std::chrono::microseconds>(Stop - Start);
 
-    UE_LOG(LogTemp, Warning, TEXT("Execution time: %lld microseconds"), Duration.count());
+    UE_LOG(LogTemp, Warning, TEXT("Modules positioned"));
 }
 
 void AMapGen::GenerateGrid()
@@ -58,55 +53,39 @@ void AMapGen::GenerateGrid()
     // Resize the ModuleNumbers array to match the GridSize
     ModuleNumbers.SetNum(GridSize.X);
     ModuleRotations.SetNum(GridSize.X);
-
+    
     for (int i = 0; i < GridSize.X; i++)
     {
         ModuleNumbers[i].SetNum(GridSize.Y);
         ModuleRotations[i].SetNum(GridSize.Y);
     }
 
-    // Create a thread pool with a number of threads equal to the number of cores
-    const int NumThreads = FPlatformMisc::NumberOfCores();
-    TArray<TFuture<void>> Futures;
-
-    // Divide the work among the threads
-    for (int ThreadIndex = 0; ThreadIndex < NumThreads; ++ThreadIndex)
+    // Fill the ModuleNumbers array with 0s and 1s based on Perlin noise
+    for (int x = 0; x < GridSize.X; x++)
     {
-        Futures.Add(Async(EAsyncExecution::ThreadPool, [this, ThreadIndex, NumThreads]()
+        for (int y = 0; y < GridSize.Y; y++)
         {
-            // Each thread handles a portion of the grid
-            for (int x = ThreadIndex; x < GridSize.X; x += NumThreads)
+            if (x == 0 || y == 0 || x == GridSize.X - 1 || y == GridSize.Y - 1)
             {
-                for (int y = 0; y < GridSize.Y; y++)
-                {
-                    if (x == 0 || y == 0 || x == GridSize.X - 1 || y == GridSize.Y - 1)
-                    {
-                        ModuleNumbers[x][y] = 0;
-                        ModuleRotations[x][y] = 0;
-                    }
-                    else
-                    {
-                        // Generate Perlin noise value based on cell position and seed
-                        const float NoiseValue = FMath::PerlinNoise2D(FVector2D((x / 10.0f) + Seed, (y / 10.0f) + Seed));
+                ModuleNumbers[x][y] = 0;
+                ModuleRotations[x][y] = 0;
+            }else
+            {
+                // Generate Perlin noise value based on cell position and seed
+                const float NoiseValue = FMath::PerlinNoise2D(FVector2D((x / 10.0f) + Seed, (y / 10.0f) + Seed));
 
-                        // Map the noise value to the range [0, 1]
-                        const float MappedValue = (NoiseValue + 1) / 2.0f;
+                // Map the noise value to the range [0, 1]
+                const float MappedValue = (NoiseValue + 1) / 2.0f; // This line is changed
 
-                        // Set the corresponding cell in ModuleNumbers to 1 if noise value is greater than 0.5, otherwise 0
-                        ModuleNumbers[x][y] = (MappedValue > 0.5) ? 1 : 0;
+                // Set the corresponding cell in ModuleNumbers to 1 if noise value is greater than 0.5, otherwise 0
+                ModuleNumbers[x][y] = (MappedValue > 0.5) ? 1 : 0;
 
-                        ModuleRotations[x][y] = 0;
-                    }
-                }
+                ModuleRotations[x][y] = 0;
             }
-        }));
+            
+        }
     }
-
-    // Wait for all threads to finish
-    for (auto& Future : Futures)
-    {
-        Future.Get();
-    }
+    
 }
 
 void AMapGen::DeleteSmallPlots()
@@ -194,8 +173,10 @@ bool AMapGen::IsInLargestIsland(const int I, const int J, const TArray<FVector2D
     return false;
 }
 
+
 void AMapGen::FigureModulesPosition()
 {
+    const auto Start = std::chrono::high_resolution_clock::now();
 
     // Create a map associating the number of neighbors with the corresponding numbers
     TMap<int, TArray<int>> NeighborsNumbersMap;
@@ -239,9 +220,12 @@ void AMapGen::FigureModulesPosition()
     }
 
     for(auto& Future : Futures) Future.Get();
-    
-    UE_LOG(LogTemp, Warning, TEXT("Number of threads used: %d"), ThreadCount);
 
+    const auto Stop = std::chrono::high_resolution_clock::now();
+    const auto Duration = std::chrono::duration_cast<std::chrono::microseconds>(Stop - Start);
+
+    UE_LOG(LogTemp, Warning, TEXT("Execution time: %lld microseconds"), Duration.count());
+    UE_LOG(LogTemp, Warning, TEXT("Number of threads used: %d"), ThreadCount);
 }
 
 void AMapGen::SpawnModule(const int X, const int Y)
