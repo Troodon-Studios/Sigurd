@@ -33,6 +33,8 @@ void AMapGen::Tick(const float DeltaTime)
 void AMapGen::Generate()
 {
 
+    const auto Start = std::chrono::high_resolution_clock::now();
+
     UE_LOG(LogTemp, Warning, TEXT("Started..."));
     Offset = FVector(ModulesSize.X / 2.0f, ModulesSize.Y / 2.0f, ModulesSize.Z / 2.0f);
 
@@ -44,8 +46,11 @@ void AMapGen::Generate()
 
     UE_LOG(LogTemp, Warning, TEXT("Small plots deleted, figuring modules position"));
     FigureModulesPosition();
+    
+    const auto Stop = std::chrono::high_resolution_clock::now();
+    const auto Duration = std::chrono::duration_cast<std::chrono::microseconds>(Stop - Start);
 
-    UE_LOG(LogTemp, Warning, TEXT("Modules positioned"));
+    UE_LOG(LogTemp, Warning, TEXT("Execution time: %lld microseconds"), Duration.count());
 }
 
 void AMapGen::GenerateGrid()
@@ -53,39 +58,55 @@ void AMapGen::GenerateGrid()
     // Resize the ModuleNumbers array to match the GridSize
     ModuleNumbers.SetNum(GridSize.X);
     ModuleRotations.SetNum(GridSize.X);
-    
+
     for (int i = 0; i < GridSize.X; i++)
     {
         ModuleNumbers[i].SetNum(GridSize.Y);
         ModuleRotations[i].SetNum(GridSize.Y);
     }
 
-    // Fill the ModuleNumbers array with 0s and 1s based on Perlin noise
-    for (int x = 0; x < GridSize.X; x++)
+    // Create a thread pool with a number of threads equal to the number of cores
+    const int NumThreads = FPlatformMisc::NumberOfCores();
+    TArray<TFuture<void>> Futures;
+
+    // Divide the work among the threads
+    for (int ThreadIndex = 0; ThreadIndex < NumThreads; ++ThreadIndex)
     {
-        for (int y = 0; y < GridSize.Y; y++)
+        Futures.Add(Async(EAsyncExecution::ThreadPool, [this, ThreadIndex, NumThreads]()
         {
-            if (x == 0 || y == 0 || x == GridSize.X - 1 || y == GridSize.Y - 1)
+            // Each thread handles a portion of the grid
+            for (int x = ThreadIndex; x < GridSize.X; x += NumThreads)
             {
-                ModuleNumbers[x][y] = 0;
-                ModuleRotations[x][y] = 0;
-            }else
-            {
-                // Generate Perlin noise value based on cell position and seed
-                const float NoiseValue = FMath::PerlinNoise2D(FVector2D((x / 10.0f) + Seed, (y / 10.0f) + Seed));
+                for (int y = 0; y < GridSize.Y; y++)
+                {
+                    if (x == 0 || y == 0 || x == GridSize.X - 1 || y == GridSize.Y - 1)
+                    {
+                        ModuleNumbers[x][y] = 0;
+                        ModuleRotations[x][y] = 0;
+                    }
+                    else
+                    {
+                        // Generate Perlin noise value based on cell position and seed
+                        const float NoiseValue = FMath::PerlinNoise2D(FVector2D((x / 10.0f) + Seed, (y / 10.0f) + Seed));
 
-                // Map the noise value to the range [0, 1]
-                const float MappedValue = (NoiseValue + 1) / 2.0f; // This line is changed
+                        // Map the noise value to the range [0, 1]
+                        const float MappedValue = (NoiseValue + 1) / 2.0f;
 
-                // Set the corresponding cell in ModuleNumbers to 1 if noise value is greater than 0.5, otherwise 0
-                ModuleNumbers[x][y] = (MappedValue > 0.5) ? 1 : 0;
+                        // Set the corresponding cell in ModuleNumbers to 1 if noise value is greater than 0.5, otherwise 0
+                        ModuleNumbers[x][y] = (MappedValue > 0.5) ? 1 : 0;
 
-                ModuleRotations[x][y] = 0;
+                        ModuleRotations[x][y] = 0;
+                    }
+                }
             }
-            
-        }
+        }));
     }
-    
+
+    // Wait for all threads to finish
+    for (auto& Future : Futures)
+    {
+        Future.Get();
+    }
 }
 
 void AMapGen::DeleteSmallPlots()
@@ -173,11 +194,19 @@ bool AMapGen::IsInLargestIsland(const int I, const int J, const TArray<FVector2D
     return false;
 }
 
-
 void AMapGen::FigureModulesPosition()
 {
-    const auto Start = std::chrono::high_resolution_clock::now();
-    TArray<int> AllNums = { 255,127,119,95,87,85,31,29,23,21,17,7,5,1 };
+
+    // Create a map associating the number of neighbors with the corresponding numbers
+    TMap<int, TArray<int>> NeighborsNumbersMap;
+    NeighborsNumbersMap.Add(1, {1});
+    NeighborsNumbersMap.Add(2, {5, 17, 1});
+    NeighborsNumbersMap.Add(3, {7, 21, 5, 1, 17});
+    NeighborsNumbersMap.Add(4, {29, 85, 23, 5, 7, 17, 21});
+    NeighborsNumbersMap.Add(5, {31, 87, 7, 17, 21, 23, 29});
+    NeighborsNumbersMap.Add(6, {95, 119, 17, 23, 29, 31});
+    NeighborsNumbersMap.Add(7, {127, 31});
+    NeighborsNumbersMap.Add(8, {255});
 
     if (ModuleNumbers.Num() == 0 || ModuleNumbers[0].Num() == 0) return;
 
@@ -190,10 +219,11 @@ void AMapGen::FigureModulesPosition()
         {
             if (ModuleNumbers[x][y] != 0)
             {
-                Futures.Add(Async(EAsyncExecution::ThreadPool, [this, x, y, AllNums]()
+                Futures.Add(Async(EAsyncExecution::ThreadPool, [this, x, y, &NeighborsNumbersMap]()
                 {
                     const TArray<TArray<int>> Mat = MatrixFunctions.GetNeighbours(GridSize,x, y,ModuleNumbers);
                     int N = 0;
+                    const TArray<int>& AllNums = NeighborsNumbersMap[MatrixFunctions.GetNeighboursCount(Mat)]; // Get the corresponding numbers from the map
                     while (N < AllNums.Num() && !MatrixFunctions.CompareMatrix(Mat,AllNums[N],x,y,ModuleRotations)) N++;
                     if (N == AllNums.Num())
                     {
@@ -209,12 +239,9 @@ void AMapGen::FigureModulesPosition()
     }
 
     for(auto& Future : Futures) Future.Get();
-
-    const auto Stop = std::chrono::high_resolution_clock::now();
-    const auto Duration = std::chrono::duration_cast<std::chrono::microseconds>(Stop - Start);
-
-    UE_LOG(LogTemp, Warning, TEXT("Execution time: %lld microseconds"), Duration.count());
+    
     UE_LOG(LogTemp, Warning, TEXT("Number of threads used: %d"), ThreadCount);
+
 }
 
 void AMapGen::SpawnModule(const int X, const int Y)

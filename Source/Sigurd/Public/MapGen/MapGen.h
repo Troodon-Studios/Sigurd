@@ -101,7 +101,7 @@ public:
     // Use color on each module
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
     bool UseColor = false;
-
+    
 //// DEBUG
     
 };
