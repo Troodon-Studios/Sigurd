@@ -230,7 +230,7 @@ void AMapGen::SpawnModule(const int ModuleNumber, const FVector& Position, const
     {
         StaticMeshModule->RegisterComponent();
         StaticMeshModule->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-        StaticMeshModule->SetRelativeLocation(Position);
+        StaticMeshModule->SetWorldLocation(Position);
         StaticMeshModule->SetRelativeRotation(Rotation);
         StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
 
@@ -273,6 +273,7 @@ void AMapGen::GenerateExtras()
     //ModuleNumbers[x][y];
     FVector NearestModule = FVector(0,0,0);
     bool Found = false;
+    FVector NewPosition;
     
     // Iterar a través de todos los módulos para encontrar el más cercano al origen
     for (int x = 0; x < GridSize.X; x++)
@@ -282,11 +283,16 @@ void AMapGen::GenerateExtras()
             if (ModuleNumbers[x][y] == 255)
             {
                 // Calcular la distancia entre el módulo actual y el origen
-
+                const FVector Position = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset;
+                // Calcular la distancia entre el módulo actual y el origen del mundo
+                
+                const float Distance = FVector::DistSquared(Position, FVector::ZeroVector);
                 // Si la distancia es menor que la distancia mínima actual, actualizar la distancia mínima y el módulo más cercano
-                if (const FVector Distance = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset; Distance.Size() < MinDistance)
+                if (Distance < MinDistance)
                 {
-                    MinDistance = Distance.Size();
+                    MinDistance = Distance;
+                    NewPosition = Position;
+                    NewPosition.Z = 800;
                     NearestModule = FVector(x, y, 0);
                     Found = true;
                 }
@@ -298,10 +304,9 @@ void AMapGen::GenerateExtras()
     if (Found)
     {
         // Mover el Pawn del jugador 100 unidades por encima del módulo 255 más cercano al origen
-        const FVector Position = FVector(NearestModule.X * ModulesSize.X, NearestModule.Y * ModulesSize.Y, 500) - Offset;
         const FRotator Rotation = FRotator(0, 90 * ModuleRotations[NearestModule.X][NearestModule.Y], 0);
 
-        PlayerPawn->SetActorLocation(Position);
+        PlayerPawn->SetActorLocation(NewPosition);
         //PlayerPawn->SetActorRotation(Rotation);
     }
 }
