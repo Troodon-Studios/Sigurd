@@ -81,7 +81,7 @@ void AMapGen::GenerateGrid()
             }else
             {
                 // Generate Perlin noise value based on cell position and seed
-                const float NoiseValue = FSimplexNoise::SimplexNoise((x / 10.0f) + Seed, (y / 10.0f) + Seed,MFrequency, MAmplitude, MLacunarity, MPersistence);
+                const float NoiseValue = FNoise::SimplexNoise((x / 10.0f) + Seed, (y / 10.0f) + Seed,MFrequency, MAmplitude, MLacunarity, MPersistence);
 
                 // Map the noise value to the range [0, 1]
                 const float MappedValue = (NoiseValue + 1) / 2.0f; // This line is changed
@@ -263,33 +263,37 @@ void AMapGen::SpawnModule(const int ModuleNumber, const FVector& Position, const
 
 void AMapGen::GenerateExtras()
 {
-    // Obtener el Pawn del jugador
+    // Get the player's pawn
     APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
+    // If the player's pawn is not found, return immediately
     if (!PlayerPawn) return;
 
-    // Inicializar la distancia mínima con un valor muy grande
+    // Initialize the minimum distance to the maximum possible float value
     float MinDistance = FLT_MAX;
 
-    //ModuleNumbers[x][y];
+    // Initialize the nearest module to (0,0,0)
     FVector NearestModule = FVector(0,0,0);
+    // Initialize the found flag to false
     bool Found = false;
+    // Initialize the new position
     FVector NewPosition;
-    
-    // Iterar a través de todos los módulos para encontrar el más cercano al origen
+
+    // Iterate over the grid size in both x and y directions
     for (int x = 0; x < GridSize.X; x++)
     {
         for (int y = 0; y < GridSize.Y; y++)
         {
+            // If the module number at the current grid position is 255
             if (ModuleNumbers[x][y] == 255)
             {
-                // Calcular la distancia entre el módulo actual y el origen
+                // Calculate the position
                 const FVector Position = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset;
-                // Calcular la distancia entre el módulo actual y el origen del mundo
-                
-                const float Distance = FVector::DistSquared(Position, FVector::ZeroVector);
-                // Si la distancia es menor que la distancia mínima actual, actualizar la distancia mínima y el módulo más cercano
-                if (Distance < MinDistance)
+
+                // Calculate the distance from the origin (0,0,0)
+                if (const float Distance = FVector::DistSquared(Position, FVector::ZeroVector); Distance < MinDistance)
                 {
+                    // If this distance is less than the current minimum distance
+                    // Update the minimum distance, the new position, the nearest module, and set the found flag to true
                     MinDistance = Distance;
                     NewPosition = Position;
                     NewPosition.Z = 800;
@@ -299,14 +303,12 @@ void AMapGen::GenerateExtras()
             }
         }
     }
-    
-    // Si encontramos un módulo 255
+
+    // If a module was found (i.e., the found flag is true)
     if (Found)
     {
-        // Mover el Pawn del jugador 100 unidades por encima del módulo 255 más cercano al origen
-        const FRotator Rotation = FRotator(0, 90 * ModuleRotations[NearestModule.X][NearestModule.Y], 0);
-
+        // Set the player pawn's location to the new position
+        FRotator(0, 90 * ModuleRotations[NearestModule.X][NearestModule.Y], 0);
         PlayerPawn->SetActorLocation(NewPosition);
-        //PlayerPawn->SetActorRotation(Rotation);
     }
 }

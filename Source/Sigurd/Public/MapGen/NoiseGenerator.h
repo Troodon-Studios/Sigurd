@@ -1,11 +1,11 @@
 ﻿#pragma once
 #include <cstddef>
 
-class FSimplexNoise {
+class FNoise {
 public:
 
     // 2D Perlin simplex noise
-    static float SimplexNoise(const float X, const float Y, float frequency, float amplitude, float lacunarity, float persistence);
-    static float CalcContribution(int32_t i, int32_t j, float x, float y);
+    static float SimplexNoise(const float X, const float Y, float Frequency, float Amplitude, float Lacunarity, float Persistence);
+    static float CalcContribution(int32_t I, int32_t j, float X, float Y);
     
 };
