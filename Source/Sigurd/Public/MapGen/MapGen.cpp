@@ -81,7 +81,7 @@ void AMapGen::GenerateGrid()
             }else
             {
                 // Generate Perlin noise value based on cell position and seed
-                const float NoiseValue = FMath::PerlinNoise2D(FVector2D((x / 10.0f) + Seed, (y / 10.0f) + Seed));
+                const float NoiseValue = FSimplexNoise::SimplexNoise((x / 10.0f) + Seed, (y / 10.0f) + Seed,MFrequency, MAmplitude, MLacunarity, MPersistence);
 
                 // Map the noise value to the range [0, 1]
                 const float MappedValue = (NoiseValue + 1) / 2.0f; // This line is changed
