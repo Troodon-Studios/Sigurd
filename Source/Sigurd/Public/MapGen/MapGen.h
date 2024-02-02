@@ -7,6 +7,7 @@
 #include "Async/Async.h"
 #include "Components/StaticMeshComponent.h"
 #include "ModuleTile.h"
+#include "NoiseSettings.h"
 #include "NoiseGenerator.h"
 #include "GameFramework/PlayerStart.h"
 #include "EngineUtils.h"
@@ -14,6 +15,7 @@
 #include <chrono>
 #include "MapGen.generated.h"
 
+class UFNoiseSettings;
 using namespace std;
 
 UCLASS()
@@ -105,22 +107,8 @@ public:
     // Use color on each module
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
     bool UseColor = false;
-
-//// Noise Settings
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise Settings", meta = (ClampMin = "0.0", ClampMax = "1.0"), DisplayName = "Frequency")
-    float MFrequency = 0.5f; 
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise Settings", meta = (ClampMin = "0.0", ClampMax = "1.0"), DisplayName = "Amplitude")
-    float MAmplitude = 0.3f;  
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise Settings", meta = (ClampMin = "0.0", ClampMax = "10.0"), DisplayName = "Lacunarity")
-    float MLacunarity = 2.0f;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise Settings", meta = (ClampMin = "0.0", ClampMax = "1.0"), DisplayName = "Persistence")
-    float MPersistence = 0.5f;
-
-
     
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+    UNoiseSettings* NoiseSettings;
     
 };

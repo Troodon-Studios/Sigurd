@@ -59,6 +59,11 @@ void AMapGen::Generate()
 
 void AMapGen::GenerateGrid()
 {
+    const float MFrequency = NoiseSettings->Frequency;
+    const float MAmplitude = NoiseSettings->Amplitude;
+    const float MLacunarity = NoiseSettings->Lacunarity;
+    const float MPersistence = NoiseSettings->Persistence;
+    
     // Resize the ModuleNumbers array to match the GridSize
     ModuleNumbers.SetNum(GridSize.X);
     ModuleRotations.SetNum(GridSize.X);

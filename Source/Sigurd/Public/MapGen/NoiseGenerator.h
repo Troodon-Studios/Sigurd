@@ -9,3 +9,4 @@ public:
     static float CalcContribution(int32_t I, int32_t j, float X, float Y);
     
 };
+
