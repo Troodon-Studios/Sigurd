@@ -5,9 +5,10 @@
 #include "MatrixFunctions.h"
 #include "GameFramework/Actor.h"
 #include "Async/Async.h"
+#include "NoiseSettings.h"
 #include "Components/StaticMeshComponent.h"
 #include "ModuleTile.h"
-#include "NoiseSettings.h"
+#include "NoiseSettingsTable.h"
 #include "NoiseGenerator.h"
 #include "GameFramework/PlayerStart.h"
 #include "EngineUtils.h"
@@ -34,6 +35,7 @@ private:
     TArray<TArray<int>> ModuleRotations;
     FMatrixFunctions MatrixFunctions = FMatrixFunctions();
     FVector Offset;
+    const FNoiseSetting* Setting;
     
     // Functions
     void DeleteSmallPlots();
@@ -68,10 +70,6 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
     FIntVector ModulesSize;
     
-    // UModuleTile DataAsset
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
-    UModuleTile* ModuleTiles;
-
     //// Grid
 
     // Grid dimensions, make it so than in editor you can lock the aspect ratio
@@ -109,6 +107,8 @@ public:
     bool UseColor = false;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-    UNoiseSettings* NoiseSettings;
+    FNoiseSettingsTable NoiseSettings;
     
 };
+
+

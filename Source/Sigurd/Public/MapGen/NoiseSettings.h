@@ -1,18 +1,14 @@
 ﻿#pragma once
-#include <vector>
-
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "ModuleTile.h"
+#include "Engine/DataTable.h"
 #include "NoiseSettings.generated.h"
 
-
-UCLASS(BlueprintType)
-class UNoiseSettings : public UDataAsset
+USTRUCT(BlueprintType)
+struct FNoiseSetting : public FTableRowBase
 {
-	UNoiseSettings(){}
 	GENERATED_BODY()
-
-public:
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "1.0"), DisplayName = "Frequency")
 	float Frequency = 0.5f;
 
@@ -24,4 +20,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "1.0"), DisplayName = "Persistence")
 	float Persistence = 0.5f;
+
+	// UModuleTile DataAsset
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UModuleTile* ModuleTiles;
+
 };

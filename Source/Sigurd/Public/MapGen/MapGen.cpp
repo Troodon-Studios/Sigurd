@@ -3,7 +3,7 @@
 
 
 // Sets default values
-AMapGen::AMapGen(): StaticMeshModule(nullptr), ModuleMaterial(nullptr), ModuleTiles(nullptr)
+AMapGen::AMapGen(): StaticMeshModule(nullptr), ModuleMaterial(nullptr)
 {
     // Set this actor to call Tick() every frame
     PrimaryActorTick.bCanEverTick = true;
@@ -13,6 +13,8 @@ AMapGen::AMapGen(): StaticMeshModule(nullptr), ModuleMaterial(nullptr), ModuleTi
     ModulesSize = FIntVector(10, 10, 10);
     Seed = 0;
 }
+
+
 
 // Called when the game starts or when spawned
 void AMapGen::BeginPlay()
@@ -34,7 +36,14 @@ void AMapGen::Tick(const float DeltaTime)
 
 void AMapGen::Generate()
 {
+    Setting = NoiseSettings.Setting.GetRow<FNoiseSetting>(FString::Printf(TEXT("%s"), *NoiseSettings.Setting.RowName.ToString()));
 
+    if (!Setting)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Noise setting not found"));
+        return;
+    }
+    
     UE_LOG(LogTemp, Warning, TEXT("Started..."));
     Offset = FVector(ModulesSize.X / 2.0f, ModulesSize.Y / 2.0f, ModulesSize.Z / 2.0f);
 
@@ -59,10 +68,10 @@ void AMapGen::Generate()
 
 void AMapGen::GenerateGrid()
 {
-    const float MFrequency = NoiseSettings->Frequency;
-    const float MAmplitude = NoiseSettings->Amplitude;
-    const float MLacunarity = NoiseSettings->Lacunarity;
-    const float MPersistence = NoiseSettings->Persistence;
+    const float MFrequency = Setting->Frequency;
+    const float MAmplitude = Setting->Amplitude;
+    const float MLacunarity = Setting->Lacunarity;
+    const float MPersistence = Setting->Persistence;
     
     // Resize the ModuleNumbers array to match the GridSize
     ModuleNumbers.SetNum(GridSize.X);
@@ -239,9 +248,9 @@ void AMapGen::SpawnModule(const int ModuleNumber, const FVector& Position, const
         StaticMeshModule->SetRelativeRotation(Rotation);
         StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
 
-        if (ModuleTiles->ModuleMesh.Contains(ModuleNumber) && ModuleTiles->ModuleMesh[ModuleNumber] != nullptr && UseMesh)
+        if (Setting->ModuleTiles->ModuleMesh.Contains(ModuleNumber) && Setting->ModuleTiles->ModuleMesh[ModuleNumber] != nullptr && UseMesh)
         {
-            StaticMeshModule->SetStaticMesh(ModuleTiles->ModuleMesh[ModuleNumber]);
+            StaticMeshModule->SetStaticMesh(Setting->ModuleTiles->ModuleMesh[ModuleNumber]);
 
         }
         else
@@ -251,9 +260,9 @@ void AMapGen::SpawnModule(const int ModuleNumber, const FVector& Position, const
                     
         UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
                     
-        if (ModuleTiles->ModuleColor.Contains(ModuleNumber) && UseColor)
+        if (Setting->ModuleTiles->ModuleColor.Contains(ModuleNumber) && UseColor)
         {
-            DynamicMaterial->SetVectorParameterValue("Color",ModuleTiles->ModuleColor[ModuleNumber]);
+            DynamicMaterial->SetVectorParameterValue("Color",Setting->ModuleTiles->ModuleColor[ModuleNumber]);
 
         }
         else
@@ -317,3 +326,5 @@ void AMapGen::GenerateExtras()
         PlayerPawn->SetActorLocation(NewPosition);
     }
 }
+
+
