@@ -7,7 +7,6 @@
 #include "Async/Async.h"
 #include "NoiseSettings.h"
 #include "Components/StaticMeshComponent.h"
-#include "ModuleTile.h"
 #include "NoiseSettingsTable.h"
 #include "NoiseGenerator.h"
 #include "GameFramework/PlayerStart.h"
