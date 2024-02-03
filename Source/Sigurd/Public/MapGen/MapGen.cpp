@@ -3,17 +3,15 @@
 
 
 // Sets default values
-AMapGen::AMapGen(): StaticMeshModule(nullptr), ModuleMaterial(nullptr)
+AMapGen::AMapGen(): Setting(nullptr), StaticMeshModule(nullptr), AuxiliarMesh(nullptr), ModuleMaterial(nullptr)
 {
     // Set this actor to call Tick() every frame
     PrimaryActorTick.bCanEverTick = true;
-    
+
     // Initialize grid dimensions and seed
     GridSize = FVector2D(10, 10);
-    ModulesSize = FIntVector(10, 10, 10);
     Seed = 0;
 }
-
 
 
 // Called when the game starts or when spawned
@@ -43,6 +41,8 @@ void AMapGen::Generate()
         UE_LOG(LogTemp, Error, TEXT("Noise setting not found"));
         return;
     }
+
+    ModulesSize = Setting->ModuleTiles->ModulesSize;
     
     UE_LOG(LogTemp, Warning, TEXT("Started..."));
     Offset = FVector(ModulesSize.X / 2.0f, ModulesSize.Y / 2.0f, ModulesSize.Z / 2.0f);
@@ -255,7 +255,7 @@ void AMapGen::SpawnModule(const int ModuleNumber, const FVector& Position, const
         }
         else
         {
-            StaticMeshModule->SetStaticMesh(ModuleMesh[0]);
+            StaticMeshModule->SetStaticMesh(AuxiliarMesh);
         }
                     
         UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);

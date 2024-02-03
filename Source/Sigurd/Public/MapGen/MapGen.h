@@ -36,6 +36,8 @@ private:
     FMatrixFunctions MatrixFunctions = FMatrixFunctions();
     FVector Offset;
     const FNoiseSetting* Setting;
+    UStaticMeshComponent* StaticMeshModule;
+    FVector ModulesSize;
     
     // Functions
     void DeleteSmallPlots();
@@ -52,25 +54,18 @@ public:
     // Sets default values for this actor's properties
     AMapGen();
     
-    //// Modules
-
-    // Static mesh component
-    UPROPERTY(BlueprintReadOnly, BlueprintReadOnly, Category = "Modules")
-    UStaticMeshComponent* StaticMeshModule;
+//// Modules
     
     // static mesh
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
-    TArray<UStaticMesh*> ModuleMesh;
+    UStaticMesh* AuxiliarMesh;
     
     //Material
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
     UMaterial* ModuleMaterial;
     
-    // Grid dimensions
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
-    FIntVector ModulesSize;
     
-    //// Grid
+//// Grid
 
     // Grid dimensions, make it so than in editor you can lock the aspect ratio
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")

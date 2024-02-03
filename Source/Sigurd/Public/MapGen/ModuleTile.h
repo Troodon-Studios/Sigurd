@@ -17,6 +17,10 @@ public:
 	// Colors
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<int, FColor> ModuleColor;
+
+	// Grid dimensions
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector ModulesSize = FVector(350, 350, 350);
 	
 	// Constructor
 	UModuleTile();
