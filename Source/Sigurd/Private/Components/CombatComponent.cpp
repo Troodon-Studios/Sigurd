@@ -34,7 +34,7 @@ void UCombatComponent::PreviousWeapon(){
 	currentWeapon = (currentWeapon - 1 + weaponInventory.Num()) % weaponInventory.Num();
 }
 
-void UCombatComponent::ExecuteCurrentWeaponMontage()
+void UCombatComponent::ExecuteCurrentWeaponMontage(FName _sectionName)
 {
 	if (currentWeapon < weaponInventory.Num())
 	{
@@ -57,7 +57,10 @@ void UCombatComponent::ExecuteCurrentWeaponMontage()
 					}
 					
 					AnimInstance->Montage_Play(CurrentWeaponMontage);
-					AnimInstance->Montage_JumpToSection(secuenceMap[comboCount], CurrentWeaponMontage);
+					if (_sectionName != NAME_None){
+						AnimInstance->Montage_JumpToSection(_sectionName, CurrentWeaponMontage);
+					}
+
 					increaseComboCount();					
 				}
 			}
@@ -68,7 +71,7 @@ void UCombatComponent::ExecuteCurrentWeaponMontage()
 void UCombatComponent::Attack(){
 	if (canAttack){
 		canAttack = false;
-		ExecuteCurrentWeaponMontage();
+		ExecuteCurrentWeaponMontage(NAME_None);
 	}
 	else if (canQueueAttack){
 		comboQueued = true;
@@ -82,10 +85,10 @@ void UCombatComponent::Attack(){
 
 }
 
-void UCombatComponent::QueueAttack(){
+void UCombatComponent::QueueAttack(FName _sectionName){
 	if (comboQueued){
 		comboQueued = false;
-		ExecuteCurrentWeaponMontage();
+		ExecuteCurrentWeaponMontage(_sectionName);
 	}
 	else{
 		comboCount = 0;

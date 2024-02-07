@@ -39,11 +39,11 @@ public:
 	void PreviousWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void ExecuteCurrentWeaponMontage();
+	void ExecuteCurrentWeaponMontage(FName _sectionName);
 
 	void Attack();
 
-	void QueueAttack();
+	void QueueAttack(FName _sectionName);
 
 	void increaseComboCount();
 

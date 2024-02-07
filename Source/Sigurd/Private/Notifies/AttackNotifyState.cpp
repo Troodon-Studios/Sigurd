@@ -21,7 +21,7 @@ void UAttackNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequ
 void UAttackNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
 	const FAnimNotifyEventReference& EventReference){
 	if (UCombatComponent* CombatComp = GetCombatComponent(MeshComp)){
-		CombatComp->QueueAttack();
+		CombatComp->QueueAttack(sectionName);
 		CombatComp->changeWeaponLight(0);
 	}
 
