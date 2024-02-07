@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Actor/Weapon.h"
+#include "Components/CombatComponent.h"
 #include "Components/ResourcesComponent.h"
 #include "Components/StaminaComponent.h"
 #include "GameFramework/Character.h"
@@ -30,6 +32,10 @@ class ASigurdCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
+	//weapon mesh component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* WeaponMesh;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resources", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UResourcesComponent> BP_ResourcesComponentClass;
 
@@ -38,6 +44,9 @@ class ASigurdCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
 	UStaminaComponent* StaminaComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
+	UCombatComponent* CombatComponent;
 	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -59,6 +68,12 @@ class ASigurdCharacter : public ACharacter
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* RunAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* NextWeaponAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* PreviousWeaponAction;
 	
 	/** CanMove and CanAttack booleans */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
@@ -83,12 +98,17 @@ protected:
 	void MoveAxis(const FInputActionValue& Value);
 	void MoveClick(const FInputActionValue& Value);
 
+	void Attack();
 	void QuickAttack(const FInputActionValue& Value);
 	void HeavyAttack(const FInputActionValue& Value);
 
 	UFUNCTION(Category = "Combat")
 	void TakeDamage(AActor *DamagedActor, float Damage, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser);
-	
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void NextWeapon();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void PreviousWeapon();
 
 	void StartRunning();
 	void StopRunning();

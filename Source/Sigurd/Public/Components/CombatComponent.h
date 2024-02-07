@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ItemData.h"
+#include "Actor/Weapon.h"
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
@@ -16,13 +18,38 @@ public:
 	// Sets default values for this component's properties
 	UCombatComponent();
 
+	int comboCount = 0;
+	bool canAttack = true;
+	bool comboQueued = false;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	int currentWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	TArray<FItemData> weaponInventory;
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void AddWeaponToInventory(FDataTableRowHandle weapon);
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void NextWeapon();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void PreviousWeapon();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void ExecuteCurrentWeaponMontage();
+
+	void Attack();
+
+	void QueueAttack();
+
+	void increaseComboCount();
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-		
+public:
+	
 };

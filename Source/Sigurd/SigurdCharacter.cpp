@@ -25,6 +25,10 @@ ASigurdCharacter::ASigurdCharacter()
 
 	ResourcesComponent = CreateDefaultSubobject<UResourcesComponent>(TEXT("ResourcesComponent"));
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
+	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	
+	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
+	WeaponMesh->SetupAttachment(GetMesh(), FName("RH_Socket"));
 		
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -76,6 +80,10 @@ void ASigurdCharacter::BeginPlay()
 		StaminaComponent->RegisterComponent();
 	}
 
+	if (CombatComponent){
+		CombatComponent->RegisterComponent();
+	}
+
 	OnTakeAnyDamage.AddDynamic(this, &ASigurdCharacter::TakeDamage);
 
 	//Add Input Mapping Context
@@ -108,12 +116,14 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 		//Combat
 		//quick mele
-		EnhancedInputComponent->BindAction(QckMeleAction, ETriggerEvent::Started, this, &ASigurdCharacter::QuickAttack);
+		EnhancedInputComponent->BindAction(QckMeleAction, ETriggerEvent::Started, this, &ASigurdCharacter::Attack);
 
 		//heavy mele
-		EnhancedInputComponent->BindAction(HvyMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::HeavyAttack);
+		//EnhancedInputComponent->BindAction(HvyMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::HeavyAttack);
 
-
+		//Weapon
+		EnhancedInputComponent->BindAction(NextWeaponAction, ETriggerEvent::Started, this, &ASigurdCharacter::NextWeapon);
+		EnhancedInputComponent->BindAction(PreviousWeaponAction, ETriggerEvent::Started, this, &ASigurdCharacter::PreviousWeapon);
 	}
 	else
 	{
@@ -182,6 +192,10 @@ void ASigurdCharacter::MoveClick(const FInputActionValue& Value)
 
 	return;
 
+}
+
+void ASigurdCharacter::Attack(){
+	CombatComponent->Attack();
 }
 
 void ASigurdCharacter::QuickAttack(const FInputActionValue& Value)
@@ -256,6 +270,20 @@ void ASigurdCharacter::TakeDamage(AActor *DamagedActor, float Damage, const clas
 	{
 		UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
 		ResourcesComponent->TakeDamageWithType(ObjectInstance ,Damage);
+	}
+}
+
+void ASigurdCharacter::NextWeapon(){
+	if (CombatComponent->weaponInventory.Num() != 0) {
+		CombatComponent->NextWeapon();
+		WeaponMesh->SetStaticMesh(CombatComponent->weaponInventory[CombatComponent->currentWeapon].Mesh);
+	}
+}
+
+void ASigurdCharacter::PreviousWeapon(){
+	if (CombatComponent->weaponInventory.Num() != 0) {
+		CombatComponent->PreviousWeapon();
+		WeaponMesh->SetStaticMesh(CombatComponent->weaponInventory[CombatComponent->currentWeapon].Mesh);
 	}
 }
 
