@@ -20,6 +20,7 @@ public:
 
 	int comboCount = 0;
 	bool canAttack = true;
+	bool canQueueAttack = false;
 	bool comboQueued = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
@@ -45,6 +46,9 @@ public:
 	void QueueAttack();
 
 	void increaseComboCount();
+
+	void changeWeaponLight(float intensity);
+	void changeWeaponLightColor(FLinearColor color);
 
 protected:
 	// Called when the game starts

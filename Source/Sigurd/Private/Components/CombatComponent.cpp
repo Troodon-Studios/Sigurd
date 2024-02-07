@@ -11,17 +11,12 @@ UCombatComponent::UCombatComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
-
-	// ...
 }
 
 // Called when the game starts
 void UCombatComponent::BeginPlay()
 {
-	Super::BeginPlay();
-
-	// ...
-	
+	Super::BeginPlay();	
 }
 
 
@@ -33,14 +28,10 @@ void UCombatComponent::AddWeaponToInventory(FDataTableRowHandle weapon){
 
 void UCombatComponent::NextWeapon(){
 	currentWeapon = (currentWeapon + 1) % weaponInventory.Num();
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Current Weapon: %s"), *weaponInventory[currentWeapon].Name));
-		
 }
 
 void UCombatComponent::PreviousWeapon(){
 	currentWeapon = (currentWeapon - 1 + weaponInventory.Num()) % weaponInventory.Num();
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Current Weapon: %s"), *weaponInventory[currentWeapon].Name));
-	
 }
 
 void UCombatComponent::ExecuteCurrentWeaponMontage()
@@ -79,21 +70,11 @@ void UCombatComponent::Attack(){
 		canAttack = false;
 		ExecuteCurrentWeaponMontage();
 	}
-	else{
+	else if (canQueueAttack){
 		comboQueued = true;
-		AActor* OwnerActor = GetOwner();
-		if (OwnerActor)
-		{
-			UStaticMeshComponent* OwnerMeshComponent = OwnerActor->FindComponentByClass<UStaticMeshComponent>();
-			if (OwnerMeshComponent)
-			{
-				UMaterialInstanceDynamic* OwnerMaterial = OwnerMeshComponent->CreateAndSetMaterialInstanceDynamic(0);
-				if (OwnerMaterial)
-				{
-					OwnerMaterial->SetScalarParameterValue("lum", 1);
-				}
-			}
-		}
+		canQueueAttack = false;
+		changeWeaponLight(1);
+		changeWeaponLightColor(FLinearColor(0, 1, 0, 1));
 	}
 
 	
@@ -102,10 +83,13 @@ void UCombatComponent::Attack(){
 }
 
 void UCombatComponent::QueueAttack(){
-	canAttack = true;
 	if (comboQueued){
 		comboQueued = false;
 		ExecuteCurrentWeaponMontage();
+	}
+	else{
+		comboCount = 0;
+		canQueueAttack = false;
 	}
 }
 
@@ -113,6 +97,41 @@ void UCombatComponent::QueueAttack(){
 void UCombatComponent::increaseComboCount(){
 	comboCount = (comboCount + 1) % weaponInventory[currentWeapon].MaxComboCount;
 }
+
+void UCombatComponent::changeWeaponLight(float intensity){
+
+	AActor* OwnerActor = GetOwner();
+	if (OwnerActor)
+	{
+		UStaticMeshComponent* OwnerMeshComponent = OwnerActor->FindComponentByClass<UStaticMeshComponent>();
+		if (OwnerMeshComponent)
+		{
+			UMaterialInstanceDynamic* OwnerMaterial = OwnerMeshComponent->CreateAndSetMaterialInstanceDynamic(0);
+			if (OwnerMaterial)
+			{
+				OwnerMaterial->SetScalarParameterValue("lum", intensity);
+			}
+		}
+	}
+}
+
+void UCombatComponent::changeWeaponLightColor(FLinearColor color){
+	AActor* OwnerActor = GetOwner();
+	if (OwnerActor)
+	{
+		UStaticMeshComponent* OwnerMeshComponent = OwnerActor->FindComponentByClass<UStaticMeshComponent>();
+		if (OwnerMeshComponent)
+		{
+			UMaterialInstanceDynamic* OwnerMaterial = OwnerMeshComponent->CreateAndSetMaterialInstanceDynamic(0);
+			if (OwnerMaterial)
+			{
+				OwnerMaterial->SetVectorParameterValue("col", color);
+			}
+		}
+	}
+}
+
+
 
 
 
