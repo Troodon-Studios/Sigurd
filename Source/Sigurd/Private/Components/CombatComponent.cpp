@@ -69,6 +69,17 @@ void UCombatComponent::ExecuteCurrentWeaponMontage(FName _sectionName)
 }
 
 void UCombatComponent::Attack(){
+
+	if (CombatState == ECombatState::Idle){
+		CombatState = ECombatState::Attacking;
+		ExecuteCurrentWeaponMontage(NAME_None);
+	}else if (CombatState == ECombatState::QueuingAttack){
+		CombatState = ECombatState::AttackQueued;
+		changeWeaponLight(1);
+		changeWeaponLightColor(FLinearColor(0, 1, 0, 1));
+		
+	}
+	
 	if (canAttack){
 		canAttack = false;
 		ExecuteCurrentWeaponMontage(NAME_None);

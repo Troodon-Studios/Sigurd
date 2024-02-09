@@ -8,6 +8,13 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
+UENUM()
+enum ECombatState : uint8 {
+	Idle,
+	Attacking,
+	QueuingAttack,
+	AttackQueued
+};
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SIGURD_API UCombatComponent : public UActorComponent
@@ -17,6 +24,9 @@ class SIGURD_API UCombatComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UCombatComponent();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	TEnumAsByte<ECombatState> CombatState;
 
 	int comboCount = 0;
 	bool canAttack = true;
