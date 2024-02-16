@@ -58,9 +58,12 @@ public:
 	UStaminaComponent* StaminaComponent;
 	UResourcesComponent* ResourcesComponent;
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void Dodge();
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void Block();
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void Attack();
 	void EndAttack();
 
