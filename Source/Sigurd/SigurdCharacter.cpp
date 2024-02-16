@@ -22,6 +22,13 @@ ASigurdCharacter::ASigurdCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+
+	ResourcesComponent = CreateDefaultSubobject<UResourcesComponent>(TEXT("ResourcesComponent"));
+	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
+	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	
+	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
+	WeaponMesh->SetupAttachment(GetMesh(), FName("RH_Socket"));
 		
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -57,12 +64,27 @@ ASigurdCharacter::ASigurdCharacter()
 
 	CachedDestination = FVector::ZeroVector;
 	FollowTime = 0.f;
+	
 }
 
 void ASigurdCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+	if (ResourcesComponent) {
+		ResourcesComponent->RegisterComponent();
+	}
+
+	if (StaminaComponent) {
+		StaminaComponent->RegisterComponent();
+	}
+
+	if (CombatComponent){
+		CombatComponent->RegisterComponent();
+	}
+
+	OnTakeAnyDamage.AddDynamic(this, &ASigurdCharacter::TakeDamage);
 
 	//Add Input Mapping Context
 	if (APlayerController* playerController = Cast<APlayerController>(Controller))
@@ -88,14 +110,23 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(MoveByClickAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::MoveClick);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::MoveAxis);
 
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartRunning);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::CheckExhaustion);
+		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &ASigurdCharacter::StopRunning);
+
 		//Combat
 		//quick mele
-		EnhancedInputComponent->BindAction(QckMeleAction, ETriggerEvent::Started, this, &ASigurdCharacter::QuickAttack);
+		EnhancedInputComponent->BindAction(QckMeleAction, ETriggerEvent::Started, this, &ASigurdCharacter::Attack);
 
 		//heavy mele
-		EnhancedInputComponent->BindAction(HvyMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::HeavyAttack);
+		//EnhancedInputComponent->BindAction(HvyMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::HeavyAttack);
 
-		EnhancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::Run);
+		//Weapon
+		EnhancedInputComponent->BindAction(NextWeaponAction, ETriggerEvent::Started, this, &ASigurdCharacter::NextWeapon);
+		EnhancedInputComponent->BindAction(PreviousWeaponAction, ETriggerEvent::Started, this, &ASigurdCharacter::PreviousWeapon);
+
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &ASigurdCharacter::Dodge);
+		EnhancedInputComponent->BindAction(BlockAction, ETriggerEvent::Started, this, &ASigurdCharacter::Block);
 	}
 	else
 	{
@@ -166,6 +197,10 @@ void ASigurdCharacter::MoveClick(const FInputActionValue& Value)
 
 }
 
+void ASigurdCharacter::Attack(){
+	CombatComponent->Attack();
+}
+
 void ASigurdCharacter::QuickAttack(const FInputActionValue& Value)
 {
 	// TODO check stamina and if can attack
@@ -231,3 +266,64 @@ void ASigurdCharacter::HeavyAttack(const FInputActionValue& Value)
 	UE_LOG(LogTemp, Warning, TEXT("Value: %f"), HeavyMeleValue);
 
 }
+
+void ASigurdCharacter::TakeDamage(AActor *DamagedActor, float Damage, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser) {
+
+	/*if (ResourcesComponent)
+	{
+		UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
+		ResourcesComponent->TakeDamageWithType(ObjectInstance ,Damage);
+	}*/
+	
+	UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
+	CombatComponent->TakeDamage(Damage, ObjectInstance);
+}
+
+/*void ASigurdCharacter::TakeDamage_Implementation(float damage){
+	IDamageableInterface::TakeDamage_Implementation(damage);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("CustomTakeDamage_Implementation"));
+}*/
+
+void ASigurdCharacter::NextWeapon(){
+	if (CombatComponent->weaponInventory.Num() != 0) {
+		CombatComponent->NextWeapon();
+		WeaponMesh->SetStaticMesh(CombatComponent->weaponInventory[CombatComponent->currentWeapon].Mesh);
+	}
+}
+
+void ASigurdCharacter::PreviousWeapon(){
+	if (CombatComponent->weaponInventory.Num() != 0) {
+		CombatComponent->PreviousWeapon();
+		WeaponMesh->SetStaticMesh(CombatComponent->weaponInventory[CombatComponent->currentWeapon].Mesh);
+	}
+}
+
+void ASigurdCharacter::StartRunning(){
+	if (!StaminaComponent->statusTags.HasTag(Tags::Exhausted)){
+		StaminaComponent->StartRunning();
+		GetCharacterMovement()->MaxWalkSpeed = 1000.f;
+	}
+	
+}
+
+void ASigurdCharacter::StopRunning(){
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	if (!StaminaComponent->statusTags.HasTag(Tags::Exhausted)){
+		StaminaComponent->StopStaminaDecay();
+	}
+}
+
+void ASigurdCharacter::CheckExhaustion(){
+	if (StaminaComponent->statusTags.HasTag(Tags::Exhausted)){
+		StopRunning();
+	}
+}
+
+void ASigurdCharacter::Dodge(){
+	CombatComponent->Dodge();
+}
+
+void ASigurdCharacter::Block(){
+	CombatComponent->Block();
+}
+

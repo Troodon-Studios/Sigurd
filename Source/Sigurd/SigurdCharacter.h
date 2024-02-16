@@ -3,7 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Actor/Weapon.h"
+#include "Components/CombatComponent.h"
+#include "Components/ResourcesComponent.h"
+#include "Components/StaminaComponent.h"
 #include "GameFramework/Character.h"
+#include "Interfaces/DamageableInterface.h"
 #include "Logging/LogMacros.h"
 #include "SigurdCharacter.generated.h"
 
@@ -16,7 +21,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ASigurdCharacter : public ACharacter
+class ASigurdCharacter : public ACharacter /*, public IDamageableInterface*/
 {
 	GENERATED_BODY()
 
@@ -27,6 +32,22 @@ class ASigurdCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
+	//weapon mesh component
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* WeaponMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resources", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UResourcesComponent> BP_ResourcesComponentClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resources", meta = (AllowPrivateAccess = "true"))
+	UResourcesComponent* ResourcesComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
+	UStaminaComponent* StaminaComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
+	UCombatComponent* CombatComponent;
 	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -48,6 +69,18 @@ class ASigurdCharacter : public ACharacter
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* RunAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* NextWeaponAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* PreviousWeaponAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* DodgeAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* BlockAction;
 	
 	/** CanMove and CanAttack booleans */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
@@ -72,11 +105,26 @@ protected:
 	void MoveAxis(const FInputActionValue& Value);
 	void MoveClick(const FInputActionValue& Value);
 
+	void Attack();
 	void QuickAttack(const FInputActionValue& Value);
 	void HeavyAttack(const FInputActionValue& Value);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Movement")
-	void Run();
+	UFUNCTION(Category = "Combat")
+	void TakeDamage(AActor *DamagedActor, float Damage, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser);
+
+	/*void TakeDamage_Implementation(float damage) override;*/
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void NextWeapon();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void PreviousWeapon();
+
+	void StartRunning();
+	void StopRunning();
+	void CheckExhaustion();
+
+	void Dodge();
+	void Block();
 
 protected:
 	// APawn interface
