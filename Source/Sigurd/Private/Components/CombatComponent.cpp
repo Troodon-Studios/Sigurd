@@ -17,7 +17,10 @@ UCombatComponent::UCombatComponent()
 // Called when the game starts
 void UCombatComponent::BeginPlay()
 {
-	Super::BeginPlay();	
+	Super::BeginPlay();
+	ResourcesComponent = GetOwner()->FindComponentByClass<UResourcesComponent>();
+	StaminaComponent = GetOwner()->FindComponentByClass<UStaminaComponent>();
+	
 }
 
 
@@ -179,10 +182,11 @@ void UCombatComponent::QueueAttack(FName _sectionName){
 
 }
 
-void UCombatComponent::TakeDamage(){
+void UCombatComponent::TakeDamage(float damage, UObject* DamageType){
 	switch (CombatState){
 	case ECombatState::Blocking:
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Blocked"));
+		StaminaComponent->DecreaseStamina(damage);
 		break;
 	case ECombatState::Dodging:
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Dodged"));
@@ -192,6 +196,8 @@ void UCombatComponent::TakeDamage(){
 		break;
 	default:
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Took Damage"));
+		ResourcesComponent->TakeDamageWithType(DamageType, damage);
+		
 		break;
 	}
 	

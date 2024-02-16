@@ -274,7 +274,9 @@ void ASigurdCharacter::TakeDamage(AActor *DamagedActor, float Damage, const clas
 		UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
 		ResourcesComponent->TakeDamageWithType(ObjectInstance ,Damage);
 	}*/
-	CombatComponent->TakeDamage();
+	
+	UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
+	CombatComponent->TakeDamage(Damage, ObjectInstance);
 }
 
 /*void ASigurdCharacter::TakeDamage_Implementation(float damage){

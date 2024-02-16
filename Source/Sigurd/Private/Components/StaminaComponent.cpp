@@ -62,6 +62,14 @@ void UStaminaComponent::StopStaminaDecay(){
 	DelayedStaminaRegen(delayTime);
 }
 
+void UStaminaComponent::DecreaseStamina(float amount){
+	currentStamina -= amount;
+	if (currentStamina < 0)
+	{
+		currentStamina = 0;
+	}
+}
+
 void UStaminaComponent::RegenStamina()
 {
 	currentStamina += staminaRegenRate;
