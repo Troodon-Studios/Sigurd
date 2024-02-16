@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "ItemData.h"
+#include "ResourcesComponent.h"
+#include "StaminaComponent.h"
 #include "Actor/Weapon.h"
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
@@ -53,6 +55,9 @@ public:
 	void ExecuteCurrentWeaponDodgeMontage();
 	void ExecuteCurrentWeaponBlockMontage();
 
+	UStaminaComponent* StaminaComponent;
+	UResourcesComponent* ResourcesComponent;
+
 	void Dodge();
 	void Block();
 
@@ -61,7 +66,7 @@ public:
 
 	void QueueAttack(FName _sectionName);
 
-	void TakeDamage();
+	void TakeDamage(float damage, UObject* DamageType);
 
 	void increaseComboCount();
 
