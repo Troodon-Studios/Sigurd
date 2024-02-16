@@ -8,6 +8,7 @@
 #include "Components/ResourcesComponent.h"
 #include "Components/StaminaComponent.h"
 #include "GameFramework/Character.h"
+#include "Interfaces/DamageableInterface.h"
 #include "Logging/LogMacros.h"
 #include "SigurdCharacter.generated.h"
 
@@ -20,7 +21,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ASigurdCharacter : public ACharacter
+class ASigurdCharacter : public ACharacter /*, public IDamageableInterface*/
 {
 	GENERATED_BODY()
 
@@ -74,6 +75,12 @@ class ASigurdCharacter : public ACharacter
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* PreviousWeaponAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* DodgeAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* BlockAction;
 	
 	/** CanMove and CanAttack booleans */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
@@ -105,6 +112,8 @@ protected:
 	UFUNCTION(Category = "Combat")
 	void TakeDamage(AActor *DamagedActor, float Damage, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser);
 
+	/*void TakeDamage_Implementation(float damage) override;*/
+
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void NextWeapon();
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
@@ -113,6 +122,9 @@ protected:
 	void StartRunning();
 	void StopRunning();
 	void CheckExhaustion();
+
+	void Dodge();
+	void Block();
 
 protected:
 	// APawn interface

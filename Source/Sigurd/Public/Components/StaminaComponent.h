@@ -46,6 +46,8 @@ public:
 	void StartStaminaDecay();
 	void StopStaminaDecay();
 
+	void DecreaseStamina(float amount);
+
 private:
 	FTimerHandle StaminaRegenTimerHandle;
 	FTimerHandle StaminaDecayTimerHandle;

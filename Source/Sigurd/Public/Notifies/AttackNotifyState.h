@@ -14,9 +14,6 @@
 UCLASS()
 class SIGURD_API UAttackNotifyState : public UAnimNotifyState
 {
-
-
-	
 	GENERATED_BODY()
 
 public:

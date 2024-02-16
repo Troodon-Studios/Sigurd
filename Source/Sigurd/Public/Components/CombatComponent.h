@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "ItemData.h"
+#include "ResourcesComponent.h"
+#include "StaminaComponent.h"
 #include "Actor/Weapon.h"
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
@@ -13,7 +15,10 @@ enum ECombatState : uint8 {
 	Idle,
 	Attacking,
 	QueuingAttack,
-	AttackQueued
+	AttackQueued,
+	Dodging,
+	Blocking,
+	Parrying,
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -29,9 +34,6 @@ public:
 	TEnumAsByte<ECombatState> CombatState;
 
 	int comboCount = 0;
-	bool canAttack = true;
-	bool canQueueAttack = false;
-	bool comboQueued = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	int currentWeapon;
@@ -49,11 +51,22 @@ public:
 	void PreviousWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void ExecuteCurrentWeaponMontage(FName _sectionName);
+	void ExecuteCurrentWeaponComboMontage(FName _sectionName);
+	void ExecuteCurrentWeaponDodgeMontage();
+	void ExecuteCurrentWeaponBlockMontage();
+
+	UStaminaComponent* StaminaComponent;
+	UResourcesComponent* ResourcesComponent;
+
+	void Dodge();
+	void Block();
 
 	void Attack();
+	void EndAttack();
 
 	void QueueAttack(FName _sectionName);
+
+	void TakeDamage(float damage, UObject* DamageType);
 
 	void increaseComboCount();
 
