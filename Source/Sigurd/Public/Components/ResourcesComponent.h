@@ -5,7 +5,10 @@
 #include "CoreMinimal.h"
 #include "Types.h"
 #include "Components/ActorComponent.h"
+#include "GameplayTagContainer.h"
+
 #include "ResourcesComponent.generated.h"
+
 
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -17,6 +20,8 @@ public:
 	// Sets default values for this component's properties
 	UResourcesComponent();
 
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	float maxHealth;
 
@@ -34,6 +39,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
 	float staminaDecayRate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	bool canRegenStamina;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	bool canDecayStamina;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
 	EDamageType selfType;
@@ -53,10 +64,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Stamina")
 	float GetStaminaPercentage();
 
-	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	UFUNCTION(BlueprintCallable, Category = "Damage")
+	void TakeDamageWithType(UObject* DamageType, float Damage);
+	
 	void RegenStamina(float deltaTime);
 
-	UFUNCTION(BlueprintCallable, Category = "Stamina")
 	void DecayStamina(float deltaTime);
-		
+	
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	void StartRunning();
+
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	void StopRunning();
+
+	
+
+	UFUNCTION(BlueprintCallable, Category = "Stamina")
+	void Attack(float attackCost);
 };
