@@ -124,6 +124,9 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		//Weapon
 		EnhancedInputComponent->BindAction(NextWeaponAction, ETriggerEvent::Started, this, &ASigurdCharacter::NextWeapon);
 		EnhancedInputComponent->BindAction(PreviousWeaponAction, ETriggerEvent::Started, this, &ASigurdCharacter::PreviousWeapon);
+
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &ASigurdCharacter::Dodge);
+		EnhancedInputComponent->BindAction(BlockAction, ETriggerEvent::Started, this, &ASigurdCharacter::Block);
 	}
 	else
 	{
@@ -266,12 +269,18 @@ void ASigurdCharacter::HeavyAttack(const FInputActionValue& Value)
 
 void ASigurdCharacter::TakeDamage(AActor *DamagedActor, float Damage, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser) {
 
-	if (ResourcesComponent)
+	/*if (ResourcesComponent)
 	{
 		UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
 		ResourcesComponent->TakeDamageWithType(ObjectInstance ,Damage);
-	}
+	}*/
+	CombatComponent->TakeDamage();
 }
+
+/*void ASigurdCharacter::TakeDamage_Implementation(float damage){
+	IDamageableInterface::TakeDamage_Implementation(damage);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("CustomTakeDamage_Implementation"));
+}*/
 
 void ASigurdCharacter::NextWeapon(){
 	if (CombatComponent->weaponInventory.Num() != 0) {
@@ -306,5 +315,13 @@ void ASigurdCharacter::CheckExhaustion(){
 	if (StaminaComponent->statusTags.HasTag(Tags::Exhausted)){
 		StopRunning();
 	}
+}
+
+void ASigurdCharacter::Dodge(){
+	CombatComponent->Dodge();
+}
+
+void ASigurdCharacter::Block(){
+	CombatComponent->Block();
 }
 

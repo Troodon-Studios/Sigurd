@@ -3,7 +3,8 @@
 
 #include "Components/CombatComponent.h"
 
-#include "Sigurd/SigurdCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/Character.h"
 
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
@@ -34,7 +35,7 @@ void UCombatComponent::PreviousWeapon(){
 	currentWeapon = (currentWeapon - 1 + weaponInventory.Num()) % weaponInventory.Num();
 }
 
-void UCombatComponent::ExecuteCurrentWeaponMontage(FName _sectionName)
+void UCombatComponent::ExecuteCurrentWeaponComboMontage(FName _sectionName)
 {
 	if (currentWeapon < weaponInventory.Num())
 	{
@@ -53,10 +54,9 @@ void UCombatComponent::ExecuteCurrentWeaponMontage(FName _sectionName)
 					if (AnimInstance->Montage_IsPlaying(weaponInventory[currentWeapon].ComboMontage))
 					{
 						AnimInstance->Montage_Stop(0.25f, CurrentWeaponMontage);
-						GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Stop Montage")));
 					}
 					
-					AnimInstance->Montage_Play(CurrentWeaponMontage);
+					AnimInstance->Montage_Play(CurrentWeaponMontage, 2.5);
 					if (_sectionName != NAME_None){
 						AnimInstance->Montage_JumpToSection(_sectionName, CurrentWeaponMontage);
 					}
@@ -68,43 +68,133 @@ void UCombatComponent::ExecuteCurrentWeaponMontage(FName _sectionName)
 	}
 }
 
+void UCombatComponent::ExecuteCurrentWeaponDodgeMontage(){
+
+	UAnimMontage* CurrentWeaponMontage = weaponInventory[currentWeapon].DodgeMontage;
+
+	if (CurrentWeaponMontage)
+	{
+		ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+		
+		if (OwnerCharacter)
+		{
+			UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
+			
+			if (AnimInstance)
+			{
+				if (AnimInstance->Montage_IsPlaying(weaponInventory[currentWeapon].DodgeMontage))
+				{
+					AnimInstance->Montage_Stop(0.25f, CurrentWeaponMontage);
+				}
+				
+				AnimInstance->Montage_Play(CurrentWeaponMontage, 1.5);
+			}
+		}
+		
+	}
+	
+}
+
+void UCombatComponent::ExecuteCurrentWeaponBlockMontage(){
+	UAnimMontage* CurrentWeaponMontage = weaponInventory[currentWeapon].BlockMontage;
+
+	if (CurrentWeaponMontage)
+	{
+		ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+		
+		if (OwnerCharacter)
+		{
+			UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
+			
+			if (AnimInstance)
+			{
+				if (AnimInstance->Montage_IsPlaying(weaponInventory[currentWeapon].BlockMontage))
+				{
+					AnimInstance->Montage_Stop(0.25f, CurrentWeaponMontage);
+				}
+				
+				AnimInstance->Montage_Play(CurrentWeaponMontage, 1.5);
+			}
+		}
+		
+	}
+}
+
+void UCombatComponent::Dodge(){
+	if ( CombatState == ECombatState::Idle){
+		CombatState = ECombatState::Dodging;
+		ExecuteCurrentWeaponDodgeMontage();		
+	}
+}
+
+void UCombatComponent::Block(){
+	if (CombatState == ECombatState::Idle){
+		CombatState = ECombatState::Blocking;
+		ExecuteCurrentWeaponBlockMontage();
+	}
+}
+
 void UCombatComponent::Attack(){
 
 	if (CombatState == ECombatState::Idle){
 		CombatState = ECombatState::Attacking;
-		ExecuteCurrentWeaponMontage(NAME_None);
+
+		
+		// Obtén una referencia al personaje y desactiva su capacidad de moverse
+		ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+		if (OwnerCharacter)
+		{
+			OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed = 150;
+		}
+		
+		ExecuteCurrentWeaponComboMontage(NAME_None);
 	}else if (CombatState == ECombatState::QueuingAttack){
 		CombatState = ECombatState::AttackQueued;
 		changeWeaponLight(1);
-		changeWeaponLightColor(FLinearColor(0, 1, 0, 1));
-		
+		changeWeaponLightColor(FLinearColor(0, 1, 0, 1));		
 	}
-	
-	if (canAttack){
-		canAttack = false;
-		ExecuteCurrentWeaponMontage(NAME_None);
-	}
-	else if (canQueueAttack){
-		comboQueued = true;
-		canQueueAttack = false;
-		changeWeaponLight(1);
-		changeWeaponLightColor(FLinearColor(0, 1, 0, 1));
-	}
+}
 
-	
-	
+void UCombatComponent::EndAttack(){
+	// Cambia el estado de combate a Idle
+	CombatState = ECombatState::Idle;
 
+	// Obtén una referencia al personaje y reactiva su capacidad de moverse
+	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
+	if (OwnerCharacter)
+	{
+		OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed = 800;
+	}
 }
 
 void UCombatComponent::QueueAttack(FName _sectionName){
-	if (comboQueued){
-		comboQueued = false;
-		ExecuteCurrentWeaponMontage(_sectionName);
-	}
-	else{
+	if (CombatState == ECombatState::AttackQueued){
+		CombatState = ECombatState::Attacking;
+		ExecuteCurrentWeaponComboMontage(_sectionName);
+	}	else{
 		comboCount = 0;
-		canQueueAttack = false;
+		CombatState = ECombatState::Idle;
 	}
+
+
+}
+
+void UCombatComponent::TakeDamage(){
+	switch (CombatState){
+	case ECombatState::Blocking:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Blocked"));
+		break;
+	case ECombatState::Dodging:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Dodged"));
+		break;
+	case ECombatState::Parrying:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Parried"));
+		break;
+	default:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Took Damage"));
+		break;
+	}
+	
 }
 
 

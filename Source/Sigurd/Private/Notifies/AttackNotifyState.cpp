@@ -9,7 +9,7 @@
 void UAttackNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
                                      float TotalDuration, const FAnimNotifyEventReference& EventReference){
 	if (UCombatComponent* CombatComp = GetCombatComponent(MeshComp)){
-		CombatComp->canQueueAttack = true;		
+		CombatComp->CombatState = ECombatState::QueuingAttack;
 		CombatComp->changeWeaponLightColor(FLinearColor(0, 0, 1, 1));
 		CombatComp->changeWeaponLight(1);
 	}

@@ -5,12 +5,6 @@
 #include "Engine/StaticMesh.h"
 #include "ItemData.generated.h"
 
-static TMap<int, FName> secuenceMap = {
-	{0, FName("A1")},
-	{1, FName("A2")},
-	{2, FName("A3")}
-};
-
 USTRUCT(BlueprintType)
 struct FItemData : public FTableRowBase{
 	GENERATED_BODY()
@@ -27,8 +21,10 @@ struct FItemData : public FTableRowBase{
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAnimMontage* ComboMontage;
 
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* DodgeMontage;
 
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UAnimMontage* BlockMontage;
 	
 };

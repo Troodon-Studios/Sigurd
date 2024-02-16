@@ -13,7 +13,10 @@ enum ECombatState : uint8 {
 	Idle,
 	Attacking,
 	QueuingAttack,
-	AttackQueued
+	AttackQueued,
+	Dodging,
+	Blocking,
+	Parrying,
 };
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -29,9 +32,6 @@ public:
 	TEnumAsByte<ECombatState> CombatState;
 
 	int comboCount = 0;
-	bool canAttack = true;
-	bool canQueueAttack = false;
-	bool comboQueued = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	int currentWeapon;
@@ -49,11 +49,19 @@ public:
 	void PreviousWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void ExecuteCurrentWeaponMontage(FName _sectionName);
+	void ExecuteCurrentWeaponComboMontage(FName _sectionName);
+	void ExecuteCurrentWeaponDodgeMontage();
+	void ExecuteCurrentWeaponBlockMontage();
+
+	void Dodge();
+	void Block();
 
 	void Attack();
+	void EndAttack();
 
 	void QueueAttack(FName _sectionName);
+
+	void TakeDamage();
 
 	void increaseComboCount();
 
