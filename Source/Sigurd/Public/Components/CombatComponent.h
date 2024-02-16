@@ -55,6 +55,9 @@ public:
 	void ExecuteCurrentWeaponDodgeMontage();
 	void ExecuteCurrentWeaponBlockMontage();
 
+	/**
+	 * 
+	 */
 	UStaminaComponent* StaminaComponent;
 	UResourcesComponent* ResourcesComponent;
 
