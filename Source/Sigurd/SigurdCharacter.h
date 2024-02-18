@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Actor/Weapon.h"
 #include "Components/CombatComponent.h"
+#include "Components/HealthComponent.h"
 #include "Components/ResourcesComponent.h"
 #include "Components/StaminaComponent.h"
 #include "GameFramework/Character.h"
@@ -48,6 +49,9 @@ class ASigurdCharacter : public ACharacter /*, public IDamageableInterface*/
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
 	UCombatComponent* CombatComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	UHealthComponent* HealthComponent;
 	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))

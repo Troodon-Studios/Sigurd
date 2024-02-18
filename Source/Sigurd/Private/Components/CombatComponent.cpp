@@ -59,7 +59,7 @@ void UCombatComponent::ExecuteCurrentWeaponComboMontage(FName _sectionName)
 						AnimInstance->Montage_Stop(0.25f, CurrentWeaponMontage);
 					}
 					
-					AnimInstance->Montage_Play(CurrentWeaponMontage, 2.5);
+					AnimInstance->Montage_Play(CurrentWeaponMontage, 1.5);
 					if (_sectionName != NAME_None){
 						AnimInstance->Montage_JumpToSection(_sectionName, CurrentWeaponMontage);
 					}
