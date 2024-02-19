@@ -10,8 +10,8 @@ void UAttackNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequ
                                      float TotalDuration, const FAnimNotifyEventReference& EventReference){
 	if (UCombatComponent* CombatComp = GetCombatComponent(MeshComp)){
 		CombatComp->CombatState = ECombatState::QueuingAttack;
-		CombatComp->changeWeaponLightColor(FLinearColor(0, 0, 1, 1));
-		CombatComp->changeWeaponLight(1);
+		CombatComp->ChangeWeaponLightColor(FLinearColor(0, 0, 1, 1));
+		CombatComp->ChangeWeaponLight(1);
 	}
 
 
@@ -22,7 +22,7 @@ void UAttackNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequen
 	const FAnimNotifyEventReference& EventReference){
 	if (UCombatComponent* CombatComp = GetCombatComponent(MeshComp)){
 		CombatComp->QueueAttack(sectionName);
-		CombatComp->changeWeaponLight(0);
+		CombatComp->ChangeWeaponLight(0);
 	}
 
 

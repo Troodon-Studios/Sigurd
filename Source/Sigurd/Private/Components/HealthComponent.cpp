@@ -9,6 +9,8 @@
 // Sets default values for this component's properties
 UHealthComponent::UHealthComponent()
 {
+	MaxHealth = 100.0f;
+	CurrentHealth = MaxHealth;
 
 }
 

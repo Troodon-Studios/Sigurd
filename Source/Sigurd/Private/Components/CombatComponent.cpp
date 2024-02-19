@@ -2,23 +2,24 @@
 
 
 #include "Components/CombatComponent.h"
-
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Character.h"
 
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
+	CombatState = ECombatState::Idle;
+	ComboCount = 0;
+	CurrentWeapon = 0;
+	
+	
 }
 
 // Called when the game starts
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	ResourcesComponent = GetOwner()->FindComponentByClass<UResourcesComponent>();
+	HealthComponent = GetOwner()->FindComponentByClass<UHealthComponent>();
 	StaminaComponent = GetOwner()->FindComponentByClass<UStaminaComponent>();
 	
 }
@@ -26,23 +27,23 @@ void UCombatComponent::BeginPlay()
 
 void UCombatComponent::AddWeaponToInventory(FDataTableRowHandle weapon){
 	FItemData ItemData = *weapon.GetRow<FItemData>(FString::Printf(TEXT("%s"), *weapon.RowName.ToString()));
-	weaponInventory.Add(ItemData);
+	WeaponInventory.Add(ItemData);
 	
 }
 
 void UCombatComponent::NextWeapon(){
-	currentWeapon = (currentWeapon + 1) % weaponInventory.Num();
+	CurrentWeapon = (CurrentWeapon + 1) % WeaponInventory.Num();
 }
 
 void UCombatComponent::PreviousWeapon(){
-	currentWeapon = (currentWeapon - 1 + weaponInventory.Num()) % weaponInventory.Num();
+	CurrentWeapon = (CurrentWeapon - 1 + WeaponInventory.Num()) % WeaponInventory.Num();
 }
 
 void UCombatComponent::ExecuteCurrentWeaponComboMontage(FName _sectionName)
 {
-	if (currentWeapon < weaponInventory.Num())
+	if (CurrentWeapon < WeaponInventory.Num())
 	{
-		UAnimMontage* CurrentWeaponMontage = weaponInventory[currentWeapon].ComboMontage;
+		UAnimMontage* CurrentWeaponMontage = WeaponInventory[CurrentWeapon].ComboMontage;
 
 		if (CurrentWeaponMontage)
 		{
@@ -54,7 +55,7 @@ void UCombatComponent::ExecuteCurrentWeaponComboMontage(FName _sectionName)
 				
 				if (AnimInstance)
 				{
-					if (AnimInstance->Montage_IsPlaying(weaponInventory[currentWeapon].ComboMontage))
+					if (AnimInstance->Montage_IsPlaying(WeaponInventory[CurrentWeapon].ComboMontage))
 					{
 						AnimInstance->Montage_Stop(0.25f, CurrentWeaponMontage);
 					}
@@ -64,7 +65,7 @@ void UCombatComponent::ExecuteCurrentWeaponComboMontage(FName _sectionName)
 						AnimInstance->Montage_JumpToSection(_sectionName, CurrentWeaponMontage);
 					}
 
-					increaseComboCount();					
+					IncreaseComboCount();					
 				}
 			}
 		}
@@ -73,7 +74,7 @@ void UCombatComponent::ExecuteCurrentWeaponComboMontage(FName _sectionName)
 
 void UCombatComponent::ExecuteCurrentWeaponDodgeMontage(){
 
-	UAnimMontage* CurrentWeaponMontage = weaponInventory[currentWeapon].DodgeMontage;
+	UAnimMontage* CurrentWeaponMontage = WeaponInventory[CurrentWeapon].DodgeMontage;
 
 	if (CurrentWeaponMontage)
 	{
@@ -85,7 +86,7 @@ void UCombatComponent::ExecuteCurrentWeaponDodgeMontage(){
 			
 			if (AnimInstance)
 			{
-				if (AnimInstance->Montage_IsPlaying(weaponInventory[currentWeapon].DodgeMontage))
+				if (AnimInstance->Montage_IsPlaying(WeaponInventory[CurrentWeapon].DodgeMontage))
 				{
 					AnimInstance->Montage_Stop(0.25f, CurrentWeaponMontage);
 				}
@@ -99,7 +100,7 @@ void UCombatComponent::ExecuteCurrentWeaponDodgeMontage(){
 }
 
 void UCombatComponent::ExecuteCurrentWeaponBlockMontage(){
-	UAnimMontage* CurrentWeaponMontage = weaponInventory[currentWeapon].BlockMontage;
+	UAnimMontage* CurrentWeaponMontage = WeaponInventory[CurrentWeapon].BlockMontage;
 
 	if (CurrentWeaponMontage)
 	{
@@ -111,7 +112,7 @@ void UCombatComponent::ExecuteCurrentWeaponBlockMontage(){
 			
 			if (AnimInstance)
 			{
-				if (AnimInstance->Montage_IsPlaying(weaponInventory[currentWeapon].BlockMontage))
+				if (AnimInstance->Montage_IsPlaying(WeaponInventory[CurrentWeapon].BlockMontage))
 				{
 					AnimInstance->Montage_Stop(0.25f, CurrentWeaponMontage);
 				}
@@ -153,8 +154,8 @@ void UCombatComponent::Attack(){
 		ExecuteCurrentWeaponComboMontage(NAME_None);
 	}else if (CombatState == ECombatState::QueuingAttack){
 		CombatState = ECombatState::AttackQueued;
-		changeWeaponLight(1);
-		changeWeaponLightColor(FLinearColor(0, 1, 0, 1));		
+		ChangeWeaponLight(1);
+		ChangeWeaponLightColor(FLinearColor(0, 1, 0, 1));		
 	}
 }
 
@@ -175,7 +176,7 @@ void UCombatComponent::QueueAttack(FName _sectionName){
 		CombatState = ECombatState::Attacking;
 		ExecuteCurrentWeaponComboMontage(_sectionName);
 	}	else{
-		comboCount = 0;
+		ComboCount = 0;
 		CombatState = ECombatState::Idle;
 	}
 
@@ -188,18 +189,14 @@ void UCombatComponent::QueueAttack(FName _sectionName){
 void UCombatComponent::TakeDamage(float damage, UObject* DamageType){
 	switch (CombatState){
 	case ECombatState::Blocking:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Blocked"));
 		StaminaComponent->DecreaseStamina(damage);
 		break;
 	case ECombatState::Dodging:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Dodged"));
 		break;
 	case ECombatState::Parrying:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Parried"));
 		break;
 	default:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Took Damage"));
-		ResourcesComponent->TakeDamageWithType(DamageType, damage);
+		HealthComponent->TakeDamageWithType(DamageType, damage);
 		
 		break;
 	}
@@ -207,11 +204,11 @@ void UCombatComponent::TakeDamage(float damage, UObject* DamageType){
 }
 
 
-void UCombatComponent::increaseComboCount(){
-	comboCount = (comboCount + 1) % weaponInventory[currentWeapon].MaxComboCount;
+void UCombatComponent::IncreaseComboCount(){
+	ComboCount = (ComboCount + 1) % WeaponInventory[CurrentWeapon].MaxComboCount;
 }
 
-void UCombatComponent::changeWeaponLight(float intensity){
+void UCombatComponent::ChangeWeaponLight(float intensity){
 
 	AActor* OwnerActor = GetOwner();
 	if (OwnerActor)
@@ -228,7 +225,7 @@ void UCombatComponent::changeWeaponLight(float intensity){
 	}
 }
 
-void UCombatComponent::changeWeaponLightColor(FLinearColor color){
+void UCombatComponent::ChangeWeaponLightColor(FLinearColor color){
 	AActor* OwnerActor = GetOwner();
 	if (OwnerActor)
 	{

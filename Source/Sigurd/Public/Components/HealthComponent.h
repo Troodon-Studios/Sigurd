@@ -32,8 +32,11 @@ private:
 
 	
 	void TakeDamage(float damage, EDamageType attackerType);
-	void TakeDamageWithType(UObject* DamageType, float Damage);
 	void Heal(float healAmount);
 	float GetHealthPercentage();
-	
+
+public:
+
+	void TakeDamageWithType(UObject* DamageType, float Damage);
+
 };
