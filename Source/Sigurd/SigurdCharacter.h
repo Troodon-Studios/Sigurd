@@ -41,9 +41,6 @@ class ASigurdCharacter : public ACharacter /*, public IDamageableInterface*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resources", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UResourcesComponent> BP_ResourcesComponentClass;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Resources", meta = (AllowPrivateAccess = "true"))
-	UResourcesComponent* ResourcesComponent;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
 	UStaminaComponent* StaminaComponent;
 

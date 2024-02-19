@@ -22,8 +22,7 @@ ASigurdCharacter::ASigurdCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
-	ResourcesComponent = CreateDefaultSubobject<UResourcesComponent>(TEXT("ResourcesComponent"));
+	
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
 	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
@@ -72,11 +71,7 @@ void ASigurdCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
-
-	if (ResourcesComponent) {
-		ResourcesComponent->RegisterComponent();
-	}
-
+	
 	if (StaminaComponent) {
 		StaminaComponent->RegisterComponent();
 	}
@@ -273,12 +268,6 @@ void ASigurdCharacter::HeavyAttack(const FInputActionValue& Value)
 }
 
 void ASigurdCharacter::TakeDamage(AActor *DamagedActor, float Damage, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser) {
-
-	/*if (ResourcesComponent)
-	{
-		UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
-		ResourcesComponent->TakeDamageWithType(ObjectInstance ,Damage);
-	}*/
 	
 	UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
 	CombatComponent->TakeDamage(Damage, ObjectInstance);
