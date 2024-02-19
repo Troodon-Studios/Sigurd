@@ -45,12 +45,18 @@ public:
 	void ExecuteCurrentWeaponDodgeMontage();
 	void ExecuteCurrentWeaponBlockMontage();
 
+	/**
+	 * 
+	 */
 	UStaminaComponent* StaminaComponent;
 	UHealthComponent* HealthComponent;
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void Dodge();
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void Block();
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void Attack();
 	void EndAttack();
 
