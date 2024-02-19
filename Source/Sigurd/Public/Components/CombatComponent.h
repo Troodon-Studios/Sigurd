@@ -62,6 +62,7 @@ public:
 
 	void QueueAttack(FName _sectionName);
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void TakeDamage(float damage, UObject* DamageType);
 
 	void IncreaseComboCount();
