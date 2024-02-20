@@ -1,8 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Enemies/BaseEnemy.h"
-
 
 
 // Sets default values
@@ -43,7 +41,7 @@ void ABaseEnemy::BeginPlay()
 }
 
 // Called every frame
-void ABaseEnemy::Tick(float DeltaTime)
+void ABaseEnemy::Tick(const float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }

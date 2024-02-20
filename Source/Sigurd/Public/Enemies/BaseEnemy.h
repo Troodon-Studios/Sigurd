@@ -3,9 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BehaviorTree/BehaviorTree.h"
 #include "Components/CombatComponent.h"
 #include "Components/StaminaComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "PatrolRoute.h"
+#include "AICBaseEnemy.h"
 #include "GameFramework/Character.h"
 #include "BaseEnemy.generated.h"
 
@@ -31,6 +34,18 @@ public:
 	// Sets default values for this character's properties
 	ABaseEnemy();
 
+	// AI Variables
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="AI")
+	TObjectPtr<UBehaviorTree> BehaviourTree;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="AI")
+	TObjectPtr<AIcBaseEnemy> AIController;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="AI")
+	TObjectPtr<APatrolRoute> PatrolRoute;
+
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
