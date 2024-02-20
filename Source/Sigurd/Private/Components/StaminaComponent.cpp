@@ -16,9 +16,6 @@ UStaminaComponent::UStaminaComponent(){
 	RunningSpeed = 900;
 	WalkingSpeed = 700;
 	ExhaustedSpeed = 500;
-
-
-	// ...
 }
 
 

@@ -31,10 +31,10 @@ public:
 		UDataTable* DamageTable;
 	
 		
-		void TakeDamage(float damage, EDamageType attackerType);
+		void TakeDamage(float Damage, EDamageType AttackerType);
 	
 		UFUNCTION(BlueprintCallable, Category = "Health")
-		void Heal(float healAmount);
+		void Heal(float HealAmount);
 		UFUNCTION(BlueprintCallable, Category = "Health")
 		float GetHealthPercentage();
 	

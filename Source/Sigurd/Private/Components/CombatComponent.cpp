@@ -25,8 +25,8 @@ void UCombatComponent::BeginPlay()
 }
 
 
-void UCombatComponent::AddWeaponToInventory(FDataTableRowHandle weapon){
-	FItemData ItemData = *weapon.GetRow<FItemData>(FString::Printf(TEXT("%s"), *weapon.RowName.ToString()));
+void UCombatComponent::AddWeaponToInventory(FDataTableRowHandle Weapon){
+	FItemData ItemData = *Weapon.GetRow<FItemData>(FString::Printf(TEXT("%s"), *Weapon.RowName.ToString()));
 	WeaponInventory.Add(ItemData);
 	
 }
@@ -39,7 +39,7 @@ void UCombatComponent::PreviousWeapon(){
 	CurrentWeapon = (CurrentWeapon - 1 + WeaponInventory.Num()) % WeaponInventory.Num();
 }
 
-void UCombatComponent::ExecuteCurrentWeaponComboMontage(FName _sectionName)
+void UCombatComponent::ExecuteCurrentWeaponComboMontage(FName SectionName)
 {
 	if (CurrentWeapon < WeaponInventory.Num())
 	{
@@ -61,8 +61,8 @@ void UCombatComponent::ExecuteCurrentWeaponComboMontage(FName _sectionName)
 					}
 					
 					AnimInstance->Montage_Play(CurrentWeaponMontage, 1.5);
-					if (_sectionName != NAME_None){
-						AnimInstance->Montage_JumpToSection(_sectionName, CurrentWeaponMontage);
+					if (SectionName != NAME_None){
+						AnimInstance->Montage_JumpToSection(SectionName, CurrentWeaponMontage);
 					}
 
 					IncreaseComboCount();					
@@ -171,10 +171,10 @@ void UCombatComponent::EndAttack(){
 	}
 }
 
-void UCombatComponent::QueueAttack(FName _sectionName){
+void UCombatComponent::QueueAttack(FName SectionName){
 	if (CombatState == ECombatState::AttackQueued){
 		CombatState = ECombatState::Attacking;
-		ExecuteCurrentWeaponComboMontage(_sectionName);
+		ExecuteCurrentWeaponComboMontage(SectionName);
 	}	else{
 		ComboCount = 0;
 		CombatState = ECombatState::Idle;
@@ -186,17 +186,17 @@ void UCombatComponent::QueueAttack(FName _sectionName){
 //TODO break block and stun character if stamina is 0
 //TODO break into different functions
 
-void UCombatComponent::TakeDamage(float damage, UObject* DamageType){
+void UCombatComponent::TakeDamage(float Damage, UObject* DamageType){
 	switch (CombatState){
 	case ECombatState::Blocking:
-		StaminaComponent->DecreaseStamina(damage);
+		StaminaComponent->DecreaseStamina(Damage);
 		break;
 	case ECombatState::Dodging:
 		break;
 	case ECombatState::Parrying:
 		break;
 	default:
-		HealthComponent->TakeDamageWithType(DamageType, damage);
+		HealthComponent->TakeDamageWithType(DamageType, Damage);
 		
 		break;
 	}
@@ -208,7 +208,7 @@ void UCombatComponent::IncreaseComboCount(){
 	ComboCount = (ComboCount + 1) % WeaponInventory[CurrentWeapon].MaxComboCount;
 }
 
-void UCombatComponent::ChangeWeaponLight(float intensity){
+void UCombatComponent::ChangeWeaponLight(float Intensity){
 
 	AActor* OwnerActor = GetOwner();
 	if (OwnerActor)
@@ -219,13 +219,13 @@ void UCombatComponent::ChangeWeaponLight(float intensity){
 			UMaterialInstanceDynamic* OwnerMaterial = OwnerMeshComponent->CreateAndSetMaterialInstanceDynamic(0);
 			if (OwnerMaterial)
 			{
-				OwnerMaterial->SetScalarParameterValue("lum", intensity);
+				OwnerMaterial->SetScalarParameterValue("lum", Intensity);
 			}
 		}
 	}
 }
 
-void UCombatComponent::ChangeWeaponLightColor(FLinearColor color){
+void UCombatComponent::ChangeWeaponLightColor(FLinearColor Color){
 	AActor* OwnerActor = GetOwner();
 	if (OwnerActor)
 	{
@@ -235,7 +235,7 @@ void UCombatComponent::ChangeWeaponLightColor(FLinearColor color){
 			UMaterialInstanceDynamic* OwnerMaterial = OwnerMeshComponent->CreateAndSetMaterialInstanceDynamic(0);
 			if (OwnerMaterial)
 			{
-				OwnerMaterial->SetVectorParameterValue("col", color);
+				OwnerMaterial->SetVectorParameterValue("col", Color);
 			}
 		}
 	}

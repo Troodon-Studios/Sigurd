@@ -14,13 +14,13 @@ UHealthComponent::UHealthComponent()
 }
 
 
-void UHealthComponent::TakeDamage(float damage, EDamageType attackerType){
+void UHealthComponent::TakeDamage(float Damage, EDamageType AttackerType){
 	float damageMultiplier = 1.0f;
 
 	if(DamageTable)
 	{
 		FDamageData* row = DamageTable->FindRow<FDamageData>(
-				   FName(*FString::Printf(TEXT("%d_%d"), static_cast<int32>(attackerType), static_cast<int32>(SelfType))), TEXT(""));
+				   FName(*FString::Printf(TEXT("%d_%d"), static_cast<int32>(AttackerType), static_cast<int32>(SelfType))), TEXT(""));
 		
 		if (row)
 		{
@@ -28,7 +28,7 @@ void UHealthComponent::TakeDamage(float damage, EDamageType attackerType){
 		}
 	}
 
-	CurrentHealth -= damage * damageMultiplier;
+	CurrentHealth -= Damage * damageMultiplier;
 	if (CurrentHealth <= 0)
 	{
 		// Die
@@ -43,8 +43,8 @@ void UHealthComponent::TakeDamageWithType(UObject* DamageType, float Damage){
 	}
 }
 
-void UHealthComponent::Heal(float healAmount){
-	CurrentHealth += healAmount;
+void UHealthComponent::Heal(float HealAmount){
+	CurrentHealth += HealAmount;
 	if (CurrentHealth > MaxHealth)
 	{
 		CurrentHealth = MaxHealth;
