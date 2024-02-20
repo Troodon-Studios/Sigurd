@@ -64,12 +64,19 @@ APatrolRoute* ABaseEnemy::GetPatrolRoute_Implementation()
 	return PatrolRoute;
 }
 
-void ABaseEnemy::GetIdealRange(double& AttackRadius, double& DefendRadius)
+void ABaseEnemy::SetMovementSpeed_Implementation(ESpeedState Speed, double& SpeedValue)
 {
-	
+	SpeedValue = SpeedValues[Speed];
+	GetCharacterMovement()->MaxWalkSpeed = SpeedValue;
 }
 
-//void ABaseEnemy::Attack(AActor* Target)
-//{
-//}
+void ABaseEnemy::GetIdealRange_Implementation(double& AttackRadius, double& DefendRadius)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("GetIdealRange_Implementation"));
+}
+
+void ABaseEnemy::EventAttack_Implementation(AActor* AttackTarget)
+{
+	CombatComponent->Attack();
+}
 

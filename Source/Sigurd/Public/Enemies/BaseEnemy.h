@@ -50,16 +50,12 @@ protected:
 										class AController* InstigatedBy, AActor* DamageCauser);
 
 public:
-
-
+	
+	// IAICoreInterface implementation
 	virtual APatrolRoute* GetPatrolRoute_Implementation() override;
-
-	//void SetMovementSpeed(TEnumAsByte<E_MovementSpeed> Speed, double& SpeedValue);
-
-	void GetIdealRange(double& AttackRadius, double& DefendRadius);
-
-	//void Attack(AActor* Target);
-
+	virtual void SetMovementSpeed_Implementation(ESpeedState Speed, double& SpeedValue) override;
+	virtual void GetIdealRange_Implementation(double& AttackRadius, double& DefendRadius) override;
+	virtual void EventAttack_Implementation(AActor* AttackTarget) override;
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

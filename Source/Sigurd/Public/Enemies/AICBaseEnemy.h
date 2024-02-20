@@ -22,7 +22,7 @@ public:
 	TObjectPtr<UAIPerceptionComponent> AIPerception;
 
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void SetStateAs(EEnemyState NewState);
     
 	// Called every frame
