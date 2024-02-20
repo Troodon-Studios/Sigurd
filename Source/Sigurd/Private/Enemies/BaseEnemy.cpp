@@ -18,6 +18,7 @@ ABaseEnemy::ABaseEnemy()
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->SetupAttachment(GetMesh(), FName("RH_Socket"));
 	
+	InitializeSpeedValues(100.0, 200.0, 300.0, 400.0);
 }
 
 // Called when the game starts or when spawned

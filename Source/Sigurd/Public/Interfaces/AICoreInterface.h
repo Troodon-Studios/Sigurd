@@ -32,12 +32,14 @@ protected:
 
 	TMap<ESpeedState, int32> SpeedValues;
 	// initialize speed values
-	void InitializeSpeedValues()
+	void InitializeSpeedValues(const int32 Idle, const int32 Walking, const int32 Jogging, const int32 Sprinting)
 	{
-		SpeedValues.Add(ESpeedState::Idle, 100);
-		SpeedValues.Add(ESpeedState::Walking, 200);
-		SpeedValues.Add(ESpeedState::Jogging, 300);
-		SpeedValues.Add(ESpeedState::Sprinting, 400);
+
+		SpeedValues.Add(ESpeedState::Idle, Idle);
+		SpeedValues.Add(ESpeedState::Walking, Walking);
+		SpeedValues.Add(ESpeedState::Jogging, Jogging);
+		SpeedValues.Add(ESpeedState::Sprinting, Sprinting);
+		
 	}
 	
 };
