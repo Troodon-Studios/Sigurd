@@ -4,27 +4,43 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "Enums/EnemyState.h"
 #include "Perception/AIPerceptionComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "AICBaseEnemy.generated.h"
 
 UCLASS()
-class SIGURD_API AIcBaseEnemy : public AAIController
+class SIGURD_API AAIcBaseEnemy : public AAIController
 {
 	GENERATED_BODY()
 
 public:
+	virtual void OnPossess(APawn* InPawn) override;
 	// Sets default values for this actor's properties
-	AIcBaseEnemy();
+	AAIcBaseEnemy();
 	
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category="Default")
 	TObjectPtr<UAIPerceptionComponent> AIPerception;
 
 
+	UFUNCTION()
+	void SetStateAs(EEnemyState NewState);
+	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+private:
+
+	FName AttackKn = "AttackTarget";
+	FName StateKn = "State";
+	FName PointOfInterestKn = "PointOfInterest";
+	FName AttackRadiusKn = "AttackRadius";
+	FName DefendRadiusKn = "DefendRadius";
+	EEnemyState ActualState;
+	UBlackboardComponent* BlackboardComponent;
+
 };

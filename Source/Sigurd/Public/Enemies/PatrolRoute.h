@@ -21,9 +21,7 @@ public:
 	void IncrementActualIndex();
 	
 	APatrolRoute();
-	
-public:
-	
+
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category="Default")
 	TObjectPtr<USplineComponent> Route;
 

@@ -40,15 +40,15 @@ public:
 	TObjectPtr<UBehaviorTree> BehaviourTree;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="AI")
-	TObjectPtr<AIcBaseEnemy> AIController;
+	AAIcBaseEnemy* AIController;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="AI")
 	TObjectPtr<APatrolRoute> PatrolRoute;
 
-	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
 	UFUNCTION()
 	void TakeDamageEnemy(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 										class AController* InstigatedBy, AActor* DamageCauser);
