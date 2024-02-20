@@ -35,6 +35,7 @@ public:
 	
 		UFUNCTION(BlueprintCallable, Category = "Health")
 		void Heal(float healAmount);
+		UFUNCTION(BlueprintCallable, Category = "Health")
 		float GetHealthPercentage();
 	
 	public:

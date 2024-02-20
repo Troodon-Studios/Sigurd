@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-/*#include "HealthComponent.h"*/
+#include "HealthComponent.h"
 #include "ItemData.h"
 #include "DataTypes/CombatState.h"
 #include "StaminaComponent.h"
@@ -46,7 +46,7 @@ public:
 	void ExecuteCurrentWeaponBlockMontage();
 	
 	UStaminaComponent* StaminaComponent;
-	/*UHealthComponent* HealthComponent;*/
+	UHealthComponent* HealthComponent;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void Dodge();
