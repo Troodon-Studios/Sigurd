@@ -3,30 +3,31 @@
 
 #include "Enemies/PatrolRoute.h"
 
-void APatrolRoute::GetSplinePointsAsWorldPosition(FVector& Location) const
+bool APatrolRoute::GetSplinePointsAsWorldPosition(FVector& OutLocation)
 {
-	Location = Route->GetLocationAtSplinePoint(PatrolIndex, ESplineCoordinateSpace::World);
+    if (Route != nullptr && Route->GetNumberOfSplinePoints() > 0)
+    {
+        OutLocation = Route->GetLocationAtSplinePoint(PatrolIndex, ESplineCoordinateSpace::World);
+        return true;
+    }
+    return false;
 }
-
 void APatrolRoute::IncrementActualIndex()
 {
-	
-	PatrolIndex += Direction;
-	if (PatrolIndex >= Route->GetNumberOfSplinePoints())
-	{
-		PatrolIndex = 0;
-	}
-	else if (PatrolIndex < 0)
-	{
-		PatrolIndex = Route->GetNumberOfSplinePoints() - 1;
-	}
-	
+	const int NumPoints = Route->GetNumberOfSplinePoints();
+    PatrolIndex = (PatrolIndex + Direction + NumPoints) % NumPoints;
+
+    if (!Loop && (PatrolIndex == 0 || PatrolIndex == NumPoints - 1))
+    {
+        Direction *= -1;
+    }
 }
 
-APatrolRoute::APatrolRoute(): PatrolIndex(0), Direction(0)
+APatrolRoute::APatrolRoute(): Loop(true), PatrolIndex(0), Direction(1)
 {
-
-	Route = CreateDefaultSubobject<USplineComponent>(TEXT("Route"));
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	Route = CreateDefaultSubobject<USplineComponent>(TEXT("RouteObject"));
+	Route->SetupAttachment(RootComponent);
 	
 }
 
@@ -34,7 +35,6 @@ APatrolRoute::APatrolRoute(): PatrolIndex(0), Direction(0)
 void APatrolRoute::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame

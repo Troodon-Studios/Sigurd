@@ -37,8 +37,9 @@ void ABaseEnemy::BeginPlay()
 		HealthComponent->RegisterComponent();
 	}
 
-	OnTakeAnyDamage.AddDynamic(this, &ABaseEnemy::TakeDamageEnemy);	
+	//OnTakeAnyDamage.AddDynamic(this, &ABaseEnemy::TakeDamageEnemy);	
 }
+
 
 // Called every frame
 void ABaseEnemy::Tick(const float DeltaTime)
@@ -57,3 +58,18 @@ void ABaseEnemy::TakeDamageEnemy(AActor* DamagedActor, float Damage, const class
 	UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
 	CombatComponent->TakeDamage(Damage, ObjectInstance);
 }
+
+APatrolRoute* ABaseEnemy::GetPatrolRoute_Implementation()
+{
+	return PatrolRoute;
+}
+
+void ABaseEnemy::GetIdealRange(double& AttackRadius, double& DefendRadius)
+{
+	
+}
+
+//void ABaseEnemy::Attack(AActor* Target)
+//{
+//}
+

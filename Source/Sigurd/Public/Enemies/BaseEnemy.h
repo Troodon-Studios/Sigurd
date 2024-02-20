@@ -9,10 +9,11 @@
 #include "Components/CapsuleComponent.h"
 #include "PatrolRoute.h"
 #include "GameFramework/Character.h"
+#include "Interfaces/AICoreInterface.h"
 #include "BaseEnemy.generated.h"
 
 UCLASS()
-class SIGURD_API ABaseEnemy : public ACharacter
+class SIGURD_API ABaseEnemy : public ACharacter, public IAICoreInterface
 {
 	GENERATED_BODY()
 
@@ -49,6 +50,17 @@ protected:
 										class AController* InstigatedBy, AActor* DamageCauser);
 
 public:
+
+
+	virtual APatrolRoute* GetPatrolRoute_Implementation() override;
+
+	//void SetMovementSpeed(TEnumAsByte<E_MovementSpeed> Speed, double& SpeedValue);
+
+	void GetIdealRange(double& AttackRadius, double& DefendRadius);
+
+	//void Attack(AActor* Target);
+
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
