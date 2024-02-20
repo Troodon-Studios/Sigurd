@@ -2,11 +2,6 @@
 
 #include "Enemies/BaseEnemy.h"
 
-#include "Perception/AISenseConfig_Damage.h"
-#include "Perception/AISenseConfig_Hearing.h"
-#include "Perception/AISenseConfig_Sight.h"
-
-
 // Sets default values
 ABaseEnemy::ABaseEnemy()
 {
@@ -21,8 +16,6 @@ ABaseEnemy::ABaseEnemy()
 
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->SetupAttachment(GetMesh(), FName("RH_Socket"));
-	AIPerception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerception"));
-	SetAIPerception();
 	
 	InitializeSpeedValues(100.0, 200.0, 300.0, 400.0);
 }
@@ -64,37 +57,6 @@ void ABaseEnemy::TakeDamageEnemy(AActor* DamagedActor, float Damage, const class
 										class AController* InstigatedBy, AActor* DamageCauser) {
 	UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
 	CombatComponent->TakeDamage(Damage, ObjectInstance);
-}
-
-void ABaseEnemy::SetAIPerception()
-{
-    // Create and configure sight sense
-    UAISenseConfig_Sight* SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
-    SightConfig->SightRadius = 1000.0f;
-    SightConfig->LoseSightRadius = SightConfig->SightRadius + 500.0f;
-    SightConfig->PeripheralVisionAngleDegrees = 90.0f;
-    SightConfig->SetMaxAge(5.0f);
-    SightConfig->AutoSuccessRangeFromLastSeenLocation = 1000.0f;
-    SightConfig->DetectionByAffiliation.bDetectEnemies = true;
-    SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
-    SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
-
-    // Create and configure hearing sense
-    UAISenseConfig_Hearing* HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Config"));
-    HearingConfig->HearingRange = 2000.0f;
-    HearingConfig->SetMaxAge(5.0f);
-    HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
-    HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
-    HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
-
-    // Create and configure damage sense
-    UAISenseConfig_Damage* DamageConfig = CreateDefaultSubobject<UAISenseConfig_Damage>(TEXT("Damage Config"));
-    DamageConfig->SetMaxAge(5.0f);
-
-    // Add the configured senses to the perception component
-    AIPerception->ConfigureSense(*SightConfig);
-    AIPerception->ConfigureSense(*HearingConfig);
-    AIPerception->ConfigureSense(*DamageConfig);
 }
 
 APatrolRoute* ABaseEnemy::GetPatrolRoute_Implementation()

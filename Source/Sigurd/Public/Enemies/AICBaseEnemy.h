@@ -6,6 +6,9 @@
 #include "Enums/EnemyState.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Perception/AISenseConfig_Damage.h"
+#include "Perception/AISenseConfig_Hearing.h"
+#include "Perception/AISenseConfig_Sight.h"
 #include "AICBaseEnemy.generated.h"
 
 UCLASS()
@@ -17,10 +20,9 @@ public:
 	virtual void OnPossess(APawn* InPawn) override;
 	// Sets default values for this actor's properties
 	AAICBaseEnemy();
-    
+	
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category="Default")
 	TObjectPtr<UAIPerceptionComponent> AIPerception;
-
 
 	UFUNCTION(BlueprintCallable)
 	void SetStateAs(EEnemyState NewState);
@@ -41,5 +43,15 @@ private:
 	FName DefendRadiusKn = "DefendRadius";
 	EEnemyState ActualState;
 	UBlackboardComponent* BlackboardComponent;
+	
+	// AI Perception Config
+	void SetAIPerception() const;
+	static UAISenseConfig_Sight* CreateSenseConfigSight();
+	static UAISenseConfig_Hearing* CreateSenseConfigHearing();
+	static UAISenseConfig_Damage* CreateSenseConfigDamage();
 
+	UFUNCTION()
+	void OnPerceptionUpdated(const TArray<AActor*>& Actors);
+	bool CanSenseActor(const AActor* Actor, TSubclassOf<UAISense> SenseType) const;
+	
 };
