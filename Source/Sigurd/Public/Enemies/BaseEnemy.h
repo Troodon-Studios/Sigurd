@@ -10,6 +10,7 @@
 #include "PatrolRoute.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/AICoreInterface.h"
+#include "Perception/AIPerceptionComponent.h"
 #include "BaseEnemy.generated.h"
 
 UCLASS()
@@ -29,6 +30,8 @@ class SIGURD_API ABaseEnemy : public ACharacter, public IAICoreInterface
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = "true"))
 	UHealthComponent* HealthComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UAIPerceptionComponent> AIPerception;
 	
 public:
 	// Sets default values for this character's properties
@@ -49,6 +52,9 @@ protected:
 	void TakeDamageEnemy(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 										class AController* InstigatedBy, AActor* DamageCauser);
 
+	UFUNCTION()
+	void SetAIPerception();
+	
 public:
 	
 	// IAICoreInterface implementation
