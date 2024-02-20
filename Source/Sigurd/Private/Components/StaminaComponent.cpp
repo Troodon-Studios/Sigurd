@@ -86,8 +86,8 @@ void UStaminaComponent::DecreaseStamina(float amount){
 	if (CurrentStamina < 0){
 		CurrentStamina = 0;
 		CharacterMovement->MaxWalkSpeed = ExhaustedSpeed;
+		DelayedStaminaRegen(DelayTime);
 	}
-	DelayedStaminaRegen(DelayTime);
 }
 
 void UStaminaComponent::RegenStamina(){
@@ -116,10 +116,11 @@ void UStaminaComponent::DecayStamina(){
 
 	if (CurrentStamina < 0){
 		CurrentStamina = 0;
-		StopStaminaDecay();
 		StaminaState = EStaminaState::Exhausted;
 		StopRunning();
-		DelayedStaminaRegen(DelayTime);
+	} else if ( CharacterMovement->Velocity.IsNearlyZero()){
+		StaminaState = EStaminaState::Resting;
+		StopRunning();
 	}
 }
 

@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Types.h"
 #include "Components/ActorComponent.h"
+#include "Types.h"
 #include "HealthComponent.generated.h"
 
 
@@ -17,29 +17,32 @@ public:
 	// Sets default values for this component's properties
 	UHealthComponent();
 
-private:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = "true"))
-	float MaxHealth;
+	private:
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = "true"))
+		float MaxHealth;
+		
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = "true"))
+		float CurrentHealth;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = "true"))
-	float CurrentHealth;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
-	EDamageType SelfType;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
-	UDataTable* DamageTable;
-
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
+		EDamageType SelfType;
 	
-	void TakeDamage(float damage, EDamageType attackerType);
-
-	UFUNCTION(BlueprintCallable, Category = "Health")
-	void Heal(float healAmount);
-	float GetHealthPercentage();
-
-public:
-
-	UFUNCTION(BlueprintCallable, Category = "Health")
-	void TakeDamageWithType(UObject* DamageType, float Damage);
-
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
+		UDataTable* DamageTable;
+	
+		
+		void TakeDamage(float damage, EDamageType attackerType);
+	
+		UFUNCTION(BlueprintCallable, Category = "Health")
+		void Heal(float healAmount);
+		float GetHealthPercentage();
+	
+	public:
+	
+		UFUNCTION(BlueprintCallable, Category = "Health")
+		void TakeDamageWithType(UObject* DamageType, float Damage);
+		
 };
+
+
+

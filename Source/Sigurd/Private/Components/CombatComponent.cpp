@@ -19,7 +19,7 @@ UCombatComponent::UCombatComponent()
 void UCombatComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	HealthComponent = GetOwner()->FindComponentByClass<UHealthComponent>();
+	/*HealthComponent = GetOwner()->FindComponentByClass<UHealthComponent>();*/
 	StaminaComponent = GetOwner()->FindComponentByClass<UStaminaComponent>();
 	
 }
@@ -196,7 +196,7 @@ void UCombatComponent::TakeDamage(float damage, UObject* DamageType){
 	case ECombatState::Parrying:
 		break;
 	default:
-		HealthComponent->TakeDamageWithType(DamageType, damage);
+		/*HealthComponent->TakeDamageWithType(DamageType, damage);*/
 		
 		break;
 	}

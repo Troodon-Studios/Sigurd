@@ -8,7 +8,7 @@
 #include "DataTypes/StaminaState.h"
 #include "StaminaComponent.generated.h"
 
-
+//TODO cear caso mantener y caso toggle y cambiar mediante opcion
 
 UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SIGURD_API UStaminaComponent : public UActorComponent
