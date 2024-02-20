@@ -1,5 +1,4 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -10,22 +9,22 @@
 #include "AICBaseEnemy.generated.h"
 
 UCLASS()
-class SIGURD_API AAIcBaseEnemy : public AAIController
+class SIGURD_API AAICBaseEnemy : public AAIController
 {
 	GENERATED_BODY()
 
 public:
 	virtual void OnPossess(APawn* InPawn) override;
 	// Sets default values for this actor's properties
-	AAIcBaseEnemy();
-	
+	AAICBaseEnemy();
+    
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category="Default")
 	TObjectPtr<UAIPerceptionComponent> AIPerception;
 
 
 	UFUNCTION()
 	void SetStateAs(EEnemyState NewState);
-	
+    
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

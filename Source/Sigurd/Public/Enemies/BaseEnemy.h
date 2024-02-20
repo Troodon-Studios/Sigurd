@@ -8,7 +8,6 @@
 #include "Components/StaminaComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "PatrolRoute.h"
-#include "AICBaseEnemy.h"
 #include "GameFramework/Character.h"
 #include "BaseEnemy.generated.h"
 
@@ -35,12 +34,8 @@ public:
 	ABaseEnemy();
 
 	// AI Variables
-	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="AI")
 	TObjectPtr<UBehaviorTree> BehaviourTree;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="AI")
-	AAIcBaseEnemy* AIController;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="AI")
 	TObjectPtr<APatrolRoute> PatrolRoute;
