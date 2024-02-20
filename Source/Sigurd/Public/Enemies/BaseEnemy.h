@@ -39,7 +39,7 @@ public:
 	TObjectPtr<UBehaviorTree> BehaviourTree;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="AI")
-	TObjectPtr<APatrolRoute> PatrolRoute;
+	APatrolRoute* PatrolRoute;
 
 protected:
 	// Called when the game starts or when spawned
