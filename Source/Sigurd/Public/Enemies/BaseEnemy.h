@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AICBaseEnemy.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "Components/CombatComponent.h"
 #include "Components/StaminaComponent.h"
@@ -28,7 +29,10 @@ class SIGURD_API ABaseEnemy : public ACharacter, public IAICoreInterface
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = "true"))
 	UHealthComponent* HealthComponent;
-
+	
+	//UPROPERTY()
+	//AAICBaseEnemy* AIController;
+	
 public:
 	// Sets default values for this character's properties
 	ABaseEnemy();
@@ -46,7 +50,7 @@ protected:
 	
 	UFUNCTION()
 	void TakeDamageEnemy(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
-										class AController* InstigatedBy, AActor* DamageCauser);
+										class AController* InstigatedBy, AActor* DamageCauser) const;
 public:
 	
 	// IAICoreInterface implementation
@@ -60,4 +64,12 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+private:
+
+	class UAIPerceptionStimuliSourceComponent* StimuliSource;
+
+	void SetupStimulusSource();
+
+	
 };

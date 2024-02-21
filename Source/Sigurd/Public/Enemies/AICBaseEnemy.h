@@ -17,9 +17,11 @@ class SIGURD_API AAICBaseEnemy : public AAIController
 	GENERATED_BODY()
 
 public:
+	
 	virtual void OnPossess(APawn* InPawn) override;
+	
 	// Sets default values for this actor's properties
-	AAICBaseEnemy();
+	explicit AAICBaseEnemy(FObjectInitializer const& ObjectInitializer = FObjectInitializer::Get());
 	
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category="Default")
 	TObjectPtr<UAIPerceptionComponent> AIPerception;
@@ -45,13 +47,19 @@ private:
 	UBlackboardComponent* BlackboardComponent;
 	
 	// AI Perception Config
-	void SetAIPerception() const;
-	static UAISenseConfig_Sight* CreateSenseConfigSight();
-	static UAISenseConfig_Hearing* CreateSenseConfigHearing();
-	static UAISenseConfig_Damage* CreateSenseConfigDamage();
+	void SetAIPerception();
+	void SetupSenseConfigSight();
+	void SetupSenseConfigHearing();
+	void SetupSenseConfigDamage();
 
+	UAISenseConfig_Sight* SightConfig;
+	UAISenseConfig_Hearing* HearingConfig;
+	UAISenseConfig_Damage* DamageConfig;
+	
 	UFUNCTION()
 	void OnPerceptionUpdated(const TArray<AActor*>& Actors);
+	UFUNCTION()
+	void OnTargetDetected(AActor* Actor, FAIStimulus Stimulus);
 	bool CanSenseActor(const AActor* Actor, TSubclassOf<UAISense> SenseType) const;
 	
 };

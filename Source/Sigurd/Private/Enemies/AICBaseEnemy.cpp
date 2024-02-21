@@ -4,71 +4,96 @@
 #include "Enemies/BaseEnemy.h"
 
 // Sets default values
-AAICBaseEnemy::AAICBaseEnemy()
+// Constructor for the AAICBaseEnemy class
+// Initializes the AIPerception component
+AAICBaseEnemy::AAICBaseEnemy(FObjectInitializer const& ObjectInitializer)
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-    
-	AIPerception = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerception"));
+ // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+ PrimaryActorTick.bCanEverTick = true;
 
-	SetAIPerception();
-	
+ SetAIPerception();
+
 }
 
 // Called when the game starts or when spawned
+// Sets up the AIPerception component
 void AAICBaseEnemy::BeginPlay()
 {
-	Super::BeginPlay();
+ Super::BeginPlay();
 }
 
+// Sets the state of the enemy
 void AAICBaseEnemy::SetStateAs(const EEnemyState NewState)
 {
-
-	ActualState = NewState;
-	BlackboardComponent->SetValueAsEnum(StateKn, static_cast<uint8>(ActualState));
-    
+ ActualState = NewState;
+ BlackboardComponent->SetValueAsEnum(StateKn, static_cast<uint8>(ActualState));
 }
 
 // Called every frame
 void AAICBaseEnemy::Tick(const float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+ Super::Tick(DeltaTime);
 }
 
+// Called when the AIController possesses a pawn
 void AAICBaseEnemy::OnPossess(APawn* InPawn)
 {
-	Super::OnPossess(InPawn);
+ Super::OnPossess(InPawn);
 
-	if (const ABaseEnemy* BaseEnemy = Cast<ABaseEnemy>(InPawn); BaseEnemy && BaseEnemy->BehaviourTree)
-	{
-		RunBehaviorTree(BaseEnemy->BehaviourTree);
-		BlackboardComponent = GetBlackboardComponent();
-	}
+ // If the pawn is a BaseEnemy and has a BehaviourTree, run the BehaviourTree and get the BlackboardComponent
+ if (const ABaseEnemy* BaseEnemy = Cast<ABaseEnemy>(InPawn); BaseEnemy && BaseEnemy->BehaviourTree)
+ {
+  BlackboardComponent = GetBlackboardComponent();
+  UseBlackboard(BaseEnemy->BehaviourTree->BlackboardAsset, BlackboardComponent);
+  Blackboard = BlackboardComponent;
+  RunBehaviorTree(BaseEnemy->BehaviourTree);
+
+ }
 }
 
+// Called when the perception of the AIController is updated
 void AAICBaseEnemy::OnPerceptionUpdated(const TArray<AActor*>& Actors)
 {
-//TODO : Handle the perception update for each sense
-	
-	for (const auto Actor : Actors)
-	{
-		if (CanSenseActor(Actor, UAISense_Sight::StaticClass()))
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I see you %s"), *Actor->GetName()));
-		}
-		if (CanSenseActor(Actor, UAISense_Hearing::StaticClass()))
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I hear you %s"), *Actor->GetName()));
-		}
-		if (CanSenseActor(Actor, UAISense_Damage::StaticClass()))
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I feel you %s"), *Actor->GetName()));
-		}
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I cant sense you %s"), *Actor->GetName()));
-	}
-	
+ GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Entered")));
+
+ // For each actor in the updated perception, check if the actor can be sensed and print a debug message
+ for (const auto Actor : Actors)
+ {
+  if (CanSenseActor(Actor, UAISense_Sight::StaticClass()))
+  {
+   GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I see you %s"), *Actor->GetName()));
+  }
+  if (CanSenseActor(Actor, UAISense_Hearing::StaticClass()))
+  {
+   GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I hear you %s"), *Actor->GetName()));
+  }
+  if (CanSenseActor(Actor, UAISense_Damage::StaticClass()))
+  {
+   GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I feel you %s"), *Actor->GetName()));
+  }
+  GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I cant sense you %s"), *Actor->GetName()));
+ }
 }
 
+void AAICBaseEnemy::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
+{
+ if (Stimulus.Type == SightConfig->GetSenseID())
+ {
+  GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I see you %s"), *Actor->GetName()));
+ }
+
+ if (Stimulus.Type == HearingConfig->GetSenseID())
+ {
+  GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I hear you %s"), *Actor->GetName()));
+ }
+
+ if (Stimulus.Type == DamageConfig->GetSenseID())
+ {
+  GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I feel you %s"), *Actor->GetName()));
+ }
+
+}
+// Checks if the AIController can sense a specific actor
 bool AAICBaseEnemy::CanSenseActor(const AActor* Actor, const TSubclassOf<UAISense> SenseType) const
 {
     TArray<AActor*> PerceivedActors;
@@ -77,53 +102,72 @@ bool AAICBaseEnemy::CanSenseActor(const AActor* Actor, const TSubclassOf<UAISens
     return PerceivedActors.Contains(Actor);
 }
 
-
-void AAICBaseEnemy::SetAIPerception() const
+// Sets up the AIPerception component
+void AAICBaseEnemy::SetAIPerception()
 {
-	
-	UAISenseConfig_Sight* SightConfig = CreateSenseConfigSight();
-	UAISenseConfig_Hearing* HearingConfig = CreateSenseConfigHearing();
-	UAISenseConfig_Damage* DamageConfig = CreateSenseConfigDamage();
-
-	AIPerception->ConfigureSense(*SightConfig);
-	AIPerception->ConfigureSense(*HearingConfig);
-	AIPerception->ConfigureSense(*DamageConfig);
-
-	AIPerception->OnPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnPerceptionUpdated);
-	
+ SetupSenseConfigSight();
+ SetupSenseConfigHearing();
+ SetupSenseConfigDamage();
 }
 
-UAISenseConfig_Sight* AAICBaseEnemy::CreateSenseConfigSight()
+// Sets up the sight sense configuration
+void AAICBaseEnemy::SetupSenseConfigSight()
 {
-	UAISenseConfig_Sight* SightConfig = NewObject<UAISenseConfig_Sight>();
-	SightConfig->SightRadius = 1000.0f;
-	SightConfig->LoseSightRadius = SightConfig->SightRadius + 500.0f;
-	SightConfig->PeripheralVisionAngleDegrees = 90.0f;
-	SightConfig->SetMaxAge(5.0f);
-	SightConfig->AutoSuccessRangeFromLastSeenLocation = 1000.0f;
-	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
-	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
-	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
+ SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
 
-	return SightConfig;
+ if (SightConfig)
+ {
+  SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception Component")));
+
+  SightConfig->SightRadius = 1000.0f;
+  SightConfig->LoseSightRadius = SightConfig->SightRadius + 500.0f;
+  SightConfig->PeripheralVisionAngleDegrees = 90.0f;
+  SightConfig->SetMaxAge(5.0f);
+  SightConfig->AutoSuccessRangeFromLastSeenLocation = 1000.0f;
+  SightConfig->DetectionByAffiliation.bDetectEnemies = true;
+  SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
+  SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
+
+  GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation());
+  GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetDetected);
+  GetPerceptionComponent()->ConfigureSense(*SightConfig);
+  
+ }
+ 
 }
 
-UAISenseConfig_Hearing* AAICBaseEnemy::CreateSenseConfigHearing()
+// Sets up the hearing sense configuration
+void AAICBaseEnemy::SetupSenseConfigHearing()
 {
-	UAISenseConfig_Hearing* HearingConfig = NewObject<UAISenseConfig_Hearing>();
-	HearingConfig->HearingRange = 2000.0f;
-	HearingConfig->SetMaxAge(5.0f);
-	HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
-	HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
-	HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
+ HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Config"));
 
-	return HearingConfig;
+ if (HearingConfig)
+ {
+
+  HearingConfig->HearingRange = 1000.0f;
+  HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
+  HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
+  HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
+  HearingConfig->SetMaxAge(5.0f);
+  GetPerceptionComponent()->ConfigureSense(*HearingConfig);
+  GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetDetected);
+  
+ }
+ 
 }
 
-UAISenseConfig_Damage* AAICBaseEnemy::CreateSenseConfigDamage()
+// Sets up the damage sense configuration
+void AAICBaseEnemy::SetupSenseConfigDamage()
 {
-	UAISenseConfig_Damage* DamageConfig = NewObject<UAISenseConfig_Damage>();
-	DamageConfig->SetMaxAge(5.0f);
+ DamageConfig = CreateDefaultSubobject<UAISenseConfig_Damage>(TEXT("Damage Config"));
 
-	return DamageConfig;
+ if (DamageConfig)
+ {
+
+  DamageConfig->SetMaxAge(5.0f);
+  GetPerceptionComponent()->ConfigureSense(*DamageConfig);
+  GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetDetected);
+  
+ }
+ 
 }
