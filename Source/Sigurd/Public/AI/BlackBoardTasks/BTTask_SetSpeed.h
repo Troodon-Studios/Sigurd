@@ -17,7 +17,7 @@ public:
 	explicit UBTTask_SetSpeed(FObjectInitializer const& ObjectInitializer = FObjectInitializer::Get());
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Speed")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Properties")
 	ESpeedState NewSpeed;
 
 	

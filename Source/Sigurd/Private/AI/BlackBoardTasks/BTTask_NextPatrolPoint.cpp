@@ -13,11 +13,8 @@ EBTNodeResult::Type UBTTask_NextPatrolPoint::ExecuteTask(UBehaviorTreeComponent&
 {
     
 	// Check if the pawn implements the AICoreInterface
-	if (APawn* ControlledPawn = OwnerComp.GetAIOwner()->GetPawn(); ControlledPawn->GetClass()->ImplementsInterface(UAICoreInterface::StaticClass()))
+	if (APawn* ControlledPawn = OwnerComp.GetAIOwner()->GetPawn(); const IAICoreInterface* AICore = Cast<IAICoreInterface>(ControlledPawn))
 	{
-		// Cast the pawn to the IAICoreInterface
-		const IAICoreInterface* AICore = Cast<IAICoreInterface>(ControlledPawn);
-		
 		// use AI move to to move to the next patrol point
 		if (APatrolRoute* PatrolRoute = AICore->Execute_GetPatrolRoute(ControlledPawn))
 		{

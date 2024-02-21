@@ -4,21 +4,23 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
-#include "BTTask_Focus.generated.h"
+#include "Enums/EnemyState.h"
+#include "BTTask_SetState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class SIGURD_API UBTTask_Focus : public UBTTask_BlackboardBase
+class SIGURD_API UBTTask_SetState : public UBTTask_BlackboardBase
 {
 
 public:
-	explicit UBTTask_Focus(FObjectInitializer const& ObjectInitializer = FObjectInitializer::Get());
+	explicit UBTTask_SetState(FObjectInitializer const& ObjectInitializer = FObjectInitializer::Get());
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Properties")
-	FBlackboardKeySelector FocusKey;
+	EEnemyState NewState;
+	
 	
 private:
 	GENERATED_BODY()
