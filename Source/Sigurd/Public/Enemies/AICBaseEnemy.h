@@ -52,14 +52,17 @@ private:
 	void SetupSenseConfigHearing();
 	void SetupSenseConfigDamage();
 
+	void HandleSeenActor(AActor* Actor);
+	void HandleHeardNoise(const FAIStimulus& Stimulus);
+	void HandleDamaged(AActor* Actor, FAIStimulus Stimulus);
+
 	UAISenseConfig_Sight* SightConfig;
 	UAISenseConfig_Hearing* HearingConfig;
 	UAISenseConfig_Damage* DamageConfig;
 	
 	UFUNCTION()
-	void OnPerceptionUpdated(const TArray<AActor*>& Actors);
-	UFUNCTION()
-	void OnTargetDetected(AActor* Actor, FAIStimulus Stimulus);
-	bool CanSenseActor(const AActor* Actor, TSubclassOf<UAISense> SenseType) const;
+	void OnTargetPerceived(AActor* Actor, FAIStimulus Stimulus);
+	
+	bool CanSenseActor(const AActor* Actor, TSubclassOf<UAISense> SenseType);
 	
 };

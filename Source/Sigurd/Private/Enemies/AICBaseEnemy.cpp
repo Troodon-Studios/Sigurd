@@ -51,55 +51,14 @@ void AAICBaseEnemy::OnPossess(APawn* InPawn)
  }
 }
 
-// Called when the perception of the AIController is updated
-void AAICBaseEnemy::OnPerceptionUpdated(const TArray<AActor*>& Actors)
-{
- GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Entered")));
 
- // For each actor in the updated perception, check if the actor can be sensed and print a debug message
- for (const auto Actor : Actors)
- {
-  if (CanSenseActor(Actor, UAISense_Sight::StaticClass()))
-  {
-   GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I see you %s"), *Actor->GetName()));
-  }
-  if (CanSenseActor(Actor, UAISense_Hearing::StaticClass()))
-  {
-   GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I hear you %s"), *Actor->GetName()));
-  }
-  if (CanSenseActor(Actor, UAISense_Damage::StaticClass()))
-  {
-   GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I feel you %s"), *Actor->GetName()));
-  }
-  GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I cant sense you %s"), *Actor->GetName()));
- }
-}
-
-void AAICBaseEnemy::OnTargetDetected(AActor* Actor, FAIStimulus Stimulus)
-{
- if (Stimulus.Type == SightConfig->GetSenseID())
- {
-  GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I see you %s"), *Actor->GetName()));
- }
-
- if (Stimulus.Type == HearingConfig->GetSenseID())
- {
-  GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I hear you %s"), *Actor->GetName()));
- }
-
- if (Stimulus.Type == DamageConfig->GetSenseID())
- {
-  GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("I feel you %s"), *Actor->GetName()));
- }
-
-}
 // Checks if the AIController can sense a specific actor
-bool AAICBaseEnemy::CanSenseActor(const AActor* Actor, const TSubclassOf<UAISense> SenseType) const
+bool AAICBaseEnemy::CanSenseActor(const AActor* Actor, TSubclassOf<UAISense> SenseType)
 {
-    TArray<AActor*> PerceivedActors;
-    AIPerception->GetCurrentlyPerceivedActors(SenseType, PerceivedActors);
+ 
+  return true;
 
-    return PerceivedActors.Contains(Actor);
+ 
 }
 
 // Sets up the AIPerception component
@@ -121,7 +80,7 @@ void AAICBaseEnemy::SetupSenseConfigSight()
 
   SightConfig->SightRadius = 1000.0f;
   SightConfig->LoseSightRadius = SightConfig->SightRadius + 500.0f;
-  SightConfig->PeripheralVisionAngleDegrees = 90.0f;
+  SightConfig->PeripheralVisionAngleDegrees = 60.0f;
   SightConfig->SetMaxAge(5.0f);
   SightConfig->AutoSuccessRangeFromLastSeenLocation = 1000.0f;
   SightConfig->DetectionByAffiliation.bDetectEnemies = true;
@@ -129,7 +88,7 @@ void AAICBaseEnemy::SetupSenseConfigSight()
   SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
 
   GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation());
-  GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetDetected);
+  GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetPerceived);
   GetPerceptionComponent()->ConfigureSense(*SightConfig);
   
  }
@@ -149,9 +108,9 @@ void AAICBaseEnemy::SetupSenseConfigHearing()
   HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
   HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
   HearingConfig->SetMaxAge(5.0f);
+  GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetPerceived);
   GetPerceptionComponent()->ConfigureSense(*HearingConfig);
-  GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetDetected);
-  
+
  }
  
 }
@@ -165,9 +124,50 @@ void AAICBaseEnemy::SetupSenseConfigDamage()
  {
 
   DamageConfig->SetMaxAge(5.0f);
+  GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetPerceived);
   GetPerceptionComponent()->ConfigureSense(*DamageConfig);
-  GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetDetected);
-  
+
  }
  
 }
+
+
+void AAICBaseEnemy::OnTargetPerceived(AActor* Actor, FAIStimulus Stimulus)
+{
+    // Check if the stimulus was successfully sensed
+    if(!Stimulus.WasSuccessfullySensed()) return;
+
+    // Handle the stimulus based on its type
+    if (const auto StimulusType = Stimulus.Type; StimulusType == DamageConfig->GetSenseID()) HandleDamaged(Actor, Stimulus);
+    else if (StimulusType == HearingConfig->GetSenseID()) HandleHeardNoise(Stimulus);
+    else if (StimulusType == SightConfig->GetSenseID()) HandleSeenActor(Actor);
+ 
+}
+
+void AAICBaseEnemy::HandleSeenActor(AActor* Actor)
+{
+ if (ActualState == EEnemyState::Passive || ActualState == EEnemyState::Investigating || ActualState == EEnemyState::Seeking)
+ {
+  BlackboardComponent->SetValueAsObject(AttackKn, Actor);
+  SetStateAs(EEnemyState::Combat);
+ }
+}
+
+void AAICBaseEnemy::HandleHeardNoise(const FAIStimulus& Stimulus)
+{
+ if (ActualState == EEnemyState::Passive || ActualState == EEnemyState::Investigating || ActualState == EEnemyState::Seeking)
+ {
+  BlackboardComponent->SetValueAsVector(PointOfInterestKn, Stimulus.StimulusLocation);
+  SetStateAs(EEnemyState::Investigating);
+ } 
+}
+
+void AAICBaseEnemy::HandleDamaged(AActor* Actor, FAIStimulus Stimulus)
+{
+ if (ActualState == EEnemyState::Passive || ActualState == EEnemyState::Investigating || ActualState == EEnemyState::Seeking)
+ {
+  BlackboardComponent->SetValueAsObject(AttackKn, Actor);
+  SetStateAs(EEnemyState::Combat);
+ }
+}
+
