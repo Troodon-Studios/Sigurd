@@ -1,31 +1,27 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#include "Enemies/AICBaseEnemy.h"
+﻿#include "Enemies/AICBaseEnemy.h"
 #include "Enemies/BaseEnemy.h"
 
-// Sets default values
-// Constructor for the AAICBaseEnemy class
-// Initializes the AIPerception component
+// Constructor for the AICBaseEnemy class
 AAICBaseEnemy::AAICBaseEnemy(FObjectInitializer const& ObjectInitializer)
 {
- // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+ // Enable ticking for this actor
  PrimaryActorTick.bCanEverTick = true;
-
+ // Set up AI perception
  SetAIPerception();
-
 }
 
 // Called when the game starts or when spawned
-// Sets up the AIPerception component
 void AAICBaseEnemy::BeginPlay()
 {
  Super::BeginPlay();
 }
 
-// Sets the state of the enemy
+// Set the state of the enemy
 void AAICBaseEnemy::SetStateAs(const EEnemyState NewState)
 {
+ // Update the actual state
  ActualState = NewState;
+ // Update the blackboard component with the new state
  BlackboardComponent->SetValueAsEnum(StateKn, static_cast<uint8>(ActualState));
 }
 
@@ -35,49 +31,54 @@ void AAICBaseEnemy::Tick(const float DeltaTime)
  Super::Tick(DeltaTime);
 }
 
-// Called when the AIController possesses a pawn
+// Called when the AI controller possesses a pawn
 void AAICBaseEnemy::OnPossess(APawn* InPawn)
 {
  Super::OnPossess(InPawn);
 
- // If the pawn is a BaseEnemy and has a BehaviourTree, run the BehaviourTree and get the BlackboardComponent
+ // If the pawn is a base enemy and has a behavior tree
  if (const ABaseEnemy* BaseEnemy = Cast<ABaseEnemy>(InPawn); BaseEnemy && BaseEnemy->BehaviourTree)
  {
+  // Get the blackboard component
   BlackboardComponent = GetBlackboardComponent();
+  // Use the blackboard associated with the behavior tree
   UseBlackboard(BaseEnemy->BehaviourTree->BlackboardAsset, BlackboardComponent);
+  // Set the blackboard
   Blackboard = BlackboardComponent;
+  // Run the behavior tree
   RunBehaviorTree(BaseEnemy->BehaviourTree);
-
  }
 }
 
-
-// Checks if the AIController can sense a specific actor
+// Check if the AI can sense a specific actor
 bool AAICBaseEnemy::CanSenseActor(const AActor* Actor, TSubclassOf<UAISense> SenseType)
 {
- 
+  // For now, the AI can sense all actors
   return true;
-
- 
 }
 
-// Sets up the AIPerception component
+// Set up AI perception
 void AAICBaseEnemy::SetAIPerception()
 {
+ // Set up sight, hearing, and damage senses
  SetupSenseConfigSight();
  SetupSenseConfigHearing();
  SetupSenseConfigDamage();
 }
 
-// Sets up the sight sense configuration
+// Set up sight sense
 void AAICBaseEnemy::SetupSenseConfigSight()
 {
+ // Create a sight config
  SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
 
+ // If the sight config was successfully created
  if (SightConfig)
  {
+  // Set up the perception component
   SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception Component")));
 
+  // Configure the sight config
   SightConfig->SightRadius = 1000.0f;
   SightConfig->LoseSightRadius = SightConfig->SightRadius + 500.0f;
   SightConfig->PeripheralVisionAngleDegrees = 60.0f;
@@ -87,87 +88,102 @@ void AAICBaseEnemy::SetupSenseConfigSight()
   SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
   SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
 
+  // Set the dominant sense for the perception component
   GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation());
+  // Add a delegate for when a target's perception is updated
   GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetPerceived);
+  // Configure the perception component with the sight config
   GetPerceptionComponent()->ConfigureSense(*SightConfig);
-  
  }
- 
 }
 
-// Sets up the hearing sense configuration
+// Set up hearing sense
 void AAICBaseEnemy::SetupSenseConfigHearing()
 {
+ // Create a hearing config
  HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Config"));
 
+ // If the hearing config was successfully created
  if (HearingConfig)
  {
-
+  // Configure the hearing config
   HearingConfig->HearingRange = 1000.0f;
   HearingConfig->DetectionByAffiliation.bDetectEnemies = true;
   HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
   HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
   HearingConfig->SetMaxAge(5.0f);
+  // Add a delegate for when a target's perception is updated
   GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetPerceived);
+  // Configure the perception component with the hearing config
   GetPerceptionComponent()->ConfigureSense(*HearingConfig);
-
  }
- 
 }
 
-// Sets up the damage sense configuration
+// Set up damage sense
 void AAICBaseEnemy::SetupSenseConfigDamage()
 {
+ // Create a damage config
  DamageConfig = CreateDefaultSubobject<UAISenseConfig_Damage>(TEXT("Damage Config"));
 
+ // If the damage config was successfully created
  if (DamageConfig)
  {
-
+  // Configure the damage config
   DamageConfig->SetMaxAge(5.0f);
+  // Add a delegate for when a target's perception is updated
   GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetPerceived);
+  // Configure the perception component with the damage config
   GetPerceptionComponent()->ConfigureSense(*DamageConfig);
-
  }
- 
 }
 
-
+// Called when a target is perceived
 void AAICBaseEnemy::OnTargetPerceived(AActor* Actor, FAIStimulus Stimulus)
 {
-    // Check if the stimulus was successfully sensed
+    // If the stimulus was not successfully sensed, return
     if(!Stimulus.WasSuccessfullySensed()) return;
 
     // Handle the stimulus based on its type
     if (const auto StimulusType = Stimulus.Type; StimulusType == DamageConfig->GetSenseID()) HandleDamaged(Actor, Stimulus);
     else if (StimulusType == HearingConfig->GetSenseID()) HandleHeardNoise(Stimulus);
     else if (StimulusType == SightConfig->GetSenseID()) HandleSeenActor(Actor);
- 
 }
 
+// Handle seeing an actor
 void AAICBaseEnemy::HandleSeenActor(AActor* Actor)
 {
+ // If the enemy is in a passive, investigating, or seeking state
  if (ActualState == EEnemyState::Passive || ActualState == EEnemyState::Investigating || ActualState == EEnemyState::Seeking)
  {
+  // Set the attack target to the seen actor
   BlackboardComponent->SetValueAsObject(AttackKn, Actor);
+  // Change the state to combat
   SetStateAs(EEnemyState::Combat);
  }
 }
 
+// Handle hearing a noise
 void AAICBaseEnemy::HandleHeardNoise(const FAIStimulus& Stimulus)
 {
+ // If the enemy is in a passive, investigating, or seeking state
  if (ActualState == EEnemyState::Passive || ActualState == EEnemyState::Investigating || ActualState == EEnemyState::Seeking)
  {
+  // Set the point of interest to the location of the noise
   BlackboardComponent->SetValueAsVector(PointOfInterestKn, Stimulus.StimulusLocation);
+  // Change the state to investigating
   SetStateAs(EEnemyState::Investigating);
- } 
-}
-
-void AAICBaseEnemy::HandleDamaged(AActor* Actor, FAIStimulus Stimulus)
-{
- if (ActualState == EEnemyState::Passive || ActualState == EEnemyState::Investigating || ActualState == EEnemyState::Seeking)
- {
-  BlackboardComponent->SetValueAsObject(AttackKn, Actor);
-  SetStateAs(EEnemyState::Combat);
  }
 }
 
+// Handle being damaged
+void AAICBaseEnemy::HandleDamaged(AActor* Actor, FAIStimulus Stimulus)
+{
+ // If the enemy is in a passive, investigating, or seeking state
+ if (ActualState == EEnemyState::Passive || ActualState == EEnemyState::Investigating || ActualState == EEnemyState::Seeking)
+ {
+  // Set the attack target to the actor that damaged the enemy
+  BlackboardComponent->SetValueAsObject(AttackKn, Actor);
+  // Change the state to combat
+  SetStateAs(EEnemyState::Combat);
+ }
+}
