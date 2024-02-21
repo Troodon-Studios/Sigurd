@@ -33,12 +33,13 @@ public:
 		
 		void TakeDamage(float damage, EDamageType attackerType);
 	
-		UFUNCTION(BlueprintCallable, Category = "Health")
-		void Heal(float healAmount);
+
 		UFUNCTION(BlueprintCallable, Category = "Health")
 		float GetHealthPercentage();
 	
 	public:
+		UFUNCTION(BlueprintCallable, Category = "Health")
+		void Heal(float healAmount);
 	
 		UFUNCTION(BlueprintCallable, Category = "Health")
 		void TakeDamageWithType(UObject* DamageType, float Damage);

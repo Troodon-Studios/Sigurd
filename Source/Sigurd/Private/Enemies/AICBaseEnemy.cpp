@@ -69,6 +69,8 @@ void AAICBaseEnemy::SetAIPerception()
  SetupSenseConfigSight();
  SetupSenseConfigHearing();
  SetupSenseConfigDamage();
+ GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetPerceived);
+
 }
 
 // Set up sight sense
@@ -95,8 +97,6 @@ void AAICBaseEnemy::SetupSenseConfigSight()
 
   // Set the dominant sense for the perception component
   GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation());
-  // Add a delegate for when a target's perception is updated
-  GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetPerceived);
   // Configure the perception component with the sight config
   GetPerceptionComponent()->ConfigureSense(*SightConfig);
  }
@@ -117,8 +117,6 @@ void AAICBaseEnemy::SetupSenseConfigHearing()
   HearingConfig->DetectionByAffiliation.bDetectNeutrals = true;
   HearingConfig->DetectionByAffiliation.bDetectFriendlies = true;
   HearingConfig->SetMaxAge(5.0f);
-  // Add a delegate for when a target's perception is updated
-  GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetPerceived);
   // Configure the perception component with the hearing config
   GetPerceptionComponent()->ConfigureSense(*HearingConfig);
  }
@@ -135,8 +133,6 @@ void AAICBaseEnemy::SetupSenseConfigDamage()
  {
   // Configure the damage config
   DamageConfig->SetMaxAge(5.0f);
-  // Add a delegate for when a target's perception is updated
-  GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAICBaseEnemy::OnTargetPerceived);
   // Configure the perception component with the damage config
   GetPerceptionComponent()->ConfigureSense(*DamageConfig);
  }

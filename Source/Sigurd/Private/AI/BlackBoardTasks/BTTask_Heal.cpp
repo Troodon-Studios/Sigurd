@@ -16,17 +16,14 @@ UBTTask_Heal::UBTTask_Heal(FObjectInitializer const& ObjectInitializer)
 EBTNodeResult::Type UBTTask_Heal::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	// Check if the pawn implements the AICoreInterface
-	if (APawn* ControlledPawn = OwnerComp.GetAIOwner()->GetPawn(); ControlledPawn->GetClass()->ImplementsInterface(UAICoreInterface::StaticClass()))
+	if (const APawn* ControlledPawn = OwnerComp.GetAIOwner()->GetPawn(); ControlledPawn->GetClass()->ImplementsInterface(UAICoreInterface::StaticClass()))
 	{
-
 		// get HealthComponent from the pawn
-		if (UHealthComponent* HealthComponent = IAICoreInterface::Execute_GetHealthComponent(ControlledPawn))
+		if (UHealthComponent* HealthComponent = ControlledPawn->FindComponentByClass<UHealthComponent>())
 		{
 			// heal the pawn
 			HealthComponent->Heal(HealAmount);
 		}
-		
 	}
-
 	return EBTNodeResult::Succeeded;
 }
