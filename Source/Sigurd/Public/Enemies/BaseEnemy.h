@@ -30,9 +30,6 @@ class SIGURD_API ABaseEnemy : public ACharacter, public IAICoreInterface
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = "true"))
 	UHealthComponent* HealthComponent;
 	
-	//UPROPERTY()
-	//AAICBaseEnemy* AIController;
-	
 public:
 	// Sets default values for this character's properties
 	ABaseEnemy();
