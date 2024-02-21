@@ -1,11 +1,10 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/BlackBoardTasks/BTTask_Focus.h"
+#include "AI/Tasks/BTTask_Focus.h"
 
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Interfaces/AICoreInterface.h"
 
 UBTTask_Focus::UBTTask_Focus(FObjectInitializer const& ObjectInitializer)
 {

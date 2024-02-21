@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/BlackBoardTasks/BTTask_NextPatrolPoint.h"
+#include "AI/Tasks/BTTask_NextPatrolPoint.h"
 
 
 UBTTask_NextPatrolPoint::UBTTask_NextPatrolPoint(FObjectInitializer const& ObjectInitializer)

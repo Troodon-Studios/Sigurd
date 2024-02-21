@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/BlackBoardTasks/BTTask_SetState.h"
+#include "AI/Tasks/BTTask_SetState.h"
 
 #include "AIController.h"
 #include "Enemies/AICBaseEnemy.h"

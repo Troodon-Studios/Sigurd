@@ -1,11 +1,10 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/BlackBoardTasks/BTTask_Heal.h"
+#include "AI/Tasks/BTTask_Heal.h"
 
 #include "AIController.h"
 #include "Components/HealthComponent.h"
-#include "Interfaces/AICoreInterface.h"
 
 UBTTask_Heal::UBTTask_Heal(FObjectInitializer const& ObjectInitializer)
 {

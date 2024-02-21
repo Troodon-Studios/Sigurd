@@ -1,10 +1,9 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/BlackBoardTasks/BTTask_ClearFocus.h"
+#include "AI/Tasks/BTTask_ClearFocus.h"
 
 #include "AIController.h"
-#include "Interfaces/AICoreInterface.h"
 
 UBTTask_ClearFocus::UBTTask_ClearFocus(FObjectInitializer const& ObjectInitializer)
 {

@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AI/BlackBoardTasks/BTTask_TourPatrol.h"
+#include "AI/Tasks/BTTask_TourPatrol.h"
 
 UBTTask_TourPatrol::UBTTask_TourPatrol(FObjectInitializer const& ObjectInitializer)
 {
