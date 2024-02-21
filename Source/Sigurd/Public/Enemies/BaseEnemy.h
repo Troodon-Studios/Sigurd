@@ -44,6 +44,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="AI")
 	APatrolRoute* PatrolRoute;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Combat")
+	double AttackRadius = 150.0;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Combat")
+	double DefendRadius = 350.0;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

@@ -45,6 +45,11 @@ void AAICBaseEnemy::OnPossess(APawn* InPawn)
   UseBlackboard(BaseEnemy->BehaviourTree->BlackboardAsset, BlackboardComponent);
   // Set the blackboard
   Blackboard = BlackboardComponent;
+
+  // Set the combat radius and the defend radius
+  BlackboardComponent->SetValueAsFloat(AttackRadiusKn, BaseEnemy->AttackRadius);
+  BlackboardComponent->SetValueAsFloat(DefendRadiusKn, BaseEnemy->DefendRadius);
+  
   // Run the behavior tree
   RunBehaviorTree(BaseEnemy->BehaviourTree);
  }

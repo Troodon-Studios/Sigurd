@@ -31,7 +31,7 @@ public:
 
  UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "AI Core")
  void EventAttack(AActor* AttackTarget);
-
+ 
 protected:
 
  TMap<ESpeedState, int32> SpeedValues;

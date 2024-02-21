@@ -93,9 +93,10 @@ void ABaseEnemy::SetMovementSpeed_Implementation(ESpeedState Speed, double& Spee
 }
 
 // Gets the ideal range for the enemy
-void ABaseEnemy::GetIdealRange_Implementation(double& AttackRadius, double& DefendRadius)
+void ABaseEnemy::GetIdealRange_Implementation(double& _AttackRadius, double& _DefendRadius)
 {
- GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("GetIdealRange_Implementation"));
+ _AttackRadius = AttackRadius;
+ _DefendRadius = DefendRadius;
 }
 
 // Makes the enemy attack
