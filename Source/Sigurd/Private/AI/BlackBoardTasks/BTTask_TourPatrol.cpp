@@ -12,26 +12,17 @@ EBTNodeResult::Type UBTTask_TourPatrol::ExecuteTask(UBehaviorTreeComponent& Owne
 {
     
     // Check if the pawn implements the AICoreInterface
-    if (APawn* ControlledPawn = OwnerComp.GetAIOwner()->GetPawn(); ControlledPawn->GetClass()->ImplementsInterface(UAICoreInterface::StaticClass()))
+    if (APawn* ControlledPawn = OwnerComp.GetAIOwner()->GetPawn(); const IAICoreInterface* AICore = Cast<IAICoreInterface>(ControlledPawn))
     {
-        // Cast the pawn to the IAICoreInterface
-        const IAICoreInterface* AICore = Cast<IAICoreInterface>(ControlledPawn);
-
-        // Get the patrol route
-        APatrolRoute* PatrolRoute = AICore->Execute_GetPatrolRoute(ControlledPawn);
-
-        // use AI move to to move to the next patrol point
-        if (PatrolRoute)
+        
+        if (APatrolRoute* PatrolRoute = AICore->Execute_GetPatrolRoute(ControlledPawn))
         {
-            FVector NextPatrolPoint;
-            if (PatrolRoute->GetSplinePointsAsWorldPosition(NextPatrolPoint))
+            if (FVector NextPatrolPoint; PatrolRoute->GetSplinePointsAsWorldPosition(NextPatrolPoint))
             {
                 // set blackboard value to the next patrol point
                 OwnerComp.GetBlackboardComponent()->SetValueAsVector("PointOfInterest", NextPatrolPoint);
             }
         }
-        
     }
-
     return EBTNodeResult::Succeeded;
 }

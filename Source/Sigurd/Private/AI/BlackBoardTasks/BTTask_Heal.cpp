@@ -16,7 +16,7 @@ UBTTask_Heal::UBTTask_Heal(FObjectInitializer const& ObjectInitializer)
 EBTNodeResult::Type UBTTask_Heal::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	// Check if the pawn implements the AICoreInterface
-	if (const APawn* ControlledPawn = OwnerComp.GetAIOwner()->GetPawn(); ControlledPawn->GetClass()->ImplementsInterface(UAICoreInterface::StaticClass()))
+	if (const APawn* ControlledPawn = OwnerComp.GetAIOwner()->GetPawn())
 	{
 		// get HealthComponent from the pawn
 		if (UHealthComponent* HealthComponent = ControlledPawn->FindComponentByClass<UHealthComponent>())

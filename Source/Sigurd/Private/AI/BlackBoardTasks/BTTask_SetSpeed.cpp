@@ -16,13 +16,10 @@ EBTNodeResult::Type UBTTask_SetSpeed::ExecuteTask(UBehaviorTreeComponent& OwnerC
 {
     
 	// Check if the pawn implements the AICoreInterface
-	if (APawn* ControlledPawn = OwnerComp.GetAIOwner()->GetPawn(); ControlledPawn->GetClass()->ImplementsInterface(UAICoreInterface::StaticClass()))
+	if (APawn* ControlledPawn = OwnerComp.GetAIOwner()->GetPawn(); const IAICoreInterface* AICore = Cast<IAICoreInterface>(ControlledPawn))
 	{
-
-		const IAICoreInterface* AICore = Cast<IAICoreInterface>(ControlledPawn);
 		double Speed = 0;
 		AICore->Execute_SetMovementSpeed(ControlledPawn,NewSpeed,Speed);
-		
 	}
 
 	return EBTNodeResult::Succeeded;

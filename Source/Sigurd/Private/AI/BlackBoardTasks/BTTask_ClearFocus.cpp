@@ -16,9 +16,9 @@ UBTTask_ClearFocus::UBTTask_ClearFocus(FObjectInitializer const& ObjectInitializ
 EBTNodeResult::Type UBTTask_ClearFocus::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	// Check if the pawn implements the AICoreInterface
-	if (const APawn* ControlledPawn = OwnerComp.GetAIOwner()->GetPawn(); ControlledPawn->GetClass()->ImplementsInterface(UAICoreInterface::StaticClass()))
+	if (AAIController* Controller = OwnerComp.GetAIOwner())
 	{
-		OwnerComp.GetAIOwner()->ClearFocus(EAIFocusPriority::Gameplay);		
+		Controller->ClearFocus(EAIFocusPriority::Gameplay);		
 	}
 
 	return EBTNodeResult::Succeeded;
