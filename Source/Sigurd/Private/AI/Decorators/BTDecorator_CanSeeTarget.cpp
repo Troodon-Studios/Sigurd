@@ -11,14 +11,11 @@ UBTDecorator_CanSeeTarget::UBTDecorator_CanSeeTarget(FObjectInitializer const& O
 	NodeName = TEXT("CanSeeTarget");
 }
 
-bool UBTDecorator_CanSeeTarget::CalculateRawConditionValue(UBehaviorTreeComponent const& OwnerComp,
-	uint8* NodeMemory) const
+bool UBTDecorator_CanSeeTarget::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
 {
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("CanSeeTarget"));
 	if (const AAIController* AICont = OwnerComp.GetAIOwner())
 	{
-//TODO: no se si este decorator esta bien hecho
 		//get actor from blackboard
 		if (const AActor* FocusActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TargetKey.SelectedKeyName)))
 		{
@@ -28,7 +25,8 @@ bool UBTDecorator_CanSeeTarget::CalculateRawConditionValue(UBehaviorTreeComponen
 				return true;
 			}
 		}
-
 	}
 	return false;
 }
+
+
