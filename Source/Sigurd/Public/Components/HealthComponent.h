@@ -30,14 +30,13 @@ public:
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage", meta = (AllowPrivateAccess = "true"))
 		UDataTable* DamageTable;
 	
-		
 		void TakeDamage(float damage, EDamageType attackerType);
 	
-
+	public:
+	
 		UFUNCTION(BlueprintCallable, Category = "Health")
 		float GetHealthPercentage();
 	
-	public:
 		UFUNCTION(BlueprintCallable, Category = "Health")
 		void Heal(float healAmount);
 	

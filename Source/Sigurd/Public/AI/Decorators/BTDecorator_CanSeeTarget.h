@@ -11,7 +11,7 @@
  * 
  */
 UCLASS()
-class SIGURD_API UBTDecorator_CanSeeTarget : public UBTDecorator_BlackboardBase
+class SIGURD_API UBTDecorator_CanSeeTarget : public UBTDecorator
 {
 
 public:

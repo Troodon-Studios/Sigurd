@@ -8,7 +8,7 @@
 
 UBTDecorator_CanSeeTarget::UBTDecorator_CanSeeTarget(FObjectInitializer const& ObjectInitializer)
 {
-	NodeName = TEXT("CanSeeTarget");
+	NodeName = TEXT("Can See Target?");
 }
 
 bool UBTDecorator_CanSeeTarget::CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const
