@@ -41,6 +41,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Token")
 	void PrintTokenInfo();
 
+	UFUNCTION(BlueprintCallable, Category="Token")
+	int32 GetAviablleTokens(UTokenComponent* Target) const;
+
 protected:
 	virtual void BeginPlay() override;
 

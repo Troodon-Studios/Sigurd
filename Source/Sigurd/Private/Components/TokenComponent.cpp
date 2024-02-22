@@ -83,6 +83,12 @@ void UTokenComponent::ReceiveToken(FToken* Token)
 	if (CastersQueue.Num() > 0) GiveToken(CastersQueue.CreateIterator()->Key, 1);
 }
 
+// Method to get the available tokens for a specific target.
+int32 UTokenComponent::GetAviablleTokens(UTokenComponent* Target) const
+{
+	return (Target == this) ? Tokens.Num() :
+	AviableTokens.FilterByPredicate([Target](const FToken* Token){ return Token->Owner == Target; }).Num();
+}
 //// ONLY FOR DEBUGGING PURPOSES ////
 // Method to print information about all tokens.
 void UTokenComponent::PrintTokenInfo()
@@ -101,7 +107,6 @@ void UTokenComponent::PrintTokenInfo()
 			                                 TEXT("%d, Owner: %s"), Token->UniqueID, *Token->Owner->GetName()));
 	}
 }
-
 
 //// UNUSED METHODS ////
 void UTokenComponent::BeginPlay()
