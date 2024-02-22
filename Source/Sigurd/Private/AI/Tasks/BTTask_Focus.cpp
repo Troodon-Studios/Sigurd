@@ -13,6 +13,7 @@ UBTTask_Focus::UBTTask_Focus(FObjectInitializer const& ObjectInitializer)
 
 EBTNodeResult::Type UBTTask_Focus::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	
 	// Check if the pawn implements the AICoreInterface
 	if (AAIController* AICont = OwnerComp.GetAIOwner())
 	{

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/Decorators/BTDecorator_BlackboardBase.h"
+#include "BehaviorTree/Decorators/BTDecorator_BlueprintBase.h"
 #include "BTDecorator_CanSeeTarget.generated.h"
 
 /**

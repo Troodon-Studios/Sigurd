@@ -15,6 +15,7 @@ bool UBTDecorator_CanSeeTarget::CalculateRawConditionValue(UBehaviorTreeComponen
 	uint8* NodeMemory) const
 {
 
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("CanSeeTarget"));
 	if (const AAIController* AICont = OwnerComp.GetAIOwner())
 	{
 //TODO: no se si este decorator esta bien hecho
