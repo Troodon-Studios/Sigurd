@@ -3,23 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "HealthComponent.h"
 #include "ItemData.h"
-#include "ResourcesComponent.h"
+#include "DataTypes/CombatState.h"
 #include "StaminaComponent.h"
-#include "Actor/Weapon.h"
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
-UENUM()
-enum ECombatState : uint8 {
-	Idle,
-	Attacking,
-	QueuingAttack,
-	AttackQueued,
-	Dodging,
-	Blocking,
-	Parrying,
-};
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SIGURD_API UCombatComponent : public UActorComponent
@@ -33,13 +23,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	TEnumAsByte<ECombatState> CombatState;
 
-	int comboCount = 0;
+	int ComboCount = 0;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	int currentWeapon;
+	int CurrentWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	TArray<FItemData> weaponInventory;
+	TArray<FItemData> WeaponInventory;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void AddWeaponToInventory(FDataTableRowHandle weapon);
@@ -54,12 +44,9 @@ public:
 	void ExecuteCurrentWeaponComboMontage(FName _sectionName);
 	void ExecuteCurrentWeaponDodgeMontage();
 	void ExecuteCurrentWeaponBlockMontage();
-
-	/**
-	 * 
-	 */
+	
 	UStaminaComponent* StaminaComponent;
-	UResourcesComponent* ResourcesComponent;
+	UHealthComponent* HealthComponent;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void Dodge();
@@ -72,12 +59,13 @@ public:
 
 	void QueueAttack(FName _sectionName);
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void TakeDamage(float damage, UObject* DamageType);
 
-	void increaseComboCount();
+	void IncreaseComboCount();
 
-	void changeWeaponLight(float intensity);
-	void changeWeaponLightColor(FLinearColor color);
+	void ChangeWeaponLight(float intensity);
+	void ChangeWeaponLightColor(FLinearColor color);
 
 protected:
 	// Called when the game starts

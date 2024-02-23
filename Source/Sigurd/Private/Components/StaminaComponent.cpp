@@ -4,48 +4,65 @@
 #include "Components/StaminaComponent.h"
 
 // Sets default values for this component's properties
-UStaminaComponent::UStaminaComponent()
-{
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
+UStaminaComponent::UStaminaComponent(){
 
-	maxStamina = 100;
-	currentStamina = maxStamina;
-	staminaRegenRate = 0.3f;
-	staminaDecayRate = 0.3f;
-	tickRate = 0.01f;
-	delayTime = 1.0f;
+	StaminaState = EStaminaState::Resting;
+	MaxStamina = 100;
+	CurrentStamina = MaxStamina;
+	StaminaRegenRate = 0.3f;
+	StaminaDecayRate = 0.3f;
+	TickRate = 0.01f;
+	DelayTime = 1.0f;
+	RunningSpeed = 900;
+	WalkingSpeed = 700;
+	ExhaustedSpeed = 500;
+
 
 	// ...
 }
 
 
 // Called when the game starts
-void UStaminaComponent::BeginPlay()
-{
+void UStaminaComponent::BeginPlay(){
 	Super::BeginPlay();
 
+	CharacterMovement = GetOwner()->FindComponentByClass<UCharacterMovementComponent>();
+
 	// ...
-	
 }
 
 void UStaminaComponent::StartStaminaRegen(){
-	if (statusTags.HasTag(Tags::Exhausted)){
-		GetWorld()->GetTimerManager().SetTimer( StaminaRegenTimerHandle,	this, &UStaminaComponent::ExhaustedRegenStamina, tickRate, true);
-	}else{
-		GetWorld()->GetTimerManager().SetTimer( StaminaRegenTimerHandle,	this, &UStaminaComponent::RegenStamina, tickRate, true);
-	}	
+	if (StaminaState == EStaminaState::Exhausted){
+		GetWorld()->GetTimerManager().SetTimer(StaminaRegenTimerHandle, this, &UStaminaComponent::ExhaustedRegenStamina,
+		                                       TickRate, true);
+	}
+	else{
+		GetWorld()->GetTimerManager().SetTimer(StaminaRegenTimerHandle, this, &UStaminaComponent::RegenStamina,
+		                                       TickRate, true);
+	}
 }
 
 void UStaminaComponent::DelayedStaminaRegen(float delay){
-	GetWorld()->GetTimerManager().SetTimer(StaminaRegenTimerHandle, this, &UStaminaComponent::StartStaminaRegen, tickRate, false, delay);
+	GetWorld()->GetTimerManager().SetTimer(StaminaRegenTimerHandle, this, &UStaminaComponent::StartStaminaRegen,
+	                                       TickRate, false, delay);
 }
 
-void UStaminaComponent::StartRunning(){
+void UStaminaComponent::RunAction(){
+	if (StaminaState == EStaminaState::Resting){
+		StaminaState = EStaminaState::Running;
+		CurrentStamina -= 5;
+		CharacterMovement->MaxWalkSpeed = RunningSpeed;
+		StartStaminaDecay();
+	}
+	else if (StaminaState == EStaminaState::Running){
+		StaminaState = EStaminaState::Resting;
+		StopRunning();
+	}
+}
 
-	currentStamina -= 5;
-	StartStaminaDecay();
+void UStaminaComponent::StopRunning(){
+	CharacterMovement->MaxWalkSpeed = (StaminaState == EStaminaState::Exhausted) ? ExhaustedSpeed : WalkingSpeed;
+	StopStaminaDecay();
 }
 
 void UStaminaComponent::StopStaminaRegen(){
@@ -54,60 +71,59 @@ void UStaminaComponent::StopStaminaRegen(){
 
 void UStaminaComponent::StartStaminaDecay(){
 	StopStaminaRegen();
-	GetWorld()->GetTimerManager().SetTimer(StaminaDecayTimerHandle, this, &UStaminaComponent::DecayStamina, tickRate, true);
+	GetWorld()->GetTimerManager().SetTimer(StaminaDecayTimerHandle, this, &UStaminaComponent::DecayStamina, TickRate,
+	                                       true);
 }
 
 void UStaminaComponent::StopStaminaDecay(){
 	GetWorld()->GetTimerManager().ClearTimer(StaminaDecayTimerHandle);
-	DelayedStaminaRegen(delayTime);
+	DelayedStaminaRegen(DelayTime);
 }
 
 void UStaminaComponent::DecreaseStamina(float amount){
 	StopStaminaRegen();
-	currentStamina -= amount;
-	if (currentStamina < 0)
-	{
-		currentStamina = 0;
+	CurrentStamina -= amount;
+	if (CurrentStamina < 0){
+		CurrentStamina = 0;
+		CharacterMovement->MaxWalkSpeed = ExhaustedSpeed;
+		DelayedStaminaRegen(DelayTime);
 	}
-	DelayedStaminaRegen(delayTime);
 }
 
-void UStaminaComponent::RegenStamina()
-{
-	currentStamina += staminaRegenRate;
-	
-	if (currentStamina > maxStamina)
-	{
-		currentStamina = maxStamina;
+void UStaminaComponent::RegenStamina(){
+	CurrentStamina += StaminaRegenRate;
+
+	if (CurrentStamina > MaxStamina){
+		StaminaState = EStaminaState::Resting;
+		CurrentStamina = MaxStamina;
 		GetWorld()->GetTimerManager().ClearTimer(StaminaRegenTimerHandle);
 	}
 }
 
 void UStaminaComponent::ExhaustedRegenStamina(){
-	currentStamina += staminaRegenRate / 2;
+	CurrentStamina += StaminaRegenRate / 2;
 
-	if (currentStamina > maxStamina)
-	{
-		statusTags.RemoveTag(Tags::Exhausted);
-		currentStamina = maxStamina;
+	if (CurrentStamina > MaxStamina){
+		StaminaState = EStaminaState::Resting;
+		CharacterMovement->MaxWalkSpeed = WalkingSpeed;
+		CurrentStamina = MaxStamina;
 		GetWorld()->GetTimerManager().ClearTimer(StaminaRegenTimerHandle);
 	}
 }
 
-void UStaminaComponent::DecayStamina()
-{
-	currentStamina -= staminaDecayRate;
+void UStaminaComponent::DecayStamina(){
+	CurrentStamina -= StaminaDecayRate;
 
-	if (currentStamina < 0)
-	{
-		currentStamina = 0;
-		StopStaminaDecay();
-		statusTags.AddTag(Tags::Exhausted);
-		DelayedStaminaRegen(delayTime);
+	if (CurrentStamina < 0){
+		CurrentStamina = 0;
+		StaminaState = EStaminaState::Exhausted;
+		StopRunning();
+	} else if ( CharacterMovement->Velocity.IsNearlyZero()){
+		StaminaState = EStaminaState::Resting;
+		StopRunning();
 	}
 }
 
 float UStaminaComponent::GetStaminaPercentage(){
-	return currentStamina / maxStamina;
+	return CurrentStamina / MaxStamina;
 }
-
