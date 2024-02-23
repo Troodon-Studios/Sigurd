@@ -1,5 +1,6 @@
 ﻿#include "MapGen.h"
 
+#include "PackedLevelActor/PackedLevelActor.h"
 
 
 // Sets default values
@@ -17,13 +18,10 @@ AMapGen::AMapGen(): Setting(nullptr), StaticMeshModule(nullptr), AuxiliarMesh(nu
 // Called when the game starts or when spawned
 void AMapGen::BeginPlay()
 {
-    if (RandomizeSeed)
-    {
-        Seed = FMath::RandRange(0, 1000);
-    }
-    
     Super::BeginPlay();
+    RandomizeSeed = false;
     Generate();
+
 }
 
 // Called every frame
@@ -34,6 +32,11 @@ void AMapGen::Tick(const float DeltaTime)
 
 void AMapGen::Generate()
 {
+    if (RandomizeSeed)
+    {
+        Seed = FMath::RandRange(0, 1000);
+    }
+    
     Setting = NoiseSettings.Setting.GetRow<FNoiseSetting>(FString::Printf(TEXT("%s"), *NoiseSettings.Setting.RowName.ToString()));
 
     if (!Setting)
@@ -53,6 +56,14 @@ void AMapGen::Generate()
     UE_LOG(LogTemp, Warning, TEXT("Grid Generated, deleting small plots"));
     DeleteSmallPlots();
 
+    if (GeneratedMap)
+    {
+        GeneratedMap->Destroy();
+    }
+
+    GeneratedMap = GetWorld()->SpawnActor<APackedLevelActor>(APackedLevelActor::StaticClass(), FVector::ZeroVector,
+                                                             FRotator::ZeroRotator);
+
     UE_LOG(LogTemp, Warning, TEXT("Small plots deleted, figuring modules position"));
     FigureModulesPosition();
     
@@ -65,6 +76,22 @@ void AMapGen::Generate()
     //MatrixFunctions.PrintMatrix(ModuleNumbers);
     
 }
+
+#if WITH_EDITOR
+void AMapGen::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+    Super::PostEditChangeProperty(PropertyChangedEvent);
+
+    if (PropertyChangedEvent.Property != nullptr && PropertyChangedEvent.Property->GetFName() == GET_MEMBER_NAME_CHECKED(AMapGen, bGenerate))
+    {
+        if (bGenerate)
+        {
+            ExecuteGenerate();
+            bGenerate = false;
+        }
+    }
+}
+#endif
 
 void AMapGen::GenerateGrid()
 {
@@ -239,7 +266,7 @@ void AMapGen::SpawnModule(const int ModuleNumber, const FVector& Position, const
     
     const FString ModuleName = FString::Printf(TEXT("Module[%d,%d]_%d"), static_cast<int>(Position.X), static_cast<int>(Position.Y), ModuleNumber);
     
-    StaticMeshModule = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), FName(ModuleName));
+    StaticMeshModule = NewObject<UStaticMeshComponent>(GeneratedMap, UStaticMeshComponent::StaticClass(), FName(ModuleName));
     if (StaticMeshModule)
     {
         StaticMeshModule->RegisterComponent();
@@ -272,7 +299,6 @@ void AMapGen::SpawnModule(const int ModuleNumber, const FVector& Position, const
                     
         StaticMeshModule->SetMaterial(0, DynamicMaterial);
     }
-                
 }
 
 void AMapGen::GenerateExtras()

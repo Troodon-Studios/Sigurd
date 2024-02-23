@@ -37,6 +37,7 @@ private:
     const FNoiseSetting* Setting;
     UStaticMeshComponent* StaticMeshModule;
     FVector ModulesSize;
+    AActor* GeneratedMap;
     
     // Functions
     void DeleteSmallPlots();
@@ -45,7 +46,7 @@ private:
     void FigureModulesPosition();
     void SpawnModule(const int ModuleNumber, const FVector& Position, const FRotator& Rotation);
     void GenerateExtras();
-    
+
 public:
     
     // Called every frame
@@ -102,7 +103,19 @@ public:
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
     FNoiseSettingsTable NoiseSettings;
-    
+
+    UFUNCTION(CallInEditor)
+    void ExecuteGenerate()
+    {
+        Generate();
+    }
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
+    bool bGenerate;
+
+#if WITH_EDITOR
+    virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 };
 
 
