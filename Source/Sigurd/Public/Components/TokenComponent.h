@@ -30,7 +30,7 @@ public:
 	int32 MaxTokens = 3;
 
 	UFUNCTION(BlueprintCallable, Category="Token")
-	void ReserveTokens(UTokenComponent* Caster, int32 Quantity);
+	bool ReserveTokens(UTokenComponent* Caster, int32 Quantity);
 
 	UFUNCTION(BlueprintCallable, Category="Token")
 	void ReturnTokens(UTokenComponent* Owner);

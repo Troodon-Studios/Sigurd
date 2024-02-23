@@ -15,15 +15,14 @@ class SIGURD_API UBTDecorator_CanSeeTarget : public UBTDecorator
 {
 
 public:
-
 	explicit UBTDecorator_CanSeeTarget(FObjectInitializer const& ObjectInitializer = FObjectInitializer::Get());
-protected:
-	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
 
-public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Properties")
 	FBlackboardKeySelector TargetKey;
 	
+protected:
+	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
+
 private:
 	GENERATED_BODY()
 };

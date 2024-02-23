@@ -19,9 +19,10 @@ UTokenComponent::UTokenComponent()
 
 // Method to reserve a certain quantity of tokens for a specific caster.
 // If the requested quantity is more than the available tokens, the caster is added to the queue.
-void UTokenComponent::ReserveTokens(UTokenComponent* Caster, const int32 Quantity)
+bool UTokenComponent::ReserveTokens(UTokenComponent* Caster, const int32 Quantity)
 {
 	Quantity > Tokens.Num() ? AddToQueue(Caster, Quantity) : GiveToken(Caster, Quantity);
+	return Quantity <= Tokens.Num();
 }
 
 // Method to return the available tokens from a specific owner.
