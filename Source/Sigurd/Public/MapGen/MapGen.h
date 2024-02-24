@@ -8,6 +8,7 @@
 #include "NoiseSettings.h"
 #include "Components/StaticMeshComponent.h"
 #include "NoiseSettingsTable.h"
+#include "ProceduralMeshComponent.h"
 #include "NoiseGenerator.h"
 #include "GameFramework/PlayerStart.h"
 #include "EngineUtils.h"
@@ -38,6 +39,7 @@ private:
     UStaticMeshComponent* StaticMeshModule;
     FVector ModulesSize;
     AActor* GeneratedMap;
+    UProceduralMeshComponent* ProceduralMesh;
     
     // Functions
     void DeleteSmallPlots();
@@ -104,13 +106,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
     FNoiseSettingsTable NoiseSettings;
 
+
+//// Editor Buttons
+    
     UFUNCTION(CallInEditor)
     void ExecuteGenerate()
     {
         Generate();
     }
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
+    
     bool bGenerate;
 
 #if WITH_EDITOR

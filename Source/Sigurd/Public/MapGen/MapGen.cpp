@@ -1,5 +1,7 @@
 ﻿#include "MapGen.h"
 
+#include "RawMesh.h"
+#include "NavMesh/RecastNavMesh.h"
 #include "PackedLevelActor/PackedLevelActor.h"
 
 
@@ -12,6 +14,9 @@ AMapGen::AMapGen(): Setting(nullptr), StaticMeshModule(nullptr), AuxiliarMesh(nu
     // Initialize grid dimensions and seed
     GridSize = FVector2D(10, 10);
     Seed = 0;
+
+    ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProceduralMesh"));
+    
 }
 
 
@@ -66,7 +71,9 @@ void AMapGen::Generate()
 
     UE_LOG(LogTemp, Warning, TEXT("Small plots deleted, figuring modules position"));
     FigureModulesPosition();
-    
+
+    GeneratedMap->SetRootComponent(ProceduralMesh);
+
     UE_LOG(LogTemp, Warning, TEXT("Modules positioned, generating extras"));
     GenerateExtras();
 
@@ -90,6 +97,7 @@ void AMapGen::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent
             bGenerate = false;
         }
     }
+    
 }
 #endif
 
@@ -241,7 +249,6 @@ void AMapGen::FigureModulesPosition()
                 while (N < AllNums.Num() && !MatrixFunctions.CompareMatrix(Mat,AllNums[N],x,y,ModuleRotations)) N++;
                 if (N == AllNums.Num())
                 {
-                    UE_LOG(LogTemp, Error, TEXT("Module %d %d does not fit"), x, y);
                     MatrixFunctions.PrintMatrix(Mat, true);
                 }
                 else
@@ -263,44 +270,60 @@ void AMapGen::FigureModulesPosition()
 
 void AMapGen::SpawnModule(const int ModuleNumber, const FVector& Position, const FRotator& Rotation)
 {
-    
-    const FString ModuleName = FString::Printf(TEXT("Module[%d,%d]_%d"), static_cast<int>(Position.X), static_cast<int>(Position.Y), ModuleNumber);
-    
-    StaticMeshModule = NewObject<UStaticMeshComponent>(GeneratedMap, UStaticMeshComponent::StaticClass(), FName(ModuleName));
-    if (StaticMeshModule)
+    UStaticMesh* MeshToUse = nullptr;
+    if (Setting->ModuleTiles->ModuleMesh.Contains(ModuleNumber) && Setting->ModuleTiles->ModuleMesh[ModuleNumber] != nullptr && UseMesh)
     {
-        StaticMeshModule->RegisterComponent();
-        StaticMeshModule->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-        StaticMeshModule->SetWorldLocation(Position);
-        StaticMeshModule->SetRelativeRotation(Rotation);
-        StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
+        MeshToUse = Setting->ModuleTiles->ModuleMesh[ModuleNumber];
+    }
+    else
+    {
+        MeshToUse = AuxiliarMesh;
+    }
 
-        if (Setting->ModuleTiles->ModuleMesh.Contains(ModuleNumber) && Setting->ModuleTiles->ModuleMesh[ModuleNumber] != nullptr && UseMesh)
+    if (MeshToUse)
+    {
+        // Get the mesh data
+        for (const TArray<FStaticMeshSourceModel>& SrcModels = MeshToUse->GetSourceModels(); const auto& SrcModel : SrcModels)
         {
-            StaticMeshModule->SetStaticMesh(Setting->ModuleTiles->ModuleMesh[ModuleNumber]);
+            FRawMesh RawMesh;
+            SrcModel.LoadRawMesh(RawMesh);
 
-        }
-        else
-        {
-            StaticMeshModule->SetStaticMesh(AuxiliarMesh);
-        }
-                    
-        UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
-                    
-        if (Setting->ModuleTiles->ModuleColor.Contains(ModuleNumber) && UseColor)
-        {
-            DynamicMaterial->SetVectorParameterValue("Color",Setting->ModuleTiles->ModuleColor[ModuleNumber]);
+            // Transform the vertices
+            TArray<FVector> VertexPositions;
+            TArray<int32> WedgeIndices;
+            TArray<FVector> WedgeTangentZ;
+            TArray<FVector2D> WedgeTexCoords;
+            TArray<FProcMeshTangent> WedgeTangentX;
 
+            for (const FVector3f& Vertex : RawMesh.VertexPositions)
+            {
+                FVector TransformedVertex = Rotation.RotateVector(FVector(Vertex.X, Vertex.Y, Vertex.Z)) + Position;
+                VertexPositions.Add(TransformedVertex);
+            }
+            for (const uint32 Index : RawMesh.WedgeIndices)
+            {
+                WedgeIndices.Add(static_cast<int32>(Index));
+            }
+            for (const FVector3f& TangentZ : RawMesh.WedgeTangentZ)
+            {
+                WedgeTangentZ.Add(FVector(TangentZ.X, TangentZ.Y, TangentZ.Z));
+            }
+            for (const FVector2f& TexCoord : RawMesh.WedgeTexCoords[0])
+            {
+                WedgeTexCoords.Add(FVector2D(TexCoord.X, TexCoord.Y));
+            }
+            for (const FVector3f& TangentX : RawMesh.WedgeTangentX)
+            {
+                WedgeTangentX.Add(FProcMeshTangent(TangentX.X, TangentX.Y, TangentX.Z));
+            }
+
+            // Create the mesh section
+            ProceduralMesh->CreateMeshSection_LinearColor(ModuleNumber, VertexPositions, WedgeIndices, WedgeTangentZ, WedgeTexCoords, TArray<FLinearColor>(RawMesh.WedgeColors), WedgeTangentX, true);
+            ProceduralMesh->SetMaterial(ModuleNumber, ModuleMaterial);
+            
         }
-        else
-        {
-            DynamicMaterial->SetVectorParameterValue("Color", FColor::White);
-        }
-                    
-        StaticMeshModule->SetMaterial(0, DynamicMaterial);
     }
 }
-
 void AMapGen::GenerateExtras()
 {
     // Get the player's pawn
