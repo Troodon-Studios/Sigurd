@@ -9,11 +9,14 @@
 #include "Components/StaticMeshComponent.h"
 #include "NoiseSettingsTable.h"
 #include "ProceduralMeshComponent.h"
+#include "RawMesh.h"
+#include "PackedLevelActor/PackedLevelActor.h"
 #include "NoiseGenerator.h"
 #include "GameFramework/PlayerStart.h"
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
 #include <chrono>
+
 #include "MapGen.generated.h"
 
 class UFNoiseSettings;
@@ -49,11 +52,15 @@ private:
     void SpawnModule(const int ModuleNumber, const FVector& Position, const FRotator& Rotation);
     void MergeMesh(const int ModuleNumber, const FVector& Position, const FRotator& Rotation);
     void GenerateExtras();
-
+    
 public:
     
     // Called every frame
-    virtual void Tick(float DeltaTime) override;
+    virtual void Tick(const float DeltaTime) override
+    {
+        Super::Tick(DeltaTime);
+    }
+
     // Sets default values for this actor's properties
     AMapGen();
     
@@ -90,7 +97,7 @@ public:
 
     // Delete small plots
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta = (DisplayName ="Delete Small Plots" ,ToolTip = "Eliminate all inaccessible areas of the map for the player, considering the largest accessible portion"))
-    bool DeletePlots = false;
+    bool DeletePlots = true;
     
     // Randomize seed for generation
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta = (ToolTip = "Randomize the seed for map generation each time a new map is Generated"))
@@ -102,7 +109,7 @@ public:
 
     // Use color on each module
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta = (EditCondition = "MergeMeshes", EditConditionHides, DisplayName = "Apply PostGen Noise" , ToolTip = "Enhance the final generated mesh by introducing noise to the vertices of the mesh, adding more detail"))
-    bool ApplyPostNoise = false;
+    bool ApplyPostNoise = true;
 
     // Use color on each module
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta = (EditCondition = "MergeMeshes && ApplyPostNoise", EditConditionHides, DisplayName = "PostGen Noise Amount", ToolTip = "Amount of noise to be added to the mesh"))
@@ -110,13 +117,13 @@ public:
 
     // Use color on each module
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta = (EditCondition = "MergeMeshes && ApplyPostNoise", EditConditionHides, DisplayName = "PostGen Noise Threshold", ToolTip = "Threshold for the noise vertex greater than this value will be not be affected by the noise"))
-    float ZThreshold = 10000;
+    float ZThreshold = 200;
     
     UPROPERTY( EditAnywhere, BlueprintReadWrite,Category = "Settings", DisplayName = "Post Noise Values", meta = (EditCondition = "MergeMeshes && ApplyPostNoise", EditConditionHides, ToolTip = "Noise values to be used for the post generation noise"))
     FNoiseValues PostNoiseValues;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings",meta=(DisplayName = "Use Mesh", ToolTip = "Use a different mesh for each module / Use Auxiliar mesh for all modules"))
-    bool UseMesh = false;
+    bool UseMesh = true;
 
     //meta=( EditCondition = "!MergeMeshes", DisplayName = "Use Mesh")
     
@@ -125,16 +132,15 @@ public:
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
     FNoiseSettingsTable NoiseSettings;
-
-
+    
 //// Editor Buttons
     
-    UFUNCTION(CallInEditor, meta=(ToolTip = "Generate the map"))
+    UFUNCTION(CallInEditor, meta=(ToolTip = "Generate the map"), Category = "Generation")
     void ExecuteGenerate()
     {
         Generate();
     }
-    
+
     bool bGenerate;
     int32 MeshSectionIndex;
 
