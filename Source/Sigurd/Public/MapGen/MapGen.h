@@ -89,21 +89,34 @@ public:
 //// Settings
 
     // Delete small plots
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", DisplayName = "Delete Small Plots")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta = (DisplayName ="Delete Small Plots" ,ToolTip = "Eliminate all inaccessible areas of the map for the player, considering the largest accessible portion"))
     bool DeletePlots = false;
     
     // Randomize seed for generation
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta = (ToolTip = "Randomize the seed for map generation each time a new map is Generated"))
     bool RandomizeSeed = false;
 
     // Use color on each module
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta = ( ToolTip = "Use a static mesh for each module / Spawn each module"))
     bool MergeMeshes = false;
+
+    // Use color on each module
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta = (EditCondition = "MergeMeshes", EditConditionHides, DisplayName = "Apply PostGen Noise" , ToolTip = "Enhance the final generated mesh by introducing noise to the vertices of the mesh, adding more detail"))
+    bool ApplyPostNoise = false;
+
+    // Use color on each module
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta = (EditCondition = "MergeMeshes && ApplyPostNoise", EditConditionHides, DisplayName = "PostGen Noise Amount", ToolTip = "Amount of noise to be added to the mesh"))
+    float PostNoiseAmount = 10000;
+
+    UPROPERTY( EditAnywhere, BlueprintReadWrite,Category = "Settings", DisplayName = "Post Noise Values", meta = (EditCondition = "MergeMeshes && ApplyPostNoise", EditConditionHides, ToolTip = "Noise values to be used for the post generation noise"))
+    FNoiseValues PostNoiseValues;
     
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings",meta=( EditCondition = "!MergeMeshes", DisplayName = "Use Mesh", ToolTip = "Use a different mesh for each module / Use Auxiliar mesh for all modules"))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings",meta=(DisplayName = "Use Mesh", ToolTip = "Use a different mesh for each module / Use Auxiliar mesh for all modules"))
     bool UseMesh = false;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta=( EditCondition = "!MergeMeshes"))
+    //meta=( EditCondition = "!MergeMeshes", DisplayName = "Use Mesh")
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta=(DisplayName = "Use Color", ToolTip = "Use a different color for each module type / Use ModuleMaterial Default"))
     bool UseColor = false;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")

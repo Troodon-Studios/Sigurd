@@ -62,6 +62,21 @@ void AMapGen::Generate()
     // Reset the mesh section index
     MeshSectionIndex = 0;
     
+    if (!GeneratedMap || !ProceduralMesh)
+    {
+        GeneratedMap = GetWorld()->SpawnActor<AActor>(FVector::ZeroVector, FRotator::ZeroRotator);
+    }
+
+    // delete the procedural mesh component if it exists
+    if (ProceduralMesh)
+    {
+        ProceduralMesh->DestroyComponent();
+    }
+    
+    ProceduralMesh = NewObject<UProceduralMeshComponent>(GeneratedMap);
+    ProceduralMesh->RegisterComponent();
+    ProceduralMesh->AttachToComponent(GeneratedMap->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+    
     UE_LOG(LogTemp, Warning, TEXT("Small plots deleted, figuring modules position"));
     FigureModulesPosition();
     
@@ -94,10 +109,10 @@ void AMapGen::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent
 
 void AMapGen::GenerateGrid()
 {
-    const float MFrequency = Setting->Frequency;
-    const float MAmplitude = Setting->Amplitude;
-    const float MLacunarity = Setting->Lacunarity;
-    const float MPersistence = Setting->Persistence;
+    const float MFrequency = Setting->NoiseValues.Frequency;
+    const float MAmplitude = Setting->NoiseValues.Amplitude;
+    const float MLacunarity = Setting->NoiseValues.Lacunarity;
+    const float MPersistence = Setting->NoiseValues.Persistence;
     
     // Resize the ModuleNumbers array to match the GridSize
     ModuleNumbers.SetNum(GridSize.X);
@@ -262,7 +277,7 @@ void AMapGen::FigureModulesPosition()
 
     const auto Stop = std::chrono::high_resolution_clock::now();
     const auto Duration = std::chrono::duration_cast<std::chrono::microseconds>(Stop - Start);
-
+    
     UE_LOG(LogTemp, Warning, TEXT("Execution time: %lld microseconds"), Duration.count());
 }
 
@@ -309,34 +324,20 @@ void AMapGen::SpawnModule(const int ModuleNumber, const FVector& Position, const
 
 void AMapGen::MergeMesh(const int ModuleNumber, const FVector& Position, const FRotator& Rotation)
 {
-    FTransform ActorTransform = FTransform(Rotation, Position, FVector(1, 1, 1));
-    UStaticMesh* MeshToUse;
-    
-	if (Setting->ModuleTiles->ModuleMesh.Contains(ModuleNumber) && Setting->ModuleTiles->ModuleMesh[ModuleNumber] != nullptr && UseMesh)
-	{
-		MeshToUse = Setting->ModuleTiles->ModuleMesh[ModuleNumber];
-	}
-	else
-	{
-		MeshToUse = AuxiliarMesh;
-	}
-	
-    if (!GeneratedMap || !ProceduralMesh)
-    {
-    	GeneratedMap = GetWorld()->SpawnActor<AActor>(FVector::ZeroVector, FRotator::ZeroRotator);
-    	ProceduralMesh = NewObject<UProceduralMeshComponent>(GeneratedMap);
-    	ProceduralMesh->RegisterComponent();
-    	ProceduralMesh->AttachToComponent(GeneratedMap->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-    }
 
-    // Check if AuxiliarMesh is null
+    const float MFrequency = PostNoiseValues.Frequency;
+    const float MAmplitude = PostNoiseValues.Amplitude;
+    const float MLacunarity = PostNoiseValues.Lacunarity;
+    const float MPersistence = PostNoiseValues.Persistence;
+    
+    FTransform ActorTransform = FTransform(Rotation, Position, FVector(1, 1, 1));
+    UStaticMesh* MeshToUse = Setting->ModuleTiles->ModuleMesh.Contains(ModuleNumber) && Setting->ModuleTiles->ModuleMesh[ModuleNumber] != nullptr && UseMesh ? Setting->ModuleTiles->ModuleMesh[ModuleNumber] : AuxiliarMesh;
+
     if (!MeshToUse) return;
 
-    // Load the raw mesh data from AuxiliarMesh
     FRawMesh RawMesh;
     MeshToUse->GetSourceModel(0).LoadRawMesh(RawMesh);
 
-    // Extract data from RawMesh
     TArray<FVector> VertexPositions;
     TArray<int32> WedgeIndices;
     TArray<FVector> WedgeTangentZ;
@@ -346,6 +347,13 @@ void AMapGen::MergeMesh(const int ModuleNumber, const FVector& Position, const F
     for (const auto& Vertex : RawMesh.VertexPositions)
     {
         FVector TransformedVertex = ActorTransform.TransformPosition(TArray<UE::Math::TVector<double>>::ElementType(Vertex));
+        if (ApplyPostNoise)
+        {
+            const float NoiseValue = FNoise::SimplexNoise((TransformedVertex.X / 10.0f) + Seed, (TransformedVertex.Y / 10.0f) + Seed,MFrequency, MAmplitude, MLacunarity, MPersistence);
+            TransformedVertex.Z += NoiseValue * PostNoiseAmount; // Adjust the multiplier as needed to control the amount of noise
+            // print the noise value
+            UE_LOG(LogTemp, Warning, TEXT("Noise value: %f"), NoiseValue);
+        }
         VertexPositions.Add(TransformedVertex);
     }
     for (const auto Index : RawMesh.WedgeIndices)
@@ -354,8 +362,7 @@ void AMapGen::MergeMesh(const int ModuleNumber, const FVector& Position, const F
     }
     for (const auto& TangentZ : RawMesh.WedgeTangentZ)
     {
-        FVector TransformedTangentZ = ActorTransform.TransformVector(TArray<UE::Math::TVector<double>>::ElementType(TangentZ));
-        WedgeTangentZ.Add(TransformedTangentZ);
+        WedgeTangentZ.Add(ActorTransform.TransformVector(TArray<UE::Math::TVector<double>>::ElementType(TangentZ)));
     }
     for (const auto& TexCoord : RawMesh.WedgeTexCoords[0])
     {
@@ -363,15 +370,13 @@ void AMapGen::MergeMesh(const int ModuleNumber, const FVector& Position, const F
     }
     for (const auto& TangentX : RawMesh.WedgeTangentX)
     {
-        FVector TransformedTangentX = ActorTransform.TransformVector(FVector(TangentX));
-        WedgeTangentX.Add(FProcMeshTangent(TransformedTangentX, false));
+        WedgeTangentX.Add(FProcMeshTangent(ActorTransform.TransformVector(FVector(TangentX)), false));
     }
-
-    // Add the mesh data to the procedural mesh
+    
     ProceduralMesh->CreateMeshSection_LinearColor(MeshSectionIndex, VertexPositions, WedgeIndices, WedgeTangentZ, WedgeTexCoords, TArray<FLinearColor>(), WedgeTangentX, true);
     ProceduralMesh->SetMaterial(MeshSectionIndex, ModuleMaterial);
 
-    MeshSectionIndex++; // Increment the mesh section index
+    MeshSectionIndex++;
 }
 void AMapGen::GenerateExtras()
 {

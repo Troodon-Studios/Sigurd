@@ -4,8 +4,9 @@
 #include "Engine/DataTable.h"
 #include "NoiseSettings.generated.h"
 
+
 USTRUCT(BlueprintType)
-struct FNoiseSetting : public FTableRowBase
+struct FNoiseValues : public FTableRowBase
 {
 	GENERATED_BODY()
 	
@@ -20,9 +21,20 @@ struct FNoiseSetting : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "1.0"), DisplayName = "Persistence")
 	float Persistence = 0.5f;
+	
+};
+
+USTRUCT(BlueprintType)
+struct FNoiseSetting : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, DisplayName = "Noise Values")
+	FNoiseValues NoiseValues;
 
 	// UModuleTile DataAsset
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UModuleTile* ModuleTiles;
 
 };
+
