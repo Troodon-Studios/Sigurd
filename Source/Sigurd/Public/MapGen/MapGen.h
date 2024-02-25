@@ -96,17 +96,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
     bool RandomizeSeed = false;
 
-    // Use mesh on each module
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+    // Use color on each module
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta = ( ToolTip = "Use a static mesh for each module / Spawn each module"))
+    bool MergeMeshes = false;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings",meta=( EditCondition = "!MergeMeshes", DisplayName = "Use Mesh", ToolTip = "Use a different mesh for each module / Use Auxiliar mesh for all modules"))
     bool UseMesh = false;
 
-    // Use color on each module
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta=( EditCondition = "!MergeMeshes"))
     bool UseColor = false;
-
-    // Use color on each module
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-    bool MergeMeshes = false;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
     FNoiseSettingsTable NoiseSettings;
@@ -114,7 +112,7 @@ public:
 
 //// Editor Buttons
     
-    UFUNCTION(CallInEditor)
+    UFUNCTION(CallInEditor, meta=(ToolTip = "Generate the map"))
     void ExecuteGenerate()
     {
         Generate();

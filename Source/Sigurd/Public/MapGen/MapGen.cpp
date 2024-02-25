@@ -321,7 +321,7 @@ void AMapGen::MergeMesh(const int ModuleNumber, const FVector& Position, const F
 		MeshToUse = AuxiliarMesh;
 	}
 	
-    if (!GeneratedMap)
+    if (!GeneratedMap || !ProceduralMesh)
     {
     	GeneratedMap = GetWorld()->SpawnActor<AActor>(FVector::ZeroVector, FRotator::ZeroRotator);
     	ProceduralMesh = NewObject<UProceduralMeshComponent>(GeneratedMap);
