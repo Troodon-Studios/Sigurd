@@ -347,7 +347,7 @@ void AMapGen::MergeMesh(const int ModuleNumber, const FVector& Position, const F
     for (const auto& Vertex : RawMesh.VertexPositions)
     {
         FVector TransformedVertex = ActorTransform.TransformPosition(TArray<UE::Math::TVector<double>>::ElementType(Vertex));
-        if (ApplyPostNoise)
+        if (ApplyPostNoise && TransformedVertex.Z <= ZThreshold)
         {
             const float NoiseValue = FNoise::SimplexNoise((TransformedVertex.X / 10.0f) + Seed, (TransformedVertex.Y / 10.0f) + Seed,MFrequency, MAmplitude, MLacunarity, MPersistence);
             TransformedVertex.Z += NoiseValue * PostNoiseAmount; // Adjust the multiplier as needed to control the amount of noise

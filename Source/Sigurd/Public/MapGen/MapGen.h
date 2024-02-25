@@ -108,6 +108,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta = (EditCondition = "MergeMeshes && ApplyPostNoise", EditConditionHides, DisplayName = "PostGen Noise Amount", ToolTip = "Amount of noise to be added to the mesh"))
     float PostNoiseAmount = 10000;
 
+    // Use color on each module
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta = (EditCondition = "MergeMeshes && ApplyPostNoise", EditConditionHides, DisplayName = "PostGen Noise Threshold", ToolTip = "Threshold for the noise vertex greater than this value will be not be affected by the noise"))
+    float ZThreshold = 10000;
+    
     UPROPERTY( EditAnywhere, BlueprintReadWrite,Category = "Settings", DisplayName = "Post Noise Values", meta = (EditCondition = "MergeMeshes && ApplyPostNoise", EditConditionHides, ToolTip = "Noise values to be used for the post generation noise"))
     FNoiseValues PostNoiseValues;
     
