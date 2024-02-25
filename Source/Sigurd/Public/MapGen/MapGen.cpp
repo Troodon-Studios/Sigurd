@@ -14,8 +14,6 @@ AMapGen::AMapGen(): Setting(nullptr), StaticMeshModule(nullptr), AuxiliarMesh(nu
     // Initialize grid dimensions and seed
     GridSize = FVector2D(10, 10);
     Seed = 0;
-
-    ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("ProceduralMesh"));
     
 }
 
@@ -61,19 +59,12 @@ void AMapGen::Generate()
     UE_LOG(LogTemp, Warning, TEXT("Grid Generated, deleting small plots"));
     DeleteSmallPlots();
 
-    if (GeneratedMap)
-    {
-        GeneratedMap->Destroy();
-    }
-
-    GeneratedMap = GetWorld()->SpawnActor<APackedLevelActor>(APackedLevelActor::StaticClass(), FVector::ZeroVector,
-                                                             FRotator::ZeroRotator);
-
+    // Reset the mesh section index
+    MeshSectionIndex = 0;
+    
     UE_LOG(LogTemp, Warning, TEXT("Small plots deleted, figuring modules position"));
     FigureModulesPosition();
-
-    GeneratedMap->SetRootComponent(ProceduralMesh);
-
+    
     UE_LOG(LogTemp, Warning, TEXT("Modules positioned, generating extras"));
     GenerateExtras();
 
@@ -256,7 +247,14 @@ void AMapGen::FigureModulesPosition()
                     ModuleNumbers[x][y] = AllNums[N];
                     const FVector Position = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset;
                     const FRotator Rotation = FRotator(0, 90 * ModuleRotations[x][y], 0);
-                    SpawnModule(AllNums[N],Position, Rotation);
+
+                    if (MergeMeshes)
+                    {
+                        MergeMesh(AllNums[N],Position, Rotation);
+                    }else
+                    {
+                        SpawnModule(AllNums[N], Position, Rotation);
+                    }
                 }
             }
         }
@@ -270,59 +268,110 @@ void AMapGen::FigureModulesPosition()
 
 void AMapGen::SpawnModule(const int ModuleNumber, const FVector& Position, const FRotator& Rotation)
 {
-    UStaticMesh* MeshToUse = nullptr;
-    if (Setting->ModuleTiles->ModuleMesh.Contains(ModuleNumber) && Setting->ModuleTiles->ModuleMesh[ModuleNumber] != nullptr && UseMesh)
+    
+    const FString ModuleName = FString::Printf(TEXT("Module[%d,%d]_%d"), static_cast<int>(Position.X), static_cast<int>(Position.Y), ModuleNumber);
+    
+    StaticMeshModule = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), FName(ModuleName));
+    if (StaticMeshModule)
     {
-        MeshToUse = Setting->ModuleTiles->ModuleMesh[ModuleNumber];
-    }
-    else
-    {
-        MeshToUse = AuxiliarMesh;
-    }
+        StaticMeshModule->RegisterComponent();
+        StaticMeshModule->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+        StaticMeshModule->SetWorldLocation(Position);
+        StaticMeshModule->SetRelativeRotation(Rotation);
+        StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
 
-    if (MeshToUse)
-    {
-        // Get the mesh data
-        for (const TArray<FStaticMeshSourceModel>& SrcModels = MeshToUse->GetSourceModels(); const auto& SrcModel : SrcModels)
+        if (Setting->ModuleTiles->ModuleMesh.Contains(ModuleNumber) && Setting->ModuleTiles->ModuleMesh[ModuleNumber] != nullptr && UseMesh)
         {
-            FRawMesh RawMesh;
-            SrcModel.LoadRawMesh(RawMesh);
+            StaticMeshModule->SetStaticMesh(Setting->ModuleTiles->ModuleMesh[ModuleNumber]);
 
-            // Transform the vertices
-            TArray<FVector> VertexPositions;
-            TArray<int32> WedgeIndices;
-            TArray<FVector> WedgeTangentZ;
-            TArray<FVector2D> WedgeTexCoords;
-            TArray<FProcMeshTangent> WedgeTangentX;
-
-            for (const FVector3f& Vertex : RawMesh.VertexPositions)
-            {
-                FVector TransformedVertex = Rotation.RotateVector(FVector(Vertex.X, Vertex.Y, Vertex.Z)) + Position;
-                VertexPositions.Add(TransformedVertex);
-            }
-            for (const uint32 Index : RawMesh.WedgeIndices)
-            {
-                WedgeIndices.Add(static_cast<int32>(Index));
-            }
-            for (const FVector3f& TangentZ : RawMesh.WedgeTangentZ)
-            {
-                WedgeTangentZ.Add(FVector(TangentZ.X, TangentZ.Y, TangentZ.Z));
-            }
-            for (const FVector2f& TexCoord : RawMesh.WedgeTexCoords[0])
-            {
-                WedgeTexCoords.Add(FVector2D(TexCoord.X, TexCoord.Y));
-            }
-            for (const FVector3f& TangentX : RawMesh.WedgeTangentX)
-            {
-                WedgeTangentX.Add(FProcMeshTangent(TangentX.X, TangentX.Y, TangentX.Z));
-            }
-
-            // Create the mesh section
-            ProceduralMesh->CreateMeshSection_LinearColor(ModuleNumber, VertexPositions, WedgeIndices, WedgeTangentZ, WedgeTexCoords, TArray<FLinearColor>(RawMesh.WedgeColors), WedgeTangentX, true);
-            ProceduralMesh->SetMaterial(ModuleNumber, ModuleMaterial);
-            
         }
+        else
+        {
+            StaticMeshModule->SetStaticMesh(AuxiliarMesh);
+        }
+                    
+        UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
+                    
+        if (Setting->ModuleTiles->ModuleColor.Contains(ModuleNumber) && UseColor)
+        {
+            DynamicMaterial->SetVectorParameterValue("Color",Setting->ModuleTiles->ModuleColor[ModuleNumber]);
+
+        }
+        else
+        {
+            DynamicMaterial->SetVectorParameterValue("Color", FColor::White);
+        }
+                    
+        StaticMeshModule->SetMaterial(0, DynamicMaterial);
     }
+                
+}
+
+void AMapGen::MergeMesh(const int ModuleNumber, const FVector& Position, const FRotator& Rotation)
+{
+    FTransform ActorTransform = FTransform(Rotation, Position, FVector(1, 1, 1));
+    UStaticMesh* MeshToUse;
+    
+	if (Setting->ModuleTiles->ModuleMesh.Contains(ModuleNumber) && Setting->ModuleTiles->ModuleMesh[ModuleNumber] != nullptr && UseMesh)
+	{
+		MeshToUse = Setting->ModuleTiles->ModuleMesh[ModuleNumber];
+	}
+	else
+	{
+		MeshToUse = AuxiliarMesh;
+	}
+	
+    if (!GeneratedMap)
+    {
+    	GeneratedMap = GetWorld()->SpawnActor<AActor>(FVector::ZeroVector, FRotator::ZeroRotator);
+    	ProceduralMesh = NewObject<UProceduralMeshComponent>(GeneratedMap);
+    	ProceduralMesh->RegisterComponent();
+    	ProceduralMesh->AttachToComponent(GeneratedMap->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+    }
+
+    // Check if AuxiliarMesh is null
+    if (!MeshToUse) return;
+
+    // Load the raw mesh data from AuxiliarMesh
+    FRawMesh RawMesh;
+    MeshToUse->GetSourceModel(0).LoadRawMesh(RawMesh);
+
+    // Extract data from RawMesh
+    TArray<FVector> VertexPositions;
+    TArray<int32> WedgeIndices;
+    TArray<FVector> WedgeTangentZ;
+    TArray<FVector2D> WedgeTexCoords;
+    TArray<FProcMeshTangent> WedgeTangentX;
+
+    for (const auto& Vertex : RawMesh.VertexPositions)
+    {
+        FVector TransformedVertex = ActorTransform.TransformPosition(TArray<UE::Math::TVector<double>>::ElementType(Vertex));
+        VertexPositions.Add(TransformedVertex);
+    }
+    for (const auto Index : RawMesh.WedgeIndices)
+    {
+        WedgeIndices.Add(static_cast<int32>(Index));
+    }
+    for (const auto& TangentZ : RawMesh.WedgeTangentZ)
+    {
+        FVector TransformedTangentZ = ActorTransform.TransformVector(TArray<UE::Math::TVector<double>>::ElementType(TangentZ));
+        WedgeTangentZ.Add(TransformedTangentZ);
+    }
+    for (const auto& TexCoord : RawMesh.WedgeTexCoords[0])
+    {
+        WedgeTexCoords.Add(TArray<UE::Math::TVector2<double>>::ElementType(TexCoord));
+    }
+    for (const auto& TangentX : RawMesh.WedgeTangentX)
+    {
+        FVector TransformedTangentX = ActorTransform.TransformVector(FVector(TangentX));
+        WedgeTangentX.Add(FProcMeshTangent(TransformedTangentX, false));
+    }
+
+    // Add the mesh data to the procedural mesh
+    ProceduralMesh->CreateMeshSection_LinearColor(MeshSectionIndex, VertexPositions, WedgeIndices, WedgeTangentZ, WedgeTexCoords, TArray<FLinearColor>(), WedgeTangentX, true);
+    ProceduralMesh->SetMaterial(MeshSectionIndex, ModuleMaterial);
+
+    MeshSectionIndex++; // Increment the mesh section index
 }
 void AMapGen::GenerateExtras()
 {

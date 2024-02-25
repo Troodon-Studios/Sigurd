@@ -47,6 +47,7 @@ private:
     static bool IsInLargestIsland(int I, int J, const TArray<FVector2D>& LargestIsland);
     void FigureModulesPosition();
     void SpawnModule(const int ModuleNumber, const FVector& Position, const FRotator& Rotation);
+    void MergeMesh(const int ModuleNumber, const FVector& Position, const FRotator& Rotation);
     void GenerateExtras();
 
 public:
@@ -102,6 +103,10 @@ public:
     // Use color on each module
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
     bool UseColor = false;
+
+    // Use color on each module
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+    bool MergeMeshes = false;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
     FNoiseSettingsTable NoiseSettings;
@@ -116,6 +121,8 @@ public:
     }
     
     bool bGenerate;
+    int32 MeshSectionIndex;
+
 
 #if WITH_EDITOR
     virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
