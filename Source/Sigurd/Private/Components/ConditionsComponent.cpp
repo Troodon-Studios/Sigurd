@@ -3,6 +3,8 @@
 
 #include "Components/ConditionsComponent.h"
 
+#include "Components/PlayerReactionHandler.h"
+
 
 // Sets default values for this component's properties
 UConditionsComponent::UConditionsComponent(){
@@ -18,7 +20,7 @@ UConditionsComponent::UConditionsComponent(){
 void UConditionsComponent::BeginPlay(){
 	Super::BeginPlay();
 
-	// ...
+	//ExecuteReaction(Condition::None, Element::Fire);
 	
 }
 
