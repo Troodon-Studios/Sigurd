@@ -58,7 +58,7 @@ private:
 	static void RemoveTokens(const UTokenComponent* Owner, TArray<FToken*>& TokensArray);
 
 	TArray<FToken*> Tokens;
-	TArray<FToken*> AviableTokens;
+	TArray<FToken*> AvailableTokens;
 	TMap<UTokenComponent*, int32> CastersQueue;
 };
 
