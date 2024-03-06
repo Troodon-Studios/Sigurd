@@ -12,7 +12,7 @@ UConditionComponent::UConditionComponent(){
 }
 
 void UConditionComponent::BeginPlay(){
-	ConditionHandler->Initialize(this, GetOwner()->FindComponentByClass<UHealthComponent>());
+	ConditionHandler->Initialize(this);
 }
 
 void UConditionComponent::AddBurn_Implementation(){

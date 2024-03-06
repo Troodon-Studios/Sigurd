@@ -9,28 +9,33 @@ class UReactionHandler;
 UENUM(BlueprintType)
 enum class Element : uint8 {
 	Fire,
-	Water,
-	Oil,
-	Air,
+	Ice,
+	Caos,
+	Nature,
 };
 
 UENUM(BlueprintType)
 enum class ECondition : uint8 {
 	Burn,
 	Extinguish,
+	Freeze,
+	Unfreeze,
+	Bloom,
 	None,
 };
 
 struct ConditionEffectInfo{
-	ECondition Condition;
 	FTimerHandle TimerHandle;
 	float Duration;
 	float Damage;	
 };
 
-inline TArray<ConditionEffectInfo> ConditionEffectInfos = {
-	{ECondition::Burn, FTimerHandle(), 5.0f, 5.0f},
-	{ECondition::Extinguish, FTimerHandle(), 0.0f, 0.0f}
+inline TMap<ECondition, ConditionEffectInfo> ConditionEffectInfos = {
+	{ECondition::Burn, ConditionEffectInfo{FTimerHandle(), 5.0f, 5.0f}},
+	{ECondition::Extinguish, ConditionEffectInfo{FTimerHandle(), 0.0f, 0.0f}},
+	{ECondition::Freeze, ConditionEffectInfo{FTimerHandle(), 5.0f, 0.0f}},
+	{ECondition::Unfreeze, ConditionEffectInfo{FTimerHandle(), 0.0f, 0.0f}},
+	{ECondition::Bloom, ConditionEffectInfo{FTimerHandle(), 5.0f, 0.0f}},
 };
 
 
