@@ -25,8 +25,7 @@ ASigurdCharacter::ASigurdCharacter(){
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
 	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
-	ElementComponent = CreateDefaultSubobject<UElementComponent>(TEXT("ElementComponent"));
-	ConditionsComponent = CreateDefaultSubobject<UConditionsComponent>(TEXT("ConditionsComponent"));
+	ConditionComponent = CreateDefaultSubobject<UConditionComponent>(TEXT("ConditionComponent"));
 
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->SetupAttachment(GetMesh(), FName("RH_Socket"));
@@ -81,12 +80,8 @@ void ASigurdCharacter::BeginPlay(){
 		HealthComponent->RegisterComponent();
 	}
 
-	if (ElementComponent){
-		ElementComponent->RegisterComponent();
-	}
-
-	if (ConditionsComponent){
-		ConditionsComponent->RegisterComponent();
+	if (ConditionComponent){
+		ConditionComponent->RegisterComponent();
 	}
 
 	OnTakeAnyDamage.AddDynamic(this, &ASigurdCharacter::TakeDamageSigurd);

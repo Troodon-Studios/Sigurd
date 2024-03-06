@@ -1,39 +1,36 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ReactionHandler.h"
 #include "Elements.generated.h"
+
+class UConditionsComponent;
+class UReactionHandler;
 
 UENUM(BlueprintType)
 enum class Element : uint8 {
 	Fire,
-	Air,
-	Earth,
 	Water,
-	Steam,
+	Oil,
+	Air,
 };
 
 UENUM(BlueprintType)
-enum class Reaction : uint8 {
-	Evaporate,
-};
-
-UENUM(BlueprintType)
-enum class Condition : uint8{
+enum class ECondition : uint8 {
+	Burn,
+	Extinguish,
 	None,
-	Burning,
-	Stunned,
-	Slowed,
 };
 
-typedef void (UReactionHandler::*ReactionFunction)();
+struct ConditionEffectInfo{
+	ECondition Condition;
+	FTimerHandle TimerHandle;
+	float Duration;
+	float Damage;	
+};
 
-typedef TMap<TPair<Condition, Element>, ReactionFunction> ReactionMapType;
+inline TArray<ConditionEffectInfo> ConditionEffectInfos = {
+	{ECondition::Burn, FTimerHandle(), 5.0f, 5.0f},
+	{ECondition::Extinguish, FTimerHandle(), 0.0f, 0.0f}
+};
 
-extern inline ReactionMapType ReactionMap = {
-	{TPair<Condition, Element>(Condition::None, Element::Fire), &UReactionHandler::Burn},
-	{TPair<Condition, Element>(Condition::None, Element::Water), &UReactionHandler::Wet},
-   };
-
-extern ReactionMapType ReactionMap;
 

@@ -51,6 +51,21 @@ void UHealthComponent::Heal(float HealAmount){
 	}
 }
 
+
+
+void UHealthComponent::StartDPS(float Damage,float Rate, float Duration, EDamageType AttackerType){
+	// Create a timer delegate
+	FTimerDelegate DamageDelegate = FTimerDelegate::CreateUObject(this, &UHealthComponent::TakeDamage, Damage, AttackerType);
+
+	// Set the timer to call the delegate every second for the specified duration
+	GetWorld()->GetTimerManager().SetTimer(DPSTimerHandle, DamageDelegate, Rate, true, 0.0f);
+
+	// Set a timer to stop the DPS after the specified duration
+	GetWorld()->GetTimerManager().SetTimer(StopDPSTimerHandle, FTimerDelegate::CreateLambda([this](){
+		GetWorld()->GetTimerManager().ClearTimer(DPSTimerHandle);
+	}), Duration, false);
+}
+
 float UHealthComponent::GetHealthPercentage(){
 	return CurrentHealth / MaxHealth;
 }

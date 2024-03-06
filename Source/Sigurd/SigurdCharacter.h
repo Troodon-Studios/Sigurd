@@ -5,8 +5,7 @@
 #include "CoreMinimal.h"
 #include "Actor/Weapon.h"
 #include "Components/CombatComponent.h"
-#include "Components/ConditionsComponent.h"
-#include "Components/ElementComponent.h"
+#include "Components/ConditionComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/StaminaComponent.h"
 #include "DataTypes/PlayerInputAction.h"
@@ -44,11 +43,8 @@ class ASigurdCharacter : public ACharacter /*, public IDamageableInterface*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = "true"))
 	UHealthComponent* HealthComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Element", meta = (AllowPrivateAccess = "true"))
-	UElementComponent* ElementComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Conditions", meta = (AllowPrivateAccess = "true"))
-	UConditionsComponent* ConditionsComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Condition", meta = (AllowPrivateAccess = "true"))
+	UConditionComponent* ConditionComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	FInputActionValues InputActionValues;
