@@ -18,11 +18,18 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 //////////////////////////////////////////////////////////////////////////
 // ASigurdCharacter
 
-ASigurdCharacter::ASigurdCharacter()
-{
+ASigurdCharacter::ASigurdCharacter(){
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
+	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
+	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+	TokenComponent = CreateDefaultSubobject<UTokenComponent>(TEXT("TokenComponent"));
+
+	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
+	WeaponMesh->SetupAttachment(GetMesh(), FName("RH_Socket"));
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -46,32 +53,41 @@ ASigurdCharacter::ASigurdCharacter()
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-	
+
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	// Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
-
-	CachedDestination = FVector::ZeroVector;
-	FollowTime = 0.f;
+	
 }
 
-void ASigurdCharacter::BeginPlay()
-{
-	// Call the base class  
+void ASigurdCharacter::BeginPlay(){
 	Super::BeginPlay();
 
-	//Add Input Mapping Context
-	if (APlayerController* playerController = Cast<APlayerController>(Controller))
-	{
+	if (StaminaComponent){
+		StaminaComponent->RegisterComponent();
+	}
+
+	if (CombatComponent){
+		CombatComponent->RegisterComponent();
+	}
+
+	if (HealthComponent){
+		HealthComponent->RegisterComponent();
+	}
+
+	OnTakeAnyDamage.AddDynamic(this, &ASigurdCharacter::TakeDamageSigurd);
+	
+	if (APlayerController* playerController = Cast<APlayerController>(Controller)){
 		playerController->bShowMouseCursor = true;
 		playerController->DefaultMouseCursor = EMouseCursor::Default;
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(playerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>(playerController->GetLocalPlayer())){
+			Subsystem->AddMappingContext(InputActionValues.DefaultMappingContext, 0);
 		}
 	}
 }
@@ -79,47 +95,49 @@ void ASigurdCharacter::BeginPlay()
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
+void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent){
 
-		// Moving
-		EnhancedInputComponent->BindAction(MoveByClickAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::MoveClick);
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::MoveAxis);
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)){
 
-		//Combat
-		//quick mele
-		EnhancedInputComponent->BindAction(QckMeleAction, ETriggerEvent::Started, this, &ASigurdCharacter::QuickAttack);
 
-		//heavy mele
-		EnhancedInputComponent->BindAction(HvyMeleAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::HeavyAttack);	
+		EnhancedInputComponent->BindAction(InputActionValues.MoveAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::Move);
+
+		EnhancedInputComponent->BindAction(InputActionValues.RunAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartRunning);
+
+		EnhancedInputComponent->BindAction(InputActionValues.LightAttackAction , ETriggerEvent::Started, this, &ASigurdCharacter::LightAttack);
+		EnhancedInputComponent->BindAction(InputActionValues.HeavyAttackAction, ETriggerEvent::Started, this, &ASigurdCharacter::HeavyAttack);
+		
+
+
+		EnhancedInputComponent->BindAction(InputActionValues.NextWeaponAction, ETriggerEvent::Started, this,
+		                                   &ASigurdCharacter::NextWeapon);
+		EnhancedInputComponent->BindAction(InputActionValues.PreviousWeaponAction, ETriggerEvent::Started, this,
+		                                   &ASigurdCharacter::PreviousWeapon);
+
+		EnhancedInputComponent->BindAction(InputActionValues.DodgeAction, ETriggerEvent::Started, this, &ASigurdCharacter::Dodge);
+		EnhancedInputComponent->BindAction(InputActionValues.BlockAction, ETriggerEvent::Started, this, &ASigurdCharacter::Block);
 	}
-	else
-	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+	else{
+		UE_LOG(LogTemplateCharacter, Error,
+		       TEXT(
+			       "'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."
+		       ), *GetNameSafe(this));
 	}
 }
 
-void ASigurdCharacter::MoveAxis(const FInputActionValue& Value)
-{
-	if (CanMove==false || MoveByClick==true)
-	{
-		return;
-	}
-	
+void ASigurdCharacter::Move(const FInputActionValue& Value){
+
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr)
-	{
+	if (Controller != nullptr){
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
+
 		// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
@@ -127,104 +145,51 @@ void ASigurdCharacter::MoveAxis(const FInputActionValue& Value)
 		AddMovementInput(ForwardDirection, MovementVector.X);
 		AddMovementInput(RightDirection, MovementVector.Y);
 	}
-
 }
 
-void ASigurdCharacter::MoveClick(const FInputActionValue& Value)
-{
-	if (CanMove==false || MoveByClick==false)
-	{
-		return;
-	}
-	
-	UE_LOG(LogTemp, Warning, TEXT("Move by click"));
-	// We flag that the input is being pressed
-	FollowTime += GetWorld()->GetDeltaSeconds();
-
-	// We look for the location in the world where the player has pressed the input
-	FHitResult Hit;
-	bool bHitSuccessful = false;
-	bHitSuccessful = GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursorByChannel(UEngineTypes::ConvertToTraceType(ECC_Visibility), true, Hit);
-
-	// If we hit a surface, cache the location
-	if (bHitSuccessful)
-	{
-		CachedDestination = Hit.Location;
-	}
-
-	// Move towards mouse pointer or touch
-	ACharacter* ControlledCharacter = GetCharacterMovement()->GetCharacterOwner();
-	if (ControlledCharacter != nullptr)
-	{
-		FVector WorldDirection = (CachedDestination - ControlledCharacter->GetActorLocation()).GetSafeNormal();
-		ControlledCharacter->AddMovementInput(WorldDirection, 1.0, false);
-	}
-
-	return;
-
+void ASigurdCharacter::StartRunning(){
+	StaminaComponent->RunAction();
 }
 
-void ASigurdCharacter::QuickAttack(const FInputActionValue& Value)
-{
-	if (CanAttack==false)
-	{
-		return;
-	}
 
-	if (APlayerController* playerController = Cast<APlayerController>(Controller))
-	{
-		if (playerController->IsInputKeyDown(EKeys::Gamepad_FaceButton_Left))
-		{
-			CanAttack = false;
-			FOutputDeviceNull ar;
-			this->CallFunctionByNameWithArguments(TEXT("MeleAttack2"), ar, NULL, true);
-		}
-		else
-		{
-			CanAttack = false;
-			FOutputDeviceNull ar;
-			this->CallFunctionByNameWithArguments(TEXT("MeleAttack"), ar, NULL, true);
-		}
-	}
-	
-
-	
+void ASigurdCharacter::LightAttack(){
+	CombatComponent->Attack();
 }
 
-void ASigurdCharacter::HeavyAttack(const FInputActionValue& Value)
-{
-	
-	UE_LOG(LogTemp, Warning, TEXT("Attack: %f"), Value.Get<float>());
+void ASigurdCharacter::HeavyAttack(){
+	CombatComponent->Attack();
+}
 
-	if (Value.Get<float>() == 0 )
-	{
 
-		if (HeavyMeleValue > 0.2f)
-		{
-			//HeavyMeleValue = 1;
-			FOutputDeviceNull ar;
-			this->CallFunctionByNameWithArguments(TEXT("HeavyAttack"), ar, NULL, true);
-			CanAttack = false;
+void ASigurdCharacter::TakeDamageSigurd(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
+                                        class AController* InstigatedBy, AActor* DamageCauser) {
+	UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
+	CombatComponent->TakeDamage(Damage, ObjectInstance);
+}
 
-		}
-		else 
-		{
-			HeavyMeleValue = 0;
-		}
-		
+/*void ASigurdCharacter::TakeDamage_Implementation(float damage){
+	IDamageableInterface::TakeDamage_Implementation(damage);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("CustomTakeDamage_Implementation"));
+}*/
+
+void ASigurdCharacter::NextWeapon() {
+	if (CombatComponent->WeaponInventory.Num() != 0){
+		CombatComponent->NextWeapon();
+		WeaponMesh->SetStaticMesh(CombatComponent->WeaponInventory[CombatComponent->CurrentWeapon].Mesh);
 	}
-	else if( HeavyMeleValue < 1 && CanAttack==true)
-	{
+}
 
-		//increase heavy attack value by delta time
-		HeavyMeleValue += GetWorld()->GetDeltaSeconds();
-		if (HeavyMeleValue > 0.2f)
-		{
-			CanMove = false;
-		}
-		
+void ASigurdCharacter::PreviousWeapon() {
+	if (CombatComponent->WeaponInventory.Num() != 0){
+		CombatComponent->PreviousWeapon();
+		WeaponMesh->SetStaticMesh(CombatComponent->WeaponInventory[CombatComponent->CurrentWeapon].Mesh);
 	}
-	
-	UE_LOG(LogTemp, Warning, TEXT("Value: %f"), HeavyMeleValue);
+}
 
+void ASigurdCharacter::Dodge() {
+	CombatComponent->Dodge();
+}
+
+void ASigurdCharacter::Block() {
+	CombatComponent->Block();
 }

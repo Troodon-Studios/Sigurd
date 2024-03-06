@@ -3,90 +3,82 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Actor/Weapon.h"
+#include "Components/CombatComponent.h"
+#include "Components/HealthComponent.h"
+#include "Components/StaminaComponent.h"
+#include "Components/TokenComponent.h"
+#include "DataTypes/PlayerInputAction.h"
 #include "GameFramework/Character.h"
+#include "Interfaces/DamageableInterface.h"
 #include "Logging/LogMacros.h"
 #include "SigurdCharacter.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
-class UInputMappingContext;
-class UInputAction;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ASigurdCharacter : public ACharacter
+class ASigurdCharacter : public ACharacter /*, public IDamageableInterface*/
 {
 	GENERATED_BODY()
 
-	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 
-	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	
-	/** MappingContext */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputMappingContext* DefaultMappingContext;
-	
-	/** Move Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* MoveAction;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* WeaponMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
+	UStaminaComponent* StaminaComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	UCombatComponent* CombatComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = "true"))
+	UHealthComponent* HealthComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	UTokenComponent* TokenComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* MoveByClickAction;
+	FInputActionValues InputActionValues;
 
-	/** Combat Input Actions */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* QckMeleAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* HvyMeleAction;
-	
-	/** CanMove and CanAttack booleans */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
-	bool CanMove = true;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
-	bool CanAttack = true;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
-	bool MoveByClick = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actions, meta = (AllowPrivateAccess = "true"))
-	float HeavyMeleValue = 0;
-	
 public:
 	ASigurdCharacter();
-	
 
 protected:
 
-	/** Called for movement input */
-	void MoveAxis(const FInputActionValue& Value);
-	void MoveClick(const FInputActionValue& Value);
+	//Movement
+	void Move(const FInputActionValue& Value);
+	void StartRunning() ;
 
-	void QuickAttack(const FInputActionValue& Value);
-	void HeavyAttack(const FInputActionValue& Value);			
+	//Combat	
+	void LightAttack() ;
+	void HeavyAttack() ;
+	UFUNCTION()
+	void TakeDamageSigurd(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
+	                      class AController* InstigatedBy, AActor* DamageCauser) ;
+	/*void TakeDamage_Implementation(float damage) override;*/
+	void Dodge() ;
+	void Block() ;
+
+	//Inventory
+	void NextWeapon() ;
+	void PreviousWeapon() ;
 
 protected:
-	// APawn interface
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
-	// To add mapping context
-	virtual void BeginPlay();
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;	
+	virtual void BeginPlay() override;
 
 public:
 	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE class USpringArmComponent* GetCameraBoom() const{ return CameraBoom; }
 	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
-private:
-	FVector CachedDestination;
-	float FollowTime; // For how long it has been pressed
+	FORCEINLINE class UCameraComponent* GetFollowCamera() const{ return FollowCamera; }
 };
-
