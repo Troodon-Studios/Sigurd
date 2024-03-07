@@ -4,7 +4,7 @@
 #include "CombatState.generated.h"
 
 UENUM()
-enum ECombatState : uint8 {
+enum class ECombatState : uint8 {
 	Idle,
 	Attacking,
 	QueuingAttack,

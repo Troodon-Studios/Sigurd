@@ -28,13 +28,13 @@ bool UTokenComponent::ReserveTokens(UTokenComponent* Caster, const int32 Quantit
 // Method to return the available tokens from a specific owner.
 void UTokenComponent::ReturnTokens(UTokenComponent* Owner)
 {
-	RemoveTokens(Owner, AviableTokens);
+	RemoveTokens(Owner, AvailableTokens);
 }
 
 // Method to return all available tokens.
 void UTokenComponent::ReturnAllTokens()
 {
-	RemoveTokens(nullptr, AviableTokens);
+	RemoveTokens(nullptr, AvailableTokens);
 }
 
 // Method to remove tokens from a specific owner or all owners if no owner is specified.
@@ -80,7 +80,7 @@ void UTokenComponent::GiveToken(UTokenComponent* Caster, const int32 Quantity)
 // If there are casters in the queue, it gives a token to the first caster in the queue.
 void UTokenComponent::ReceiveToken(FToken* Token)
 {
-	Token->Owner == this ? Tokens.Add(Token) : AviableTokens.Add(Token);
+	Token->Owner == this ? Tokens.Add(Token) : AvailableTokens.Add(Token);
 	if (CastersQueue.Num() > 0) GiveToken(CastersQueue.CreateIterator()->Key, 1);
 }
 
@@ -88,7 +88,7 @@ void UTokenComponent::ReceiveToken(FToken* Token)
 int32 UTokenComponent::GetAviablleTokens(UTokenComponent* Target) const
 {
 	return (Target == this) ? Tokens.Num() :
-	AviableTokens.FilterByPredicate([Target](const FToken* Token){ return Token->Owner == Target; }).Num();
+	AvailableTokens.FilterByPredicate([Target](const FToken* Token){ return Token->Owner == Target; }).Num();
 }
 //// ONLY FOR DEBUGGING PURPOSES ////
 // Method to print information about all tokens.
@@ -101,7 +101,7 @@ void UTokenComponent::PrintTokenInfo()
 			                                 TEXT("%d, Owner: %s"), Token->UniqueID, *Token->Owner->GetName()));
 	}
 
-	for (const FToken* Token : AviableTokens)
+	for (const FToken* Token : AvailableTokens)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green,
 		                                 FString::Printf(

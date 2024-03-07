@@ -1,0 +1,31 @@
+﻿@startuml
+class ASigurdCharacter {
+  UStaminaComponent StaminaComponent
+  UCombatComponent CombatComponent
+  UHealthComponent HealthComponent
+  UConditionsComponent ConditionsComponent
+}
+
+class UStaminaComponent
+class UCombatComponent
+class UHealthComponent
+class UConditionsComponent{
+  - TArray<FCondition> Conditions
+  
+}
+
+class UConditionEffectHandler{
+    - TArray<FConditionEffectInfo> ConditionEffects;
+    
+    + AddCondition(ECondition Condition)
+    + RemoveCondition(ECondition Condition)
+}
+
+ASigurdCharacter *-- UStaminaComponent
+ASigurdCharacter *-- UCombatComponent
+ASigurdCharacter *-- UHealthComponent
+ASigurdCharacter *-- UConditionsComponent
+
+UConditionsComponent *-- UConditionEffectHandler
+
+@enduml

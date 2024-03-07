@@ -32,7 +32,7 @@ public:
 	TArray<FItemData> WeaponInventory;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void AddWeaponToInventory(FDataTableRowHandle weapon);
+	void AddWeaponToInventory(FDataTableRowHandle Weapon);
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void NextWeapon();
@@ -41,7 +41,7 @@ public:
 	void PreviousWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void ExecuteCurrentWeaponComboMontage(FName _sectionName);
+	void ExecuteCurrentWeaponComboMontage(FName SectionName);
 	void ExecuteCurrentWeaponDodgeMontage();
 	void ExecuteCurrentWeaponBlockMontage();
 	
@@ -57,20 +57,18 @@ public:
 	void Attack();
 	void EndAttack();
 
-	void QueueAttack(FName _sectionName);
+	void QueueAttack(FName SectionName);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void TakeDamage(float damage, UObject* DamageType);
+	void TakeDamage(float Damage, UObject* DamageType);
 
 	void IncreaseComboCount();
 
-	void ChangeWeaponLight(float intensity);
-	void ChangeWeaponLightColor(FLinearColor color);
+	void ChangeWeaponLight(float Intensity);
+	void ChangeWeaponLightColor(FLinearColor Color);
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-
-public:
 	
 };

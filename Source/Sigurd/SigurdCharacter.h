@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Actor/Weapon.h"
 #include "Components/CombatComponent.h"
+#include "Components/ConditionComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/StaminaComponent.h"
 #include "Components/TokenComponent.h"
@@ -42,6 +43,9 @@ class ASigurdCharacter : public ACharacter /*, public IDamageableInterface*/
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = "true"))
 	UHealthComponent* HealthComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Condition", meta = (AllowPrivateAccess = "true"))
+	UConditionComponent* ConditionComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	UTokenComponent* TokenComponent;

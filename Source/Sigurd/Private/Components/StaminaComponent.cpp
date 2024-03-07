@@ -6,7 +6,7 @@
 // Sets default values for this component's properties
 UStaminaComponent::UStaminaComponent(){
 
-	StaminaState = EStaminaState::Resting;
+	StaminaState = EStaminaState::Idle;
 	MaxStamina = 100;
 	CurrentStamina = MaxStamina;
 	StaminaRegenRate = 0.3f;
@@ -16,13 +16,10 @@ UStaminaComponent::UStaminaComponent(){
 	RunningSpeed = 900;
 	WalkingSpeed = 700;
 	ExhaustedSpeed = 500;
-
-
-	// ...
 }
 
 
-// Called when the game starts
+// Called when the game starts*
 void UStaminaComponent::BeginPlay(){
 	Super::BeginPlay();
 
@@ -48,14 +45,14 @@ void UStaminaComponent::DelayedStaminaRegen(float delay){
 }
 
 void UStaminaComponent::RunAction(){
-	if (StaminaState == EStaminaState::Resting){
+	if (StaminaState == EStaminaState::Idle){
 		StaminaState = EStaminaState::Running;
 		CurrentStamina -= 5;
 		CharacterMovement->MaxWalkSpeed = RunningSpeed;
 		StartStaminaDecay();
 	}
 	else if (StaminaState == EStaminaState::Running){
-		StaminaState = EStaminaState::Resting;
+		StaminaState = EStaminaState::Idle;
 		StopRunning();
 	}
 }
@@ -94,7 +91,7 @@ void UStaminaComponent::RegenStamina(){
 	CurrentStamina += StaminaRegenRate;
 
 	if (CurrentStamina > MaxStamina){
-		StaminaState = EStaminaState::Resting;
+		StaminaState = EStaminaState::Idle;
 		CurrentStamina = MaxStamina;
 		GetWorld()->GetTimerManager().ClearTimer(StaminaRegenTimerHandle);
 	}
@@ -104,7 +101,7 @@ void UStaminaComponent::ExhaustedRegenStamina(){
 	CurrentStamina += StaminaRegenRate / 2;
 
 	if (CurrentStamina > MaxStamina){
-		StaminaState = EStaminaState::Resting;
+		StaminaState = EStaminaState::Idle;
 		CharacterMovement->MaxWalkSpeed = WalkingSpeed;
 		CurrentStamina = MaxStamina;
 		GetWorld()->GetTimerManager().ClearTimer(StaminaRegenTimerHandle);
@@ -119,7 +116,7 @@ void UStaminaComponent::DecayStamina(){
 		StaminaState = EStaminaState::Exhausted;
 		StopRunning();
 	} else if ( CharacterMovement->Velocity.IsNearlyZero()){
-		StaminaState = EStaminaState::Resting;
+		StaminaState = EStaminaState::Idle;
 		StopRunning();
 	}
 }
