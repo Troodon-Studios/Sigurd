@@ -8,6 +8,7 @@
 #include "Components/ConditionComponent.h"
 #include "Components/HealthComponent.h"
 #include "Components/StaminaComponent.h"
+#include "Components/TokenComponent.h"
 #include "DataTypes/PlayerInputAction.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/DamageableInterface.h"
@@ -45,6 +46,9 @@ class ASigurdCharacter : public ACharacter /*, public IDamageableInterface*/
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Condition", meta = (AllowPrivateAccess = "true"))
 	UConditionComponent* ConditionComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	UTokenComponent* TokenComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	FInputActionValues InputActionValues;
