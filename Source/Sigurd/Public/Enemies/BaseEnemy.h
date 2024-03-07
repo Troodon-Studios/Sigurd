@@ -9,6 +9,7 @@
 #include "Components/StaminaComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "PatrolRoute.h"
+#include "Components/TokenComponent.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/AICoreInterface.h"
 #include "BaseEnemy.generated.h"
@@ -29,6 +30,10 @@ class SIGURD_API ABaseEnemy : public ACharacter, public IAICoreInterface
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = "true"))
 	UHealthComponent* HealthComponent;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	UTokenComponent* TokenComponent;
+	
 	
 public:
 	// Sets default values for this character's properties
