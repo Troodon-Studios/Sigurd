@@ -18,15 +18,9 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 //////////////////////////////////////////////////////////////////////////
 // ASigurdCharacter
 
-ASigurdCharacter::ASigurdCharacter(){
+ASigurdCharacter::ASigurdCharacter() : ABaseCharacter(){
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
-	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
-	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
-	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
-	ConditionComponent = CreateDefaultSubobject<UConditionComponent>(TEXT("ConditionComponent"));
-	TokenComponent = CreateDefaultSubobject<UTokenComponent>(TEXT("TokenComponent"));
 
 	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
 	WeaponMesh->SetupAttachment(GetMesh(), FName("RH_Socket"));
@@ -68,22 +62,6 @@ ASigurdCharacter::ASigurdCharacter(){
 
 void ASigurdCharacter::BeginPlay(){
 	Super::BeginPlay();
-
-	if (StaminaComponent){
-		StaminaComponent->RegisterComponent();
-	}
-
-	if (CombatComponent){
-		CombatComponent->RegisterComponent();
-	}
-
-	if (HealthComponent){
-		HealthComponent->RegisterComponent();
-	}
-
-	if (ConditionComponent){
-		ConditionComponent->RegisterComponent();
-	}
 
 	OnTakeAnyDamage.AddDynamic(this, &ASigurdCharacter::TakeDamageSigurd);
 	

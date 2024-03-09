@@ -1,0 +1,34 @@
+﻿@startuml
+class BaseCharacter {
+
+    -UHealthComponent* HealthComponent;
+    -UConditionComponent* ConditionComponent;
+    -UCombatComponent* CombatComponent;
+}
+
+class SigurdCharacter {
+
+}
+
+class UConditionComponent {
+UConditionHandler* conditionHandler
+}
+
+class UCombatComponent {}
+
+class UConditionHandler {
+	-UHealthComponent* HealthComponent;
+	-UConditionComponent* ConditionComponent;
+	-UCharacterMovementComponent* MovementComponent;
+    Reactions()
+}
+
+BaseCharacter <|-left- SigurdCharacter
+
+BaseCharacter *-- UHealthComponent
+BaseCharacter *-- UConditionComponent
+BaseCharacter *-- UCombatComponent
+UConditionComponent *-- UConditionHandler
+
+
+@enduml

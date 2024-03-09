@@ -5,20 +5,22 @@
 #include "ConditionHandler.generated.h"
 
 class UConditionComponent;
+class ABaseCharacter;
 
 UCLASS()
 class UConditionHandler : public UObject {
 	GENERATED_BODY()
 
 private:
-	UHealthComponent* HealthComponent;
+	ABaseCharacter* OwnerCharacter;
 	UConditionComponent* ConditionComponent;
+	UHealthComponent* HealthComponent;
 	UCharacterMovementComponent* MovementComponent;
 
 public:
 	UConditionHandler();
 
-	void Initialize(UConditionComponent* ParentConditionComponent);
+	void Initialize(ABaseCharacter* InOwnerCharacter);
 
 	void StartBurning();
 	void StartFreezing();

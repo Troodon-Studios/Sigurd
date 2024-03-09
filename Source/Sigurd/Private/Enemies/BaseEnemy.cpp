@@ -7,21 +7,13 @@
 // Sets default values
 // Constructor for the ABaseEnemy class
 // Initializes the StaminaComponent, CombatComponent, HealthComponent, and WeaponMesh
-ABaseEnemy::ABaseEnemy()
+ABaseEnemy::ABaseEnemy() : ABaseCharacter()
 {
  // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
  PrimaryActorTick.bCanEverTick = true;
 
  // Set size for collision capsule
  GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
- // Create the StaminaComponent, CombatComponent, HealthComponent, and WeaponMesh
- StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
- CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
- HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
- WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
- WeaponMesh->SetupAttachment(GetMesh(), FName("RH_Socket"));
- TokenComponent = CreateDefaultSubobject<UTokenComponent>(TEXT("TokenComponent"));
 
  SetupStimulusSource();
  
@@ -34,17 +26,7 @@ ABaseEnemy::ABaseEnemy()
 void ABaseEnemy::BeginPlay()
 {
  Super::BeginPlay();
-
- // Register the StaminaComponent, CombatComponent, and HealthComponent
- if (StaminaComponent){
-  StaminaComponent->RegisterComponent();
- }
- if (CombatComponent){
-  CombatComponent->RegisterComponent();
- }
- if (HealthComponent){
-  HealthComponent->RegisterComponent();
- }
+ 
 }
 
 // Called every frame
