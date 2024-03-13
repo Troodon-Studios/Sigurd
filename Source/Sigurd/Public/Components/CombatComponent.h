@@ -7,30 +7,59 @@
 #include "ItemData.h"
 #include "DataTypes/CombatState.h"
 #include "StaminaComponent.h"
+#include "Combat/CombatAbility.h"
+#include "Combat/Weapon.h"
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
+
+struct AbilityKit{
+
+	UCombatAbility* LightAttack;
+	UCombatAbility* HeavyAttack;
+	UCombatAbility* Dodge;
+	UCombatAbility* Block;
+	
+	UCombatAbility* Ability1;
+	UCombatAbility* Ability2;
+	UCombatAbility* Ability3;
+	UCombatAbility* Ability4;
+	
+};
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SIGURD_API UCombatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
+private:
+
+
+	int ComboCount = 0;
+
+	AbilityKit CurrentAbilityKit;
+
+	void Attack(UCombatAbility* Ability, ECombatState QueuedState);
+
 public:	
 	// Sets default values for this component's properties
 	UCombatComponent();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	TEnumAsByte<ECombatState> CombatState;
 
-	int ComboCount = 0;
+	int CurrentWeapon = -1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	TSubclassOf<AWeapon> WeaponClass;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	int CurrentWeapon;
+	AWeapon* CurrentWeaponActor;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TArray<FItemData> WeaponInventory;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	TArray<TSubclassOf<UCombatAbility>> AbilityInventory; 
+	
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void AddWeaponToInventory(FDataTableRowHandle Weapon);
 
@@ -39,9 +68,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void PreviousWeapon();
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void ExecuteCurrentWeaponComboMontage(FName SectionName);
+	
 	void ExecuteCurrentWeaponDodgeMontage();
 	void ExecuteCurrentWeaponBlockMontage();
 	
@@ -52,9 +79,10 @@ public:
 	void Dodge();
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void Block();
-
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void Attack();
+	
+	void LightAttack();
+	void HeavyAttack();
+	
 	void EndAttack();
 
 	void QueueAttack(FName SectionName);
@@ -70,5 +98,12 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+
+	UCombatAbility* SetAbility(TSubclassOf<UCombatAbility> AbilityClass);
+
+	void SetWeaponAbilities();
+
+	void SetCurrentWeapon();
 	
 };

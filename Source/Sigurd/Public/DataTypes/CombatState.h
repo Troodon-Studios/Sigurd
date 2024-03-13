@@ -9,6 +9,8 @@ enum class ECombatState : uint8 {
 	Attacking,
 	QueuingAttack,
 	AttackQueued,
+	LightAttackQueued,
+	HeavyAttackQueued,
 	Dodging,
 	Blocking,
 	Parrying,

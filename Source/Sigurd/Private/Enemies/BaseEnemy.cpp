@@ -85,5 +85,5 @@ void ABaseEnemy::GetIdealRange_Implementation(double& _AttackRadius, double& _De
 // Makes the enemy attack
 void ABaseEnemy::EventAttack_Implementation(AActor* AttackTarget)
 {
- CombatComponent->Attack();
+ CombatComponent->LightAttack();
 }

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Actor/Weapon.h"
 #include "Characters/BaseCharacter.h"
 #include "Components/CombatComponent.h"
 #include "Components/ConditionComponent.h"
@@ -32,9 +31,6 @@ class ASigurdCharacter : public ABaseCharacter /*, public IDamageableInterface*/
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	UStaticMeshComponent* WeaponMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	FInputActionValues InputActionValues;

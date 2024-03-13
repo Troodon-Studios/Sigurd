@@ -1,8 +1,7 @@
 ﻿@startuml
 class BaseCharacter {
-
-    -UHealthComponent* HealthComponent;
     -UConditionComponent* ConditionComponent;
+    -UHealthComponent* HealthComponent;
     -UCombatComponent* CombatComponent;
 }
 
@@ -25,10 +24,10 @@ class UConditionHandler {
 
 BaseCharacter <|-left- SigurdCharacter
 
+BaseCharacter *-- UCombatComponent
 BaseCharacter *-- UHealthComponent
 BaseCharacter *-- UConditionComponent
-BaseCharacter *-- UCombatComponent
-UConditionComponent *-- UConditionHandler
 
+UConditionComponent *-- UConditionHandler
 
 @enduml

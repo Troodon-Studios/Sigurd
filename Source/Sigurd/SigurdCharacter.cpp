@@ -21,9 +21,7 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 ASigurdCharacter::ASigurdCharacter() : ABaseCharacter(){
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
-	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
-	WeaponMesh->SetupAttachment(GetMesh(), FName("RH_Socket"));
+	
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -136,11 +134,11 @@ void ASigurdCharacter::StartRunning(){
 
 
 void ASigurdCharacter::LightAttack(){
-	CombatComponent->Attack();
+	CombatComponent->LightAttack();
 }
 
 void ASigurdCharacter::HeavyAttack(){
-	CombatComponent->Attack();
+	CombatComponent->HeavyAttack();
 }
 
 
@@ -158,14 +156,12 @@ void ASigurdCharacter::TakeDamageSigurd(AActor* DamagedActor, float Damage, cons
 void ASigurdCharacter::NextWeapon() {
 	if (CombatComponent->WeaponInventory.Num() != 0){
 		CombatComponent->NextWeapon();
-		WeaponMesh->SetStaticMesh(CombatComponent->WeaponInventory[CombatComponent->CurrentWeapon].Mesh);
 	}
 }
 
 void ASigurdCharacter::PreviousWeapon() {
 	if (CombatComponent->WeaponInventory.Num() != 0){
 		CombatComponent->PreviousWeapon();
-		WeaponMesh->SetStaticMesh(CombatComponent->WeaponInventory[CombatComponent->CurrentWeapon].Mesh);
 	}
 }
 

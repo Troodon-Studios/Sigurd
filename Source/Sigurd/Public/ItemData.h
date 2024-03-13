@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "Combat/CombatAbility.h"
 #include "GameFramework/Actor.h"
 #include "Engine/StaticMesh.h"
 #include "ItemData.generated.h"
@@ -26,5 +27,11 @@ struct FItemData : public FTableRowBase{
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UAnimMontage* BlockMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UCombatAbility> LightAttack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UCombatAbility> HeavyAttack;
 	
 };

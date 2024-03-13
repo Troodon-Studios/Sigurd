@@ -19,9 +19,6 @@ UCLASS()
 class SIGURD_API ABaseEnemy : public ABaseCharacter, public IAICoreInterface
 {
 	GENERATED_BODY()
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	UStaticMeshComponent* WeaponMesh;
 	
 	
 public:
