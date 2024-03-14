@@ -33,6 +33,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	UTokenComponent* TokenComponent;
 
+
+
 public:
 	// Sets default values for this character's properties
 	ABaseCharacter();

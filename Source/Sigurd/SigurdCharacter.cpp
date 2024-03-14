@@ -53,8 +53,7 @@ ASigurdCharacter::ASigurdCharacter() : ABaseCharacter(){
 	// Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
 	
 }
 
@@ -71,6 +70,8 @@ void ASigurdCharacter::BeginPlay(){
 			Subsystem->AddMappingContext(InputActionValues.DefaultMappingContext, 0);
 		}
 	}
+
+	
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -132,7 +133,6 @@ void ASigurdCharacter::StartRunning(){
 	StaminaComponent->RunAction();
 }
 
-
 void ASigurdCharacter::LightAttack(){
 	CombatComponent->LightAttack();
 }
@@ -141,11 +141,10 @@ void ASigurdCharacter::HeavyAttack(){
 	CombatComponent->HeavyAttack();
 }
 
-
 void ASigurdCharacter::TakeDamageSigurd(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
                                         class AController* InstigatedBy, AActor* DamageCauser) {
 	UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
-	CombatComponent->TakeDamage(Damage, ObjectInstance);
+	//CombatComponent->TakeDamage(Damage, ObjectInstance);
 }
 
 /*void ASigurdCharacter::TakeDamage_Implementation(float damage){
@@ -154,21 +153,21 @@ void ASigurdCharacter::TakeDamageSigurd(AActor* DamagedActor, float Damage, cons
 }*/
 
 void ASigurdCharacter::NextWeapon() {
-	if (CombatComponent->WeaponInventory.Num() != 0){
-		CombatComponent->NextWeapon();
-	}
+	//if (CombatComponent->WeaponDataInventory.Num() != 0){
+	//	CombatComponent->NextWeapon();
+	//}
 }
 
 void ASigurdCharacter::PreviousWeapon() {
-	if (CombatComponent->WeaponInventory.Num() != 0){
-		CombatComponent->PreviousWeapon();
-	}
+	//if (CombatComponent->WeaponDataInventory.Num() != 0){
+	//	CombatComponent->PreviousWeapon();
+	//}
 }
 
 void ASigurdCharacter::Dodge() {
-	CombatComponent->Dodge();
+	//CombatComponent->Dodge();
 }
 
 void ASigurdCharacter::Block() {
-	CombatComponent->Block();
+	//CombatComponent->Block();
 }

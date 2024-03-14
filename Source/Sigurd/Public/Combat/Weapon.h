@@ -12,16 +12,16 @@ UCLASS()
 class SIGURD_API AWeapon : public AActor{
 	GENERATED_BODY()
 
+protected:
+	ABaseCharacter* Owner;
+
 public:
 	// Sets default values for this actor's properties
 	AWeapon();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-	UStaticMeshComponent* WeaponMesh;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	UBoxComponent* WeaponCollision;
-
+	UStaticMeshComponent* WeaponMesh;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	FItemData WeaponData;
 
@@ -29,12 +29,4 @@ public:
 	UCombatAbility* HeavyAttack;
 
 	void SetWeaponData(FItemData NewWeaponData, ABaseCharacter* Character);
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 };

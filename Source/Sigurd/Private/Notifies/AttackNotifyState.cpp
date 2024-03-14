@@ -9,9 +9,9 @@
 void UAttackNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
                                      float TotalDuration, const FAnimNotifyEventReference& EventReference){
 	if (UCombatComponent* CombatComp = GetCombatComponent(MeshComp)){
-		CombatComp->CombatState = ECombatState::QueuingAttack;
-		CombatComp->ChangeWeaponLightColor(FLinearColor(0, 0, 1, 1));
-		CombatComp->ChangeWeaponLight(1);
+		// CombatComp->CombatState = ECombatState::QueuingAttack;
+		// CombatComp->ChangeWeaponLightColor(FLinearColor(0, 0, 1, 1));
+		// CombatComp->ChangeWeaponLight(1);
 	}
 
 
@@ -21,8 +21,8 @@ void UAttackNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequ
 void UAttackNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
 	const FAnimNotifyEventReference& EventReference){
 	if (UCombatComponent* CombatComp = GetCombatComponent(MeshComp)){
-		CombatComp->QueueAttack(sectionName);
-		CombatComp->ChangeWeaponLight(0);
+		// CombatComp->QueueAttack(sectionName);
+		// CombatComp->ChangeWeaponLight(0);
 	}
 
 
