@@ -17,12 +17,15 @@ public:
 	UCombatAbility();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float Damage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	FString Description;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* Montage;
 	
-	void Initialize(ABaseCharacter* InOwner);
+	virtual void Initialize(ABaseCharacter* InOwner);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual void Execute();
@@ -30,11 +33,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual void ExecuteSection(FName SectionName);
 
+	virtual void OnAnimationEnded(UAnimMontage* InMontage, bool bInterrupted);
+
 protected:
 	ABaseCharacter* Owner;
 	
-	static void PlayAnimation(UAnimMontage* Montage, ABaseCharacter* Owner);
-	static void PlayAnimationSection(UAnimMontage* Montage, FName SectionName, ABaseCharacter* Owner);
+	void PlayAnimation(UAnimMontage* InMontage, ABaseCharacter* InOwner);
+	void PlayAnimationSection(UAnimMontage* InMontage, FName SectionName, ABaseCharacter* InOwner);
 
 	
 	

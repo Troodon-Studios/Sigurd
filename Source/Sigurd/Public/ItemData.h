@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Combat/CombatAbility.h"
+#include "Combat/MeleeAttack.h"
 #include "GameFramework/Actor.h"
 #include "Engine/StaticMesh.h"
 #include "ItemData.generated.h"
@@ -34,10 +35,10 @@ struct FItemData : public FTableRowBase{
 	UAnimMontage* BlockMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<UCombatAbility> LightAttack;
+	TSubclassOf<UMeleeAttack> LightAttack;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<UCombatAbility> HeavyAttack;
+	TSubclassOf<UMeleeAttack> HeavyAttack;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName SocketName;	

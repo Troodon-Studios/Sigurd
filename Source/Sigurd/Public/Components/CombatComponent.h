@@ -25,6 +25,9 @@ public:
 	AWeapon* EquippedWeapon;
 
 
+	// UFUNCTION(BlueprintCallable, Category = "Combat")
+	// void TakeDamage(float Damage, UObject* DamageType);
+
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void EquipWeapon(FDataTableRowHandle Weapon);

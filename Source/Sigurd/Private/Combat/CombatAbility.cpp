@@ -26,35 +26,42 @@ void UCombatAbility::ExecuteSection(FName SectionName){
 	PlayAnimationSection(Montage, SectionName, Owner);
 }
 
-// Add default functionality here for any ICombatAbility functions that are not pure virtual.
-void UCombatAbility::PlayAnimation(UAnimMontage* Montage, ABaseCharacter* Owner){
-
-	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
+void UCombatAbility::PlayAnimation(UAnimMontage* InMontage, ABaseCharacter* InOwner){
+	UAnimInstance* AnimInstance = InOwner->GetMesh()->GetAnimInstance();
 
 	if (AnimInstance){
-
-		if (AnimInstance->Montage_IsPlaying(Montage)){
-			AnimInstance->Montage_Stop(0.2f, Montage);
+		if (AnimInstance->Montage_IsPlaying(NULL)){
+			AnimInstance->Montage_Stop(0.2f, NULL);
 		}
 
-		AnimInstance->Montage_Play(Montage, 1.5);
+		AnimInstance->Montage_Play(InMontage, 1.5);
+
+		// Create a variable of type FOnMontageEnded and assign the delegate to it
+		FOnMontageEnded OnMontageEndedDelegate;
+		OnMontageEndedDelegate.BindUObject(this, &UCombatAbility::OnAnimationEnded);
+
+		// Pass the variable to Montage_SetEndDelegate
+		AnimInstance->Montage_SetEndDelegate(OnMontageEndedDelegate, InMontage);
 	}
-	
 }
 
-void UCombatAbility::PlayAnimationSection(UAnimMontage* Montage, FName SectionName, ABaseCharacter* Owner){
+void UCombatAbility::OnAnimationEnded(UAnimMontage* InMontage, bool bInterrupted){
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Animation ended");
+}
 
-	UAnimInstance* AnimInstance = Owner->GetMesh()->GetAnimInstance();
+void UCombatAbility::PlayAnimationSection(UAnimMontage* InMontage, FName SectionName, ABaseCharacter* InOwner){
+
+	UAnimInstance* AnimInstance = InOwner->GetMesh()->GetAnimInstance();
 
 	if (AnimInstance){
 
-		if (AnimInstance->Montage_IsPlaying(Montage)){
-			AnimInstance->Montage_Stop(0.2f, Montage);
+		if (AnimInstance->Montage_IsPlaying(InMontage)){
+			AnimInstance->Montage_Stop(0.2f, InMontage);
 		}
 
-		AnimInstance->Montage_Play(Montage, 1.5); //TODO dejar en 1 
+		AnimInstance->Montage_Play(InMontage, 1.5); //TODO dejar en 1 
 		if (SectionName != NAME_None){
-			AnimInstance->Montage_JumpToSection(SectionName, Montage);
+			AnimInstance->Montage_JumpToSection(SectionName, InMontage);
 		}
 	}
 }

@@ -28,12 +28,12 @@ void UCombatComponent::EquipWeapon(FDataTableRowHandle Weapon){
 
 void UCombatComponent::LightAttack(){
 	if (EquippedWeapon){
-		EquippedWeapon->LightAttack->Execute();		
+		EquippedWeapon->LightAttack();
 	}
 }
 
 void UCombatComponent::HeavyAttack(){
 	if (EquippedWeapon){
-		EquippedWeapon->HeavyAttack->Execute();
+		EquippedWeapon->HeavyAttack();
 	}
 }

@@ -27,5 +27,7 @@ private:
 	virtual void NotifyEnd(USkeletalMeshComponent * MeshComp, UAnimSequenceBase * Animation, const FAnimNotifyEventReference& EventReference) override;
 
 	static UCombatComponent* GetCombatComponent(const USkeletalMeshComponent* MeshComp);
+
+	static UBoxComponent* GetWeaponCollider(const USkeletalMeshComponent* MeshComp);
 	
 };

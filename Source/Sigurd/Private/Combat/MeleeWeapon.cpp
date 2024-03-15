@@ -11,9 +11,33 @@
 AMeleeWeapon::AMeleeWeapon(){
 	WeaponCollider = CreateDefaultSubobject<UBoxComponent>(TEXT("WeaponCollider"));
 	WeaponCollider->SetupAttachment(WeaponMesh);
+	WeaponCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-	WeaponCollider->OnComponentBeginOverlap.AddDynamic(this, &AMeleeWeapon::OnWeaponColliderBeginOverlap);
+	
+}
 
+void AMeleeWeapon::SetWeaponData(FItemData NewWeaponData, ABaseCharacter* Character){
+	Owner = Character;
+	WeaponData = NewWeaponData;
+
+	LightAttackAbility = NewObject<UMeleeAttack>(this, WeaponData.LightAttack);
+	Cast<UMeleeAttack>(LightAttackAbility)->Initialize(Character, WeaponCollider);
+	HeavyAttackAbility = NewObject<UMeleeAttack>(this, WeaponData.HeavyAttack);
+	Cast<UMeleeAttack>(HeavyAttackAbility)->Initialize(Character, WeaponCollider);
+
+
+}
+
+void AMeleeWeapon::LightAttack(){
+	if (LightAttackAbility) {
+		Cast<UMeleeAttack>(LightAttackAbility)->ExecuteAttack(WeaponCollider);
+	} else {
+		UE_LOG(LogTemp, Warning, TEXT("LightAttackAbility is null."));
+	}
+}
+
+void AMeleeWeapon::HeavyAttack(){
+	Cast<UMeleeAttack>(HeavyAttackAbility)->ExecuteAttack(WeaponCollider);
 }
 
 // Called when the game starts or when spawned
@@ -21,18 +45,4 @@ void AMeleeWeapon::BeginPlay(){
 	Super::BeginPlay();
 	
 }
-
-void AMeleeWeapon::OnWeaponColliderBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult){
-
-	if (OtherActor == Cast<AActor>(Owner))
-		return;
-
-	//print other actor
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, OtherActor->GetName());
-
-
-}
-
-
 

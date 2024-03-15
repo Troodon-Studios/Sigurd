@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "CombatAbility.h"
 #include "ItemData.h"
+#include "MeleeAttack.h"
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
@@ -25,8 +26,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	FItemData WeaponData;
 
-	UCombatAbility* LightAttack;
-	UCombatAbility* HeavyAttack;
+	UPROPERTY()
+	UCombatAbility* LightAttackAbility;
+	UPROPERTY()
+	UCombatAbility* HeavyAttackAbility;
 
-	void SetWeaponData(FItemData NewWeaponData, ABaseCharacter* Character);
+	virtual void SetWeaponData(FItemData NewWeaponData, ABaseCharacter* Character);
+
+	virtual void LightAttack();
+	virtual void HeavyAttack();
 };

@@ -17,12 +17,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UBoxComponent* WeaponCollider;
+
+	virtual void SetWeaponData(FItemData NewWeaponData, ABaseCharacter* Character) override;
+	
+	virtual void LightAttack() override;
+
+	virtual void HeavyAttack() override;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UFUNCTION()
-	void OnWeaponColliderBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 
 };
