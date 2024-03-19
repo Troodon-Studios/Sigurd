@@ -33,6 +33,6 @@ public:
 
 	virtual void SetWeaponData(FItemData NewWeaponData, ABaseCharacter* Character);
 
-	virtual void LightAttack();
-	virtual void HeavyAttack();
+	virtual void LightAttack(FName SectionName);
+	virtual void HeavyAttack(FName SectionName);
 };

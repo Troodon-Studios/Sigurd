@@ -28,17 +28,6 @@ void UAttackNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequen
 
 }
 
-UCombatComponent* UAttackNotifyState::GetCombatComponent(const USkeletalMeshComponent* MeshComp){
-	if (const AActor* Owner = MeshComp->GetOwner())
-	{
-		if (UCombatComponent* CombatComp = Owner->FindComponentByClass<UCombatComponent>())
-		{
-			return CombatComp;
-		}
-	}
-	return nullptr;
-}
-
 UBoxComponent* UAttackNotifyState::GetWeaponCollider(const USkeletalMeshComponent* MeshComp){
 	if (const AActor* Owner = MeshComp->GetOwner())
 	{

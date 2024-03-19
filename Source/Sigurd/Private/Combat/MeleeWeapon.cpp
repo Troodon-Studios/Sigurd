@@ -28,16 +28,16 @@ void AMeleeWeapon::SetWeaponData(FItemData NewWeaponData, ABaseCharacter* Charac
 
 }
 
-void AMeleeWeapon::LightAttack(){
+void AMeleeWeapon::LightAttack(FName SectionName){
 	if (LightAttackAbility) {
-		Cast<UMeleeAttack>(LightAttackAbility)->ExecuteAttack(WeaponCollider);
+		Cast<UMeleeAttack>(LightAttackAbility)->ExecuteAttack(WeaponCollider, SectionName);
 	} else {
 		UE_LOG(LogTemp, Warning, TEXT("LightAttackAbility is null."));
 	}
 }
 
-void AMeleeWeapon::HeavyAttack(){
-	Cast<UMeleeAttack>(HeavyAttackAbility)->ExecuteAttack(WeaponCollider);
+void AMeleeWeapon::HeavyAttack(FName SectionName){
+	Cast<UMeleeAttack>(HeavyAttackAbility)->ExecuteAttack(WeaponCollider, SectionName);
 }
 
 // Called when the game starts or when spawned

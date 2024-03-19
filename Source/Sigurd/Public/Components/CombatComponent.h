@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Combat/Weapon.h"
+#include "DataTypes/CombatState.h"
 #include "CombatComponent.generated.h"
 
 
@@ -17,6 +18,8 @@ public:
 	virtual void BeginPlay() override;
 
 	UCombatComponent();
+
+	TEnumAsByte<ECombatState> CombatState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	TSubclassOf<AWeapon> DefaultWeapon;
@@ -34,5 +37,10 @@ public:
 
 	void LightAttack();
 	void HeavyAttack();
+
+	void ChainAttack(FName SectionName);
+
+	void ChangeWeaponLight(float Intensity);
+	void ChangeWeaponLightColor(FLinearColor Color);
 	
 };

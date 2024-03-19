@@ -4,11 +4,11 @@
 #include "Combat/MeleeAttack.h"
 #include "Characters/BaseCharacter.h"
 
-void UMeleeAttack::ExecuteAttack(UBoxComponent* Collider){
+void UMeleeAttack::ExecuteAttack(UBoxComponent* Collider, FName SectionName){
 	if (WeaponCollider->OnComponentBeginOverlap.IsAlreadyBound(this, &UMeleeAttack::OnWeaponColliderOverlap)){
 		bSelfInterrupt = true;
 	}
-	PlayAttackAnimation(Montage, Owner);
+	PlayAttackAnimation(Montage, Owner, SectionName);
 }
 
 void UMeleeAttack::Initialize(ABaseCharacter* InOwner, UBoxComponent* InCollider){
@@ -41,7 +41,7 @@ void UMeleeAttack::OnWeaponColliderOverlap(UPrimitiveComponent* OverlappedCompon
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Description);
 }
 
-void UMeleeAttack::PlayAttackAnimation(UAnimMontage* InMontage, ABaseCharacter* InOwner){
+void UMeleeAttack::PlayAttackAnimation(UAnimMontage* InMontage, ABaseCharacter* InOwner, FName SectionName){
 	UAnimInstance* AnimInstance = InOwner->GetMesh()->GetAnimInstance();
 
 	if (AnimInstance){
@@ -55,6 +55,10 @@ void UMeleeAttack::PlayAttackAnimation(UAnimMontage* InMontage, ABaseCharacter* 
 		}
 
 		AnimInstance->Montage_Play(InMontage, 1.5);
+		
+		if (SectionName != NAME_None){
+			AnimInstance->Montage_JumpToSection(SectionName, InMontage);
+		}
 
 		// Create a variable of type FOnMontageEnded and assign the delegate to it
 		FOnMontageEnded OnMontageEndedDelegate;

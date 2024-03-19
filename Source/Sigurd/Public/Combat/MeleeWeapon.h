@@ -20,9 +20,9 @@ public:
 
 	virtual void SetWeaponData(FItemData NewWeaponData, ABaseCharacter* Character) override;
 	
-	virtual void LightAttack() override;
+	virtual void LightAttack(FName SectionName) override;
 
-	virtual void HeavyAttack() override;
+	virtual void HeavyAttack(FName SectionName) override;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

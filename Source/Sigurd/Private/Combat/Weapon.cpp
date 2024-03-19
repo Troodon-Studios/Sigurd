@@ -23,10 +23,10 @@ void AWeapon::SetWeaponData(FItemData NewWeaponData, ABaseCharacter* Character){
 	LightAttackAbility->Initialize(Character);
 }
 
-void AWeapon::LightAttack(){
+void AWeapon::LightAttack(FName SectionName){
 	LightAttackAbility->Execute();
 }
 
-void AWeapon::HeavyAttack(){
+void AWeapon::HeavyAttack(FName SectionName){
 	HeavyAttackAbility->Execute();
 }

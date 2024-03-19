@@ -20,7 +20,7 @@ private:
 
 public:
 
-	virtual void ExecuteAttack(UBoxComponent* Collider);
+	virtual void ExecuteAttack(UBoxComponent* Collider, FName SectionName);
 
 	virtual void Initialize(ABaseCharacter* InOwner, UBoxComponent* InCollider);
 
@@ -31,5 +31,5 @@ public:
 	UFUNCTION()
 	void OnWeaponColliderOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	void PlayAttackAnimation(UAnimMontage* InMontage, ABaseCharacter* InOwner);
+	void PlayAttackAnimation(UAnimMontage* InMontage, ABaseCharacter* InOwner, FName SectionName);
 };
