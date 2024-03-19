@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/BoxComponent.h"
+#include "DataTypes/AbilityData.h"
 #include "UObject/Interface.h"
 #include "CombatAbility.generated.h"
 
@@ -34,6 +35,9 @@ public:
 	virtual void ExecuteSection(FName SectionName);
 
 	virtual void OnAnimationEnded(UAnimMontage* InMontage, bool bInterrupted);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	FAbilityData AbilityData;
 
 protected:
 	ABaseCharacter* Owner;
