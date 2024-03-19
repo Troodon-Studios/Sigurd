@@ -21,6 +21,7 @@ ABaseEnemy::ABaseEnemy()
  HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
  WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
  WeaponMesh->SetupAttachment(GetMesh(), FName("RH_Socket"));
+ TokenComponent = CreateDefaultSubobject<UTokenComponent>(TEXT("TokenComponent"));
 
  SetupStimulusSource();
  
