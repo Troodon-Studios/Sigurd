@@ -21,6 +21,8 @@ public:
 
 	TEnumAsByte<ECombatState> CombatState;
 
+	TEnumAsByte<EAttackState> AttackState;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	TSubclassOf<AWeapon> DefaultWeapon;
 	
@@ -35,12 +37,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void EquipWeapon(FDataTableRowHandle Weapon);
 
+	void ActivateAbility(EAttackState Ability);
+
 	void LightAttack();
 	void HeavyAttack();
 
-	void ChainAttack(FName SectionName);
+	void FirstAbility();
+	void SecondAbility();
+	void ThirdAbility();
+	void FourthAbility();
+
+	void AbilityController(UCombatAbility* Ability, FName SectionName);
 
 	void ChangeWeaponLight(float Intensity);
 	void ChangeWeaponLightColor(FLinearColor Color);
+
+	void ProcessAttack(FName SectionName = NAME_None);
+	void ProcessChain(FName SectionName = NAME_None);
 	
 };

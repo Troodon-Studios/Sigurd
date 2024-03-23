@@ -1,6 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
+﻿#pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
@@ -13,12 +11,14 @@
 
 #include "BaseCharacter.generated.h"
 
+//Base class for all characters in the game so that we can get the components we need
 UCLASS()
 class SIGURD_API ABaseCharacter : public ACharacter {
 	GENERATED_BODY()
 
 protected:
-		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
 	UStaminaComponent* StaminaComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
@@ -33,21 +33,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	UTokenComponent* TokenComponent;
 
-
-
-public:
-	// Sets default values for this character's properties
-	ABaseCharacter();
-
-	UConditionComponent* GetConditionComponent() const;
-	UHealthComponent* GetHealthComponent() const;
-
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:
+	ABaseCharacter();
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UStaminaComponent* GetStaminaComponent() const;
+	UCombatComponent* GetCombatComponent() const;
+	UHealthComponent* GetHealthComponent() const;
+	UConditionComponent* GetConditionComponent() const;
+	UTokenComponent* GetTokenComponent() const;
 };

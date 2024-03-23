@@ -17,6 +17,12 @@ public:
 	UCombatAbility();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	bool combable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	bool chainable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	float Damage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
@@ -28,7 +34,7 @@ public:
 	virtual void Initialize(ABaseCharacter* InOwner);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	virtual void Execute();
+	virtual void Execute(FName SectionName = NAME_None);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual void ExecuteSection(FName SectionName);

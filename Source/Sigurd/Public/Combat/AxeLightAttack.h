@@ -20,7 +20,7 @@ public:
 		Description = "This is a axe light attack";
 	}
 
-	virtual void Execute() override{
+	virtual void Execute(FName SectionName) override{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Description);
 		PlayAnimation(Montage, Owner);
 	}

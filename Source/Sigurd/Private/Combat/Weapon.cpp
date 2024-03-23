@@ -16,17 +16,16 @@ void AWeapon::SetWeaponData(FItemData NewWeaponData, ABaseCharacter* Character){
 
 	Owner = Character;
 	WeaponData = NewWeaponData;
-
-	HeavyAttackAbility = NewObject<UMeleeAttack>(this, WeaponData.HeavyAttack);
-	HeavyAttackAbility->Initialize(Character);
-	LightAttackAbility = NewObject<UMeleeAttack>(this, WeaponData.LightAttack);
-	LightAttackAbility->Initialize(Character);
+	
+	InitializeAbility(LightAttackAbility, WeaponData.LightAttack);
+	InitializeAbility(HeavyAttackAbility, WeaponData.HeavyAttack);
+	InitializeAbility(FirstAbility, WeaponData.FirstAbility);
+	InitializeAbility(SecondAbility, WeaponData.SecondAbility);
+	InitializeAbility(ThirdAbility, WeaponData.ThirdAbility);
+	InitializeAbility(FourthAbility, WeaponData.FourthAbility);
 }
 
-void AWeapon::LightAttack(FName SectionName){
-	LightAttackAbility->Execute();
-}
-
-void AWeapon::HeavyAttack(FName SectionName){
-	HeavyAttackAbility->Execute();
+void AWeapon::InitializeAbility(UCombatAbility*& CombatAbility, TSubclassOf<UCombatAbility> Ability){
+	CombatAbility = NewObject<UCombatAbility>(this, Ability);
+	CombatAbility->Initialize(Owner);
 }

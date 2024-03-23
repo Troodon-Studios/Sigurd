@@ -22,7 +22,9 @@ public:
 
 	virtual void ExecuteAttack(UBoxComponent* Collider, FName SectionName);
 
-	virtual void Initialize(ABaseCharacter* InOwner, UBoxComponent* InCollider);
+	virtual void Initialize(ABaseCharacter* InOwner) override;
+
+	virtual void Execute(FName SectionName) override;
 
 	void CancelAttack();
 

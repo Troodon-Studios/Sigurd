@@ -3,6 +3,7 @@
 
 #include "Combat/MeleeAttack.h"
 #include "Characters/BaseCharacter.h"
+#include "Combat/MeleeWeapon.h"
 
 void UMeleeAttack::ExecuteAttack(UBoxComponent* Collider, FName SectionName){
 	if (WeaponCollider->OnComponentBeginOverlap.IsAlreadyBound(this, &UMeleeAttack::OnWeaponColliderOverlap)){
@@ -11,9 +12,16 @@ void UMeleeAttack::ExecuteAttack(UBoxComponent* Collider, FName SectionName){
 	PlayAttackAnimation(Montage, Owner, SectionName);
 }
 
-void UMeleeAttack::Initialize(ABaseCharacter* InOwner, UBoxComponent* InCollider){
-	Owner = InOwner;
-	WeaponCollider = InCollider;
+void UMeleeAttack::Initialize(ABaseCharacter* InOwner){
+	Super::Initialize(InOwner);
+	WeaponCollider = Cast<AMeleeWeapon>(GetOuter())->WeaponCollider;
+}
+
+void UMeleeAttack::Execute(FName SectionName){
+	if (WeaponCollider->OnComponentBeginOverlap.IsAlreadyBound(this, &UMeleeAttack::OnWeaponColliderOverlap)){
+		bSelfInterrupt = true;
+	}
+	PlayAttackAnimation(Montage, Owner, SectionName);
 }
 
 void UMeleeAttack::CancelAttack(){

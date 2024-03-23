@@ -1,11 +1,6 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+﻿#include "Characters/BaseCharacter.h"
 
-
-#include "Characters/BaseCharacter.h"
-
-
-// Sets default values
-ABaseCharacter::ABaseCharacter() {
+ABaseCharacter::ABaseCharacter(){
 	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
 	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
@@ -13,16 +8,7 @@ ABaseCharacter::ABaseCharacter() {
 	TokenComponent = CreateDefaultSubobject<UTokenComponent>(TEXT("TokenComponent"));
 }
 
-UConditionComponent* ABaseCharacter::GetConditionComponent() const {
-	return ConditionComponent;
-}
-
-UHealthComponent* ABaseCharacter::GetHealthComponent() const {
-	return HealthComponent;
-}
-
-// Called when the game starts or when spawned
-void ABaseCharacter::BeginPlay() {
+void ABaseCharacter::BeginPlay(){
 	Super::BeginPlay();
 
 	if (StaminaComponent){
@@ -40,11 +26,31 @@ void ABaseCharacter::BeginPlay() {
 	if (ConditionComponent){
 		ConditionComponent->RegisterComponent();
 	}
-	
+
+	if (TokenComponent){
+		TokenComponent->RegisterComponent();
+	}
 }
 
-// Called to bind functionality to input
-void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+UStaminaComponent* ABaseCharacter::GetStaminaComponent() const{
+	return StaminaComponent;
 }
+
+UCombatComponent* ABaseCharacter::GetCombatComponent() const{
+	return CombatComponent;
+}
+
+UHealthComponent* ABaseCharacter::GetHealthComponent() const{
+	return HealthComponent;
+}
+
+
+UConditionComponent* ABaseCharacter::GetConditionComponent() const{
+	return ConditionComponent;
+}
+
+UTokenComponent* ABaseCharacter::GetTokenComponent() const{
+	return TokenComponent;
+}
+
 

@@ -17,7 +17,7 @@ void UCombatAbility::Initialize(ABaseCharacter* InOwner){
 	this->Owner = InOwner;
 }
 
-void UCombatAbility::Execute(){
+void UCombatAbility::Execute(FName SectionName){
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Description);
 }
 
