@@ -71,6 +71,7 @@ void ABaseEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 
 void ABaseEnemy::SetupStimulusSource()
 {
+	
 	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliSource"));
 
 	if (StimuliSource)

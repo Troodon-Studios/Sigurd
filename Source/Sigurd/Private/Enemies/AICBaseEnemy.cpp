@@ -92,6 +92,7 @@ void AAICBaseEnemy::SetAIPerception()
 void AAICBaseEnemy::SetupSenseConfigSight()
 {
 
+
 	if(!BaseEnemy->EnemyType.bCanSee)return;
 	
 
@@ -118,7 +119,6 @@ void AAICBaseEnemy::SetupSenseConfigSight()
 		}
 		// Configure the perception component with the sight config
 		GetPerceptionComponent()->ConfigureSense(*SightConfig);
-		
 	}
 }
 
@@ -153,7 +153,6 @@ void AAICBaseEnemy::SetupSenseConfigDamage()
 {
 	if (!BaseEnemy->EnemyType.bCanFeel)return;
 	
-
 	// If the damage config was successfully created
 	if (DamageConfig)
 	{
@@ -173,6 +172,8 @@ void AAICBaseEnemy::SetupSenseConfigDamage()
 // Called when a target is perceived
 void AAICBaseEnemy::OnTargetPerceived(AActor* Actor, FAIStimulus Stimulus)
 {
+	UE_LOG(LogTemp, Error, TEXT("Perceived"));
+	
 	// If the stimulus was not successfully sensed, return
 	if (!Stimulus.WasSuccessfullySensed()) return;
 
