@@ -11,6 +11,8 @@
 #include "Perception/AISenseConfig_Sight.h"
 #include "AICBaseEnemy.generated.h"
 
+class ABaseEnemy;
+
 UCLASS()
 class SIGURD_API AAICBaseEnemy : public AAIController
 {
@@ -48,6 +50,7 @@ private:
 	FName DefendRadiusKn = "DefendRadius";
 	EEnemyState ActualState;
 	UBlackboardComponent* BlackboardComponent;
+	ABaseEnemy* BaseEnemy;
 	
 	// AI Perception Config
 	void SetAIPerception();
