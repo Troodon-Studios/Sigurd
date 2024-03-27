@@ -18,17 +18,10 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 //////////////////////////////////////////////////////////////////////////
 // ASigurdCharacter
 
-ASigurdCharacter::ASigurdCharacter(){
+ASigurdCharacter::ASigurdCharacter() : ABaseCharacter(){
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
-	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
-	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
-	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
-	TokenComponent = CreateDefaultSubobject<UTokenComponent>(TEXT("TokenComponent"));
-
-	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
-	WeaponMesh->SetupAttachment(GetMesh(), FName("RH_Socket"));
+	
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -58,27 +51,11 @@ ASigurdCharacter::ASigurdCharacter(){
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	// Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
-	
+	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm	
 }
 
 void ASigurdCharacter::BeginPlay(){
 	Super::BeginPlay();
-
-	if (StaminaComponent){
-		StaminaComponent->RegisterComponent();
-	}
-
-	if (CombatComponent){
-		CombatComponent->RegisterComponent();
-	}
-
-	if (HealthComponent){
-		HealthComponent->RegisterComponent();
-	}
 
 	OnTakeAnyDamage.AddDynamic(this, &ASigurdCharacter::TakeDamageSigurd);
 	
@@ -90,6 +67,7 @@ void ASigurdCharacter::BeginPlay(){
 			Subsystem->AddMappingContext(InputActionValues.DefaultMappingContext, 0);
 		}
 	}
+	
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -107,12 +85,10 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(InputActionValues.LightAttackAction , ETriggerEvent::Started, this, &ASigurdCharacter::LightAttack);
 		EnhancedInputComponent->BindAction(InputActionValues.HeavyAttackAction, ETriggerEvent::Started, this, &ASigurdCharacter::HeavyAttack);
 		
-
-
-		EnhancedInputComponent->BindAction(InputActionValues.NextWeaponAction, ETriggerEvent::Started, this,
-		                                   &ASigurdCharacter::NextWeapon);
-		EnhancedInputComponent->BindAction(InputActionValues.PreviousWeaponAction, ETriggerEvent::Started, this,
-		                                   &ASigurdCharacter::PreviousWeapon);
+		EnhancedInputComponent->BindAction(InputActionValues.FirstAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::FirstAbility);
+		EnhancedInputComponent->BindAction(InputActionValues.SecondAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::SecondAbility);
+		EnhancedInputComponent->BindAction(InputActionValues.ThirdAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::ThirdAbility);
+		EnhancedInputComponent->BindAction(InputActionValues.FourthAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::FourthAbility);
 
 		EnhancedInputComponent->BindAction(InputActionValues.DodgeAction, ETriggerEvent::Started, this, &ASigurdCharacter::Dodge);
 		EnhancedInputComponent->BindAction(InputActionValues.BlockAction, ETriggerEvent::Started, this, &ASigurdCharacter::Block);
@@ -151,20 +127,34 @@ void ASigurdCharacter::StartRunning(){
 	StaminaComponent->RunAction();
 }
 
-
 void ASigurdCharacter::LightAttack(){
-	CombatComponent->Attack();
+	CombatComponent->LightAttack();
 }
 
 void ASigurdCharacter::HeavyAttack(){
-	CombatComponent->Attack();
+	CombatComponent->HeavyAttack();
 }
 
+void ASigurdCharacter::FirstAbility(){
+	CombatComponent->FirstAbility();
+}
+
+void ASigurdCharacter::SecondAbility(){
+	CombatComponent->SecondAbility();
+}
+
+void ASigurdCharacter::ThirdAbility(){
+	CombatComponent->ThirdAbility();
+}
+
+void ASigurdCharacter::FourthAbility(){
+	CombatComponent->FourthAbility();
+}
 
 void ASigurdCharacter::TakeDamageSigurd(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
                                         class AController* InstigatedBy, AActor* DamageCauser) {
 	UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
-	CombatComponent->TakeDamage(Damage, ObjectInstance);
+	//CombatComponent->TakeDamage(Damage, ObjectInstance);
 }
 
 /*void ASigurdCharacter::TakeDamage_Implementation(float damage){
@@ -172,24 +162,11 @@ void ASigurdCharacter::TakeDamageSigurd(AActor* DamagedActor, float Damage, cons
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("CustomTakeDamage_Implementation"));
 }*/
 
-void ASigurdCharacter::NextWeapon() {
-	if (CombatComponent->WeaponInventory.Num() != 0){
-		CombatComponent->NextWeapon();
-		WeaponMesh->SetStaticMesh(CombatComponent->WeaponInventory[CombatComponent->CurrentWeapon].Mesh);
-	}
-}
-
-void ASigurdCharacter::PreviousWeapon() {
-	if (CombatComponent->WeaponInventory.Num() != 0){
-		CombatComponent->PreviousWeapon();
-		WeaponMesh->SetStaticMesh(CombatComponent->WeaponInventory[CombatComponent->CurrentWeapon].Mesh);
-	}
-}
 
 void ASigurdCharacter::Dodge() {
-	CombatComponent->Dodge();
+	//CombatComponent->Dodge();
 }
 
 void ASigurdCharacter::Block() {
-	CombatComponent->Block();
+	//CombatComponent->Block();
 }

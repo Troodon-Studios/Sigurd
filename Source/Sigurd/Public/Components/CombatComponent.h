@@ -3,11 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HealthComponent.h"
-#include "ItemData.h"
+#include "Combat/Weapon.h"
 #include "DataTypes/CombatState.h"
-#include "StaminaComponent.h"
-#include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
 
@@ -16,61 +13,46 @@ class SIGURD_API UCombatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
-	// Sets default values for this component's properties
-	UCombatComponent();
+public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	TEnumAsByte<ECombatState> CombatState;
-
-	int ComboCount = 0;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	int CurrentWeapon;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	TArray<FItemData> WeaponInventory;
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void AddWeaponToInventory(FDataTableRowHandle weapon);
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void NextWeapon();
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void PreviousWeapon();
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void ExecuteCurrentWeaponComboMontage(FName _sectionName);
-	void ExecuteCurrentWeaponDodgeMontage();
-	void ExecuteCurrentWeaponBlockMontage();
-	
-	UStaminaComponent* StaminaComponent;
-	UHealthComponent* HealthComponent;
-
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void Dodge();
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void Block();
-
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void Attack();
-	void EndAttack();
-
-	void QueueAttack(FName _sectionName);
-
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void TakeDamage(float damage, UObject* DamageType);
-
-	void IncreaseComboCount();
-
-	void ChangeWeaponLight(float intensity);
-	void ChangeWeaponLightColor(FLinearColor color);
-
-protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:
+	UCombatComponent();
+
+	TEnumAsByte<ECombatState> CombatState;
+
+	TEnumAsByte<EAttackState> AttackState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	TSubclassOf<AWeapon> DefaultWeapon;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	AWeapon* EquippedWeapon;
+
+
+	// UFUNCTION(BlueprintCallable, Category = "Combat")
+	// void TakeDamage(float Damage, UObject* DamageType);
+
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void EquipWeapon(FDataTableRowHandle Weapon);
+
+	void ActivateAbility(EAttackState Ability);
+
+	void LightAttack();
+	void HeavyAttack();
+
+	void FirstAbility();
+	void SecondAbility();
+	void ThirdAbility();
+	void FourthAbility();
+
+	void AbilityController(UCombatAbility* Ability, FName SectionName);
+
+	void ChangeWeaponLight(float Intensity);
+	void ChangeWeaponLightColor(FLinearColor Color);
+
+	void ProcessAttack(FName SectionName = NAME_None);
+	void ProcessChain(FName SectionName = NAME_None);
 	
 };

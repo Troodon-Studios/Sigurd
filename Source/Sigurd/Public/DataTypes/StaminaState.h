@@ -4,8 +4,8 @@
 #include "StaminaState.generated.h"
 
 UENUM()
-enum EStaminaState : uint8 {
-	Resting,
+enum class EStaminaState : uint8 {
+	Idle,
 	Running,
 	Exhausted,
 };

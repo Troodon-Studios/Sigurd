@@ -2,249 +2,163 @@
 
 
 #include "Components/CombatComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "GameFramework/Character.h"
 
-// Sets default values for this component's properties
-UCombatComponent::UCombatComponent()
-{
-	CombatState = ECombatState::Idle;
-	ComboCount = 0;
-	CurrentWeapon = 0;
-	
-	
-}
+#include "Characters/BaseCharacter.h"
 
-// Called when the game starts
-void UCombatComponent::BeginPlay()
-{
+void UCombatComponent::BeginPlay(){
 	Super::BeginPlay();
-	HealthComponent = GetOwner()->FindComponentByClass<UHealthComponent>();
-	StaminaComponent = GetOwner()->FindComponentByClass<UStaminaComponent>();
-	
 }
 
-
-void UCombatComponent::AddWeaponToInventory(FDataTableRowHandle weapon){
-	FItemData ItemData = *weapon.GetRow<FItemData>(FString::Printf(TEXT("%s"), *weapon.RowName.ToString()));
-	WeaponInventory.Add(ItemData);
-	
-}
-
-void UCombatComponent::NextWeapon(){
-	CurrentWeapon = (CurrentWeapon + 1) % WeaponInventory.Num();
-}
-
-void UCombatComponent::PreviousWeapon(){
-	CurrentWeapon = (CurrentWeapon - 1 + WeaponInventory.Num()) % WeaponInventory.Num();
-}
-
-void UCombatComponent::ExecuteCurrentWeaponComboMontage(FName _sectionName)
-{
-	if (CurrentWeapon < WeaponInventory.Num())
-	{
-		UAnimMontage* CurrentWeaponMontage = WeaponInventory[CurrentWeapon].ComboMontage;
-
-		if (CurrentWeaponMontage)
-		{
-			ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-			
-			if (OwnerCharacter)
-			{
-				UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
-				
-				if (AnimInstance)
-				{
-					if (AnimInstance->Montage_IsPlaying(WeaponInventory[CurrentWeapon].ComboMontage))
-					{
-						AnimInstance->Montage_Stop(0.25f, CurrentWeaponMontage);
-					}
-					
-					AnimInstance->Montage_Play(CurrentWeaponMontage, 1.5);
-					if (_sectionName != NAME_None){
-						AnimInstance->Montage_JumpToSection(_sectionName, CurrentWeaponMontage);
-					}
-
-					IncreaseComboCount();					
-				}
-			}
-		}
-	}
-}
-
-void UCombatComponent::ExecuteCurrentWeaponDodgeMontage(){
-
-	UAnimMontage* CurrentWeaponMontage = WeaponInventory[CurrentWeapon].DodgeMontage;
-
-	if (CurrentWeaponMontage)
-	{
-		ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-		
-		if (OwnerCharacter)
-		{
-			UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
-			
-			if (AnimInstance)
-			{
-				if (AnimInstance->Montage_IsPlaying(WeaponInventory[CurrentWeapon].DodgeMontage))
-				{
-					AnimInstance->Montage_Stop(0.25f, CurrentWeaponMontage);
-				}
-				
-				AnimInstance->Montage_Play(CurrentWeaponMontage, 1.5);
-			}
-		}
-		
-	}
-	
-}
-
-void UCombatComponent::ExecuteCurrentWeaponBlockMontage(){
-	UAnimMontage* CurrentWeaponMontage = WeaponInventory[CurrentWeapon].BlockMontage;
-
-	if (CurrentWeaponMontage)
-	{
-		ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-		
-		if (OwnerCharacter)
-		{
-			UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
-			
-			if (AnimInstance)
-			{
-				if (AnimInstance->Montage_IsPlaying(WeaponInventory[CurrentWeapon].BlockMontage))
-				{
-					AnimInstance->Montage_Stop(0.25f, CurrentWeaponMontage);
-				}
-				
-				AnimInstance->Montage_Play(CurrentWeaponMontage, 1.5);
-			}
-		}
-		
-	}
-}
-
-void UCombatComponent::Dodge(){
-	if ( CombatState == ECombatState::Idle){
-		CombatState = ECombatState::Dodging;
-		ExecuteCurrentWeaponDodgeMontage();		
-	}
-}
-
-void UCombatComponent::Block(){
-	if (CombatState == ECombatState::Idle){
-		CombatState = ECombatState::Blocking;
-		ExecuteCurrentWeaponBlockMontage();
-	}
-}
-
-void UCombatComponent::Attack(){
-
-	if (CombatState == ECombatState::Idle){
-		CombatState = ECombatState::Attacking;
-
-		
-		// Obtén una referencia al personaje y desactiva su capacidad de moverse
-		ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-		if (OwnerCharacter)
-		{
-			OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed = 150;
-		}
-		
-		ExecuteCurrentWeaponComboMontage(NAME_None);
-	}else if (CombatState == ECombatState::QueuingAttack){
-		CombatState = ECombatState::AttackQueued;
-		ChangeWeaponLight(1);
-		ChangeWeaponLightColor(FLinearColor(0, 1, 0, 1));		
-	}
-}
-
-void UCombatComponent::EndAttack(){
-	// Cambia el estado de combate a Idle
+UCombatComponent::UCombatComponent(){
 	CombatState = ECombatState::Idle;
+	AttackState = EAttackState::Idle;
+}
 
-	// Obtén una referencia al personaje y reactiva su capacidad de moverse
-	ACharacter* OwnerCharacter = Cast<ACharacter>(GetOwner());
-	if (OwnerCharacter)
-	{
-		OwnerCharacter->GetCharacterMovement()->MaxWalkSpeed = 800;
+void UCombatComponent::EquipWeapon(FDataTableRowHandle Weapon){
+	if (EquippedWeapon){
+		EquippedWeapon->Destroy();
+	}
+
+	FItemData WeaponData = *Weapon.GetRow<FItemData>(FString::Printf(TEXT("%s"), *Weapon.RowName.ToString()));
+
+	EquippedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponData.WeaponClass);
+	EquippedWeapon->AttachToComponent(Cast<ABaseCharacter>(GetOwner())->GetMesh(),
+	                                  FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponData.SocketName);
+	EquippedWeapon->SetWeaponData(WeaponData, Cast<ABaseCharacter>(GetOwner()));
+}
+
+void UCombatComponent::ActivateAbility(EAttackState Ability){
+	if (EquippedWeapon){
+		if (AttackState == EAttackState::Idle){
+			AttackState = Ability;
+		}
+		ProcessAttack();
 	}
 }
 
-void UCombatComponent::QueueAttack(FName _sectionName){
-	if (CombatState == ECombatState::AttackQueued){
-		CombatState = ECombatState::Attacking;
-		ExecuteCurrentWeaponComboMontage(_sectionName);
-	}	else{
-		ComboCount = 0;
-		CombatState = ECombatState::Idle;
-	}
-
-
+void UCombatComponent::LightAttack(){
+	ActivateAbility(EAttackState::LightAttack);
 }
 
-//TODO break block and stun character if stamina is 0
-//TODO break into different functions
+void UCombatComponent::HeavyAttack(){
+	ActivateAbility(EAttackState::HeavyAttack);
+}
 
-void UCombatComponent::TakeDamage(float damage, UObject* DamageType){
+void UCombatComponent::FirstAbility(){
+	ActivateAbility(EAttackState::FirstAbility);
+}
+
+void UCombatComponent::SecondAbility(){
+	ActivateAbility(EAttackState::SecondAbility);
+}
+
+void UCombatComponent::ThirdAbility(){
+	ActivateAbility(EAttackState::ThirdAbility);
+}
+
+void UCombatComponent::FourthAbility(){
+	ActivateAbility(EAttackState::FourthAbility);
+}
+
+void UCombatComponent::AbilityController(UCombatAbility* Ability, FName SectionName){
 	switch (CombatState){
-	case ECombatState::Blocking:
-		StaminaComponent->DecreaseStamina(damage);
+	case ECombatState::Idle:
+		Ability->Execute(SectionName);
+		CombatState = ECombatState::Attacking;
 		break;
-	case ECombatState::Dodging:
+	case ECombatState::QueuingAttack:
+		if (Ability->combable || Ability->chainable){
+			CombatState = ECombatState::AttackQueued;
+			ChangeWeaponLightColor(FColor::Green);
+		}
 		break;
-	case ECombatState::Parrying:
+	}
+	
+}
+
+void UCombatComponent::ChangeWeaponLight(float Intensity){
+	if (EquippedWeapon->WeaponMesh){
+		UMaterialInstanceDynamic* OwnerMaterial = EquippedWeapon->WeaponMesh->CreateAndSetMaterialInstanceDynamic(0);
+		if (OwnerMaterial){
+			OwnerMaterial->SetScalarParameterValue("EmissiveIntensity", Intensity);
+		}
+	}
+}
+
+void UCombatComponent::ChangeWeaponLightColor(FLinearColor Color){
+	if (EquippedWeapon->WeaponMesh){
+		UMaterialInstanceDynamic* OwnerMaterial = EquippedWeapon->WeaponMesh->CreateAndSetMaterialInstanceDynamic(0);
+		if (OwnerMaterial){
+			OwnerMaterial->SetVectorParameterValue("EmissiveColor", Color);
+		}
+	}
+}
+
+
+
+void UCombatComponent::ProcessAttack(FName SectionName){
+	switch (AttackState){
+	case EAttackState::Idle:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Idle"));
+		break;
+	case EAttackState::LightAttack:
+		AbilityController(EquippedWeapon->LightAttackAbility, SectionName);
+		break;
+	case EAttackState::HeavyAttack:
+		AbilityController(EquippedWeapon->HeavyAttackAbility, SectionName);
+		break;
+	case EAttackState::FirstAbility:
+		AbilityController(EquippedWeapon->FirstAbility, SectionName);
+		AttackState = EAttackState::Idle;
+		break;
+	case EAttackState::SecondAbility:
+		AbilityController(EquippedWeapon->SecondAbility, SectionName);		AttackState = EAttackState::Idle;
+		break;
+	case EAttackState::ThirdAbility:
+		AbilityController(EquippedWeapon->ThirdAbility, SectionName);		AttackState = EAttackState::Idle;
+		break;
+	case EAttackState::FourthAbility:
+		AbilityController(EquippedWeapon->FourthAbility, SectionName);		AttackState = EAttackState::Idle;
 		break;
 	default:
-		HealthComponent->TakeDamageWithType(DamageType, damage);
-		
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Attack State"));
 		break;
 	}
-	
 }
 
-
-void UCombatComponent::IncreaseComboCount(){
-	ComboCount = (ComboCount + 1) % WeaponInventory[CurrentWeapon].MaxComboCount;
-}
-
-void UCombatComponent::ChangeWeaponLight(float intensity){
-
-	AActor* OwnerActor = GetOwner();
-	if (OwnerActor)
-	{
-		UStaticMeshComponent* OwnerMeshComponent = OwnerActor->FindComponentByClass<UStaticMeshComponent>();
-		if (OwnerMeshComponent)
-		{
-			UMaterialInstanceDynamic* OwnerMaterial = OwnerMeshComponent->CreateAndSetMaterialInstanceDynamic(0);
-			if (OwnerMaterial)
-			{
-				OwnerMaterial->SetScalarParameterValue("lum", intensity);
-			}
+void UCombatComponent::ProcessChain(FName SectionName){
+	if (CombatState == ECombatState::AttackQueued){
+		switch (AttackState){
+		case EAttackState::Idle:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Idle"));
+			break;
+		case EAttackState::LightAttack:
+			EquippedWeapon->LightAttackAbility->Execute(SectionName);
+			break;
+		case EAttackState::HeavyAttack:
+			EquippedWeapon->HeavyAttackAbility->Execute(SectionName);
+			break;
+		case EAttackState::FirstAbility:
+		AbilityController(EquippedWeapon->FirstAbility, SectionName);
+			break;
+		case EAttackState::SecondAbility:
+		AbilityController(EquippedWeapon->SecondAbility, SectionName);
+			break;
+		case EAttackState::ThirdAbility:
+		AbilityController(EquippedWeapon->ThirdAbility, SectionName);
+			break;
+		case EAttackState::FourthAbility:
+		AbilityController(EquippedWeapon->FourthAbility, SectionName);
+			break;
+		default:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Attack State"));
+			break;
 		}
+		CombatState = ECombatState::Attacking;
+		ChangeWeaponLight(0);
+	}
+	else{
+		ChangeWeaponLightColor(FColor::Red);
+		
 	}
 }
-
-void UCombatComponent::ChangeWeaponLightColor(FLinearColor color){
-	AActor* OwnerActor = GetOwner();
-	if (OwnerActor)
-	{
-		UStaticMeshComponent* OwnerMeshComponent = OwnerActor->FindComponentByClass<UStaticMeshComponent>();
-		if (OwnerMeshComponent)
-		{
-			UMaterialInstanceDynamic* OwnerMaterial = OwnerMeshComponent->CreateAndSetMaterialInstanceDynamic(0);
-			if (OwnerMaterial)
-			{
-				OwnerMaterial->SetVectorParameterValue("col", color);
-			}
-		}
-	}
-}
-
-
-
-
-
-
-
-

@@ -9,7 +9,9 @@ void UAttackEndNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
                               const FAnimNotifyEventReference& EventReference){
 
 	if (UCombatComponent* CombatComp = GetCombatComponent(MeshComp)){
-		CombatComp->EndAttack();
+		CombatComp->CombatState = ECombatState::Idle;
+		CombatComp->AttackState = EAttackState::Idle;
+		CombatComp->ChangeWeaponLight(0);
 	}
 }
 

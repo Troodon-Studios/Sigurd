@@ -18,14 +18,11 @@ class SIGURD_API UAttackNotifyState : public UAnimNotifyState
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
-	FName sectionName;
-	
 private:
 	
 	virtual void NotifyBegin(USkeletalMeshComponent * MeshComp, UAnimSequenceBase * Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
 	virtual void NotifyEnd(USkeletalMeshComponent * MeshComp, UAnimSequenceBase * Animation, const FAnimNotifyEventReference& EventReference) override;
-
-	static UCombatComponent* GetCombatComponent(const USkeletalMeshComponent* MeshComp);
+	
+	static UBoxComponent* GetWeaponCollider(const USkeletalMeshComponent* MeshComp);
 	
 };
