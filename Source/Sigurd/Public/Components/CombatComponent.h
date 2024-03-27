@@ -27,8 +27,10 @@ public:
 	TSubclassOf<AWeapon> DefaultWeapon;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	AWeapon* EquippedWeapon;
+	AWeapon* RightHandWeapon;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	AWeapon* LeftHandWeapon;
 
 	// UFUNCTION(BlueprintCallable, Category = "Combat")
 	// void TakeDamage(float Damage, UObject* DamageType);
@@ -47,6 +49,8 @@ public:
 	void ThirdAbility();
 	void FourthAbility();
 
+	void BlockAbility();
+	
 	void AbilityController(UCombatAbility* Ability, FName SectionName);
 
 	void ChangeWeaponLight(float Intensity);
@@ -54,5 +58,4 @@ public:
 
 	void ProcessAttack(FName SectionName = NAME_None);
 	void ProcessChain(FName SectionName = NAME_None);
-	
 };

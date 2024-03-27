@@ -5,120 +5,141 @@
 
 #include "Characters/BaseCharacter.h"
 
-void UCombatComponent::BeginPlay(){
+void UCombatComponent::BeginPlay() {
 	Super::BeginPlay();
 }
 
-UCombatComponent::UCombatComponent(){
+UCombatComponent::UCombatComponent() {
 	CombatState = ECombatState::Idle;
 	AttackState = EAttackState::Idle;
 }
 
-void UCombatComponent::EquipWeapon(FDataTableRowHandle Weapon){
-	if (EquippedWeapon){
-		EquippedWeapon->Destroy();
-	}
-
+void UCombatComponent::EquipWeapon(FDataTableRowHandle Weapon) {
 	FItemData WeaponData = *Weapon.GetRow<FItemData>(FString::Printf(TEXT("%s"), *Weapon.RowName.ToString()));
 
-	EquippedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponData.WeaponClass);
-	EquippedWeapon->AttachToComponent(Cast<ABaseCharacter>(GetOwner())->GetMesh(),
-	                                  FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponData.SocketName);
-	EquippedWeapon->SetWeaponData(WeaponData, Cast<ABaseCharacter>(GetOwner()));
+	switch (WeaponData.SocketName) {
+		case ESocket::RH_Socket:
+			if (RightHandWeapon) {
+				RightHandWeapon->Destroy();
+			}
+			RightHandWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponData.WeaponClass);
+			RightHandWeapon->AttachToComponent(Cast<ABaseCharacter>(GetOwner())->GetMesh(),
+			                                   FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+			                                   GetSocketName(WeaponData.SocketName));
+			RightHandWeapon->SetWeaponData(WeaponData, Cast<ABaseCharacter>(GetOwner()));
+			break;
+		case ESocket::LH_Socket:
+			if (LeftHandWeapon) {
+				LeftHandWeapon->Destroy();
+			}
+			LeftHandWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponData.WeaponClass);
+			LeftHandWeapon->AttachToComponent(Cast<ABaseCharacter>(GetOwner())->GetMesh(),
+			                                  FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+			                                  GetSocketName(WeaponData.SocketName));
+			LeftHandWeapon->SetWeaponData(WeaponData, Cast<ABaseCharacter>(GetOwner()));
+			break;
+	}
 }
 
-void UCombatComponent::ActivateAbility(EAttackState Ability){
-	if (EquippedWeapon){
-		if (AttackState == EAttackState::Idle){
+void UCombatComponent::ActivateAbility(EAttackState Ability) {
+	if (RightHandWeapon) {
+		if (AttackState == EAttackState::Idle) {
 			AttackState = Ability;
 		}
 		ProcessAttack();
 	}
 }
 
-void UCombatComponent::LightAttack(){
+void UCombatComponent::LightAttack() {
 	ActivateAbility(EAttackState::LightAttack);
 }
 
-void UCombatComponent::HeavyAttack(){
+void UCombatComponent::HeavyAttack() {
 	ActivateAbility(EAttackState::HeavyAttack);
 }
 
-void UCombatComponent::FirstAbility(){
+void UCombatComponent::FirstAbility() {
 	ActivateAbility(EAttackState::FirstAbility);
 }
 
-void UCombatComponent::SecondAbility(){
+void UCombatComponent::SecondAbility() {
 	ActivateAbility(EAttackState::SecondAbility);
 }
 
-void UCombatComponent::ThirdAbility(){
+void UCombatComponent::ThirdAbility() {
 	ActivateAbility(EAttackState::ThirdAbility);
 }
 
-void UCombatComponent::FourthAbility(){
+void UCombatComponent::FourthAbility() {
 	ActivateAbility(EAttackState::FourthAbility);
 }
 
-void UCombatComponent::AbilityController(UCombatAbility* Ability, FName SectionName){
-	switch (CombatState){
+void UCombatComponent::BlockAbility() {
+}
+
+void UCombatComponent::AbilityController(UCombatAbility* Ability, FName SectionName) {
+	switch (CombatState) {
 	case ECombatState::Idle:
 		Ability->Execute(SectionName);
 		CombatState = ECombatState::Attacking;
 		break;
 	case ECombatState::QueuingAttack:
-		if (Ability->combable || Ability->chainable){
+		if (Ability->combable || Ability->chainable) {
 			CombatState = ECombatState::AttackQueued;
 			ChangeWeaponLightColor(FColor::Green);
 		}
 		break;
+	case ECombatState::ExecuteQueuedAttack:
+		Ability->Execute(SectionName);
+		CombatState = ECombatState::Attacking;
+		break;
 	}
-	
 }
 
-void UCombatComponent::ChangeWeaponLight(float Intensity){
-	if (EquippedWeapon->WeaponMesh){
-		UMaterialInstanceDynamic* OwnerMaterial = EquippedWeapon->WeaponMesh->CreateAndSetMaterialInstanceDynamic(0);
-		if (OwnerMaterial){
+void UCombatComponent::ChangeWeaponLight(float Intensity) {
+	if (RightHandWeapon->WeaponMesh) {
+		UMaterialInstanceDynamic* OwnerMaterial = RightHandWeapon->WeaponMesh->CreateAndSetMaterialInstanceDynamic(0);
+		if (OwnerMaterial) {
 			OwnerMaterial->SetScalarParameterValue("EmissiveIntensity", Intensity);
 		}
 	}
 }
 
-void UCombatComponent::ChangeWeaponLightColor(FLinearColor Color){
-	if (EquippedWeapon->WeaponMesh){
-		UMaterialInstanceDynamic* OwnerMaterial = EquippedWeapon->WeaponMesh->CreateAndSetMaterialInstanceDynamic(0);
-		if (OwnerMaterial){
+void UCombatComponent::ChangeWeaponLightColor(FLinearColor Color) {
+	if (RightHandWeapon->WeaponMesh) {
+		UMaterialInstanceDynamic* OwnerMaterial = RightHandWeapon->WeaponMesh->CreateAndSetMaterialInstanceDynamic(0);
+		if (OwnerMaterial) {
 			OwnerMaterial->SetVectorParameterValue("EmissiveColor", Color);
 		}
 	}
 }
 
-
-
-void UCombatComponent::ProcessAttack(FName SectionName){
-	switch (AttackState){
+void UCombatComponent::ProcessAttack(FName SectionName) {
+	switch (AttackState) {
 	case EAttackState::Idle:
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Idle"));
 		break;
 	case EAttackState::LightAttack:
-		AbilityController(EquippedWeapon->LightAttackAbility, SectionName);
+		AbilityController(RightHandWeapon->LightAttackAbility, SectionName);
 		break;
 	case EAttackState::HeavyAttack:
-		AbilityController(EquippedWeapon->HeavyAttackAbility, SectionName);
+		AbilityController(RightHandWeapon->HeavyAttackAbility, SectionName);
 		break;
 	case EAttackState::FirstAbility:
-		AbilityController(EquippedWeapon->FirstAbility, SectionName);
+		AbilityController(RightHandWeapon->FirstAbility, SectionName);
 		AttackState = EAttackState::Idle;
 		break;
 	case EAttackState::SecondAbility:
-		AbilityController(EquippedWeapon->SecondAbility, SectionName);		AttackState = EAttackState::Idle;
+		AbilityController(RightHandWeapon->SecondAbility, SectionName);
+		AttackState = EAttackState::Idle;
 		break;
 	case EAttackState::ThirdAbility:
-		AbilityController(EquippedWeapon->ThirdAbility, SectionName);		AttackState = EAttackState::Idle;
+		AbilityController(RightHandWeapon->ThirdAbility, SectionName);
+		AttackState = EAttackState::Idle;
 		break;
 	case EAttackState::FourthAbility:
-		AbilityController(EquippedWeapon->FourthAbility, SectionName);		AttackState = EAttackState::Idle;
+		AbilityController(RightHandWeapon->FourthAbility, SectionName);
+		AttackState = EAttackState::Idle;
 		break;
 	default:
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Attack State"));
@@ -126,39 +147,9 @@ void UCombatComponent::ProcessAttack(FName SectionName){
 	}
 }
 
-void UCombatComponent::ProcessChain(FName SectionName){
-	if (CombatState == ECombatState::AttackQueued){
-		switch (AttackState){
-		case EAttackState::Idle:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Idle"));
-			break;
-		case EAttackState::LightAttack:
-			EquippedWeapon->LightAttackAbility->Execute(SectionName);
-			break;
-		case EAttackState::HeavyAttack:
-			EquippedWeapon->HeavyAttackAbility->Execute(SectionName);
-			break;
-		case EAttackState::FirstAbility:
-		AbilityController(EquippedWeapon->FirstAbility, SectionName);
-			break;
-		case EAttackState::SecondAbility:
-		AbilityController(EquippedWeapon->SecondAbility, SectionName);
-			break;
-		case EAttackState::ThirdAbility:
-		AbilityController(EquippedWeapon->ThirdAbility, SectionName);
-			break;
-		case EAttackState::FourthAbility:
-		AbilityController(EquippedWeapon->FourthAbility, SectionName);
-			break;
-		default:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Attack State"));
-			break;
-		}
-		CombatState = ECombatState::Attacking;
-		ChangeWeaponLight(0);
-	}
-	else{
-		ChangeWeaponLightColor(FColor::Red);
-		
+void UCombatComponent::ProcessChain(FName SectionName) {
+	if (CombatState == ECombatState::AttackQueued) {
+		CombatState = ECombatState::ExecuteQueuedAttack;
+		ProcessAttack(SectionName);
 	}
 }
