@@ -15,14 +15,6 @@ ABaseEnemy::ABaseEnemy()
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
-	// Create the StaminaComponent, CombatComponent, HealthComponent, and WeaponMesh
-	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
-	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
-	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
-	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
-	WeaponMesh->SetupAttachment(GetMesh(), FName("RH_Socket"));
-	TokenComponent = CreateDefaultSubobject<UTokenComponent>(TEXT("TokenComponent"));
-
 	SetupStimulusSource();
 
 	// Initialize speed values
@@ -86,7 +78,7 @@ void ABaseEnemy::TakeDamageEnemy(AActor* DamagedActor, const float Damage, const
                                  class AController* InstigatedBy, AActor* DamageCauser) const
 {
 	UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
-	CombatComponent->TakeDamage(Damage, ObjectInstance);
+	//CombatComponent->TakeDamage(Damage, ObjectInstance);
 }
 
 // Returns the patrol route of the enemy
@@ -112,5 +104,5 @@ void ABaseEnemy::GetIdealRange_Implementation(double& _AttackRadius, double& _De
 // Makes the enemy attack
 void ABaseEnemy::EventAttack_Implementation(AActor* AttackTarget)
 {
-	CombatComponent->Attack();
+	CombatComponent->LightAttack();
 }
