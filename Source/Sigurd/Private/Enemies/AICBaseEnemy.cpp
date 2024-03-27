@@ -6,12 +6,8 @@ AAICBaseEnemy::AAICBaseEnemy(FObjectInitializer const& ObjectInitializer)
 {
 	// Enable ticking for this actor
 	PrimaryActorTick.bCanEverTick = true;
-	//SetAIPerception();
-	SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception Component")));
-	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
-	HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Config"));
-	DamageConfig = CreateDefaultSubobject<UAISenseConfig_Damage>(TEXT("Damage Config"));
-
+	// Set up AI perception
+	SetAIPerception();
 }
 
 // Called when the game starts or when spawned
@@ -39,7 +35,8 @@ void AAICBaseEnemy::Tick(const float DeltaTime)
 void AAICBaseEnemy::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	
+
+
 	// If the pawn is a base enemy and has a behavior tree
 	if (BaseEnemy = Cast<ABaseEnemy>(InPawn); BaseEnemy)
 	{
@@ -56,18 +53,74 @@ void AAICBaseEnemy::OnPossess(APawn* InPawn)
 			// Set the combat radius and the defend radius
 			BlackboardComponent->SetValueAsFloat(AttackRadiusKn, BaseEnemy->EnemyType.AttackRadius);
 			BlackboardComponent->SetValueAsFloat(DefendRadiusKn, BaseEnemy->EnemyType.DefendRadius);
-		
+
 			// Run the behavior tree
 			RunBehaviorTree(BaseEnemy->EnemyType.BehaviourTree);
-			
-			// Set up AI perception
-			SetAIPerception();
-		}else
+
+			ReConfigureSenseConfig();
+		}
+	}
+}
+
+void AAICBaseEnemy::ReConfigureSenseConfig()
+{
+	// Sight
+	if (BaseEnemy->EnemyType.bCanSee)
+	{
+		SightConfig->SightRadius = BaseEnemy->EnemyType.SightValues.SightRadius;
+		SightConfig->LoseSightRadius = BaseEnemy->EnemyType.SightValues.LoseSightRadius;
+		SightConfig->PeripheralVisionAngleDegrees = BaseEnemy->EnemyType.SightValues.PeripheralVisionAngleDegrees;
+		SightConfig->AutoSuccessRangeFromLastSeenLocation = BaseEnemy->EnemyType.SightValues.AutoSuccessRangeFromLastSeenLocation;
+		SightConfig->DetectionByAffiliation.bDetectEnemies = BaseEnemy->EnemyType.SightValues.DetectionByAffiliation.bDetectEnemies;
+		SightConfig->DetectionByAffiliation.bDetectNeutrals = BaseEnemy->EnemyType.SightValues.DetectionByAffiliation.bDetectNeutrals;
+		SightConfig->DetectionByAffiliation.bDetectFriendlies = BaseEnemy->EnemyType.SightValues.DetectionByAffiliation.bDetectFriendlies;
+		SightConfig->SetMaxAge(BaseEnemy->EnemyType.MemoryTime);
+
+		if (BaseEnemy->EnemyType.DominantSense == EDominantSense::Sight)
 		{
-			UE_LOG(LogTemp, Error, TEXT("No behaviour tree found"));
+			GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation());
 		}
 
 	}
+	else
+	{
+		GetPerceptionComponent()->SetSenseEnabled(SightConfig->GetSenseImplementation(), false);
+	}
+
+	// Hearing'
+	if (BaseEnemy->EnemyType.bCanHear)
+	{
+		HearingConfig->HearingRange = BaseEnemy->EnemyType.HearingValues.HearingRange;
+		HearingConfig->DetectionByAffiliation.bDetectEnemies = BaseEnemy->EnemyType.HearingValues.DetectionByAffiliation.bDetectEnemies;
+		HearingConfig->DetectionByAffiliation.bDetectNeutrals = BaseEnemy->EnemyType.HearingValues.DetectionByAffiliation.bDetectNeutrals;
+		HearingConfig->DetectionByAffiliation.bDetectFriendlies = BaseEnemy->EnemyType.HearingValues.DetectionByAffiliation.bDetectFriendlies;
+		HearingConfig->SetMaxAge(BaseEnemy->EnemyType.MemoryTime);
+
+		if (BaseEnemy->EnemyType.DominantSense == EDominantSense::Hear)
+		{
+			GetPerceptionComponent()->SetDominantSense(*HearingConfig->GetSenseImplementation());
+		}
+	}
+	else
+	{
+		GetPerceptionComponent()->SetSenseEnabled(HearingConfig->GetSenseImplementation(), false);
+	}
+
+	// Damage
+	if (BaseEnemy->EnemyType.bCanFeel)
+	{
+		DamageConfig->SetMaxAge(BaseEnemy->EnemyType.MemoryTime);
+
+		if (BaseEnemy->EnemyType.DominantSense == EDominantSense::Feel)
+		{
+			GetPerceptionComponent()->SetDominantSense(*DamageConfig->GetSenseImplementation());
+		}
+	}
+	else
+	{
+		GetPerceptionComponent()->SetSenseEnabled(DamageConfig->GetSenseImplementation(), false);
+	}
+	
 }
 
 // Check if the AI can sense a specific actor
@@ -80,7 +133,6 @@ bool AAICBaseEnemy::CanSenseActor(const AActor* Actor, TSubclassOf<UAISense> Sen
 // Set up AI perception
 void AAICBaseEnemy::SetAIPerception()
 {
-	if (BaseEnemy == nullptr) return;
 	// Set up sight, hearing, and damage senses
 	SetupSenseConfigSight();
 	SetupSenseConfigHearing();
@@ -91,32 +143,27 @@ void AAICBaseEnemy::SetAIPerception()
 // Set up sight sense
 void AAICBaseEnemy::SetupSenseConfigSight()
 {
-
-
-	if(!BaseEnemy->EnemyType.bCanSee)return;
-	
+	// Create a sight config
+	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
 
 	// If the sight config was successfully created
 	if (SightConfig)
 	{
 		// Set up the perception component
-		const FSightValues SightValues = BaseEnemy->EnemyType.SightValues;
-		
+		SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception Component")));
+
 		// Configure the sight config
-		SightConfig->SightRadius = SightValues.SightRadius;
-		SightConfig->LoseSightRadius = SightValues.LoseSightRadius;
-		SightConfig->PeripheralVisionAngleDegrees = SightValues.PeripheralVisionAngleDegrees;
-		DamageConfig->SetMaxAge(BaseEnemy->EnemyType.MemoryTime);
-		SightConfig->AutoSuccessRangeFromLastSeenLocation = SightValues.AutoSuccessRangeFromLastSeenLocation;
-		SightConfig->DetectionByAffiliation.bDetectEnemies = SightValues.DetectionByAffiliation.bDetectEnemies;
-		SightConfig->DetectionByAffiliation.bDetectNeutrals = SightValues.DetectionByAffiliation.bDetectNeutrals;
-		SightConfig->DetectionByAffiliation.bDetectFriendlies = SightValues.DetectionByAffiliation.bDetectFriendlies;
+		SightConfig->SightRadius = 0;
+		SightConfig->LoseSightRadius = 0;
+		SightConfig->PeripheralVisionAngleDegrees = 0;
+		SightConfig->SetMaxAge(0.0f);
+		SightConfig->AutoSuccessRangeFromLastSeenLocation = 0.0f;
+		SightConfig->DetectionByAffiliation.bDetectEnemies = false;
+		SightConfig->DetectionByAffiliation.bDetectNeutrals = false;
+		SightConfig->DetectionByAffiliation.bDetectFriendlies = false;
 
 		// Set the dominant sense for the perception component
-		if (BaseEnemy->EnemyType.DominantSense == EDominantSense::Sight)
-		{
-			GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation());
-		}
+		GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation());
 		// Configure the perception component with the sight config
 		GetPerceptionComponent()->ConfigureSense(*SightConfig);
 	}
@@ -125,24 +172,18 @@ void AAICBaseEnemy::SetupSenseConfigSight()
 // Set up hearing sense
 void AAICBaseEnemy::SetupSenseConfigHearing()
 {
-	if (!BaseEnemy->EnemyType.bCanHear)return;
-	
+	// Create a hearing config
+	HearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("Hearing Config"));
 
 	// If the hearing config was successfully created
 	if (HearingConfig)
 	{
 		// Configure the hearing config
-		HearingConfig->HearingRange = 1000.0f;
-		HearingConfig->DetectionByAffiliation.bDetectEnemies = BaseEnemy->EnemyType.SightValues.DetectionByAffiliation.bDetectEnemies;
-		HearingConfig->DetectionByAffiliation.bDetectNeutrals = BaseEnemy->EnemyType.SightValues.DetectionByAffiliation.bDetectNeutrals;
-		HearingConfig->DetectionByAffiliation.bDetectFriendlies = BaseEnemy->EnemyType.SightValues.DetectionByAffiliation.bDetectFriendlies;
-		DamageConfig->SetMaxAge(BaseEnemy->EnemyType.MemoryTime);
-
-		// Set the dominant sense for the perception component
-		if (BaseEnemy->EnemyType.DominantSense == EDominantSense::Hear)
-		{
-			GetPerceptionComponent()->SetDominantSense(*HearingConfig->GetSenseImplementation());
-		}		
+		HearingConfig->HearingRange = 0.0f;
+		HearingConfig->DetectionByAffiliation.bDetectEnemies = false;
+		HearingConfig->DetectionByAffiliation.bDetectNeutrals = false;
+		HearingConfig->DetectionByAffiliation.bDetectFriendlies = false;
+		HearingConfig->SetMaxAge(0.0f);
 		// Configure the perception component with the hearing config
 		GetPerceptionComponent()->ConfigureSense(*HearingConfig);
 	}
@@ -151,19 +192,14 @@ void AAICBaseEnemy::SetupSenseConfigHearing()
 // Set up damage sense
 void AAICBaseEnemy::SetupSenseConfigDamage()
 {
-	if (!BaseEnemy->EnemyType.bCanFeel)return;
-	
-	// If the damage config was successfully created
+	// Create a damage config
+	DamageConfig = CreateDefaultSubobject<UAISenseConfig_Damage>(TEXT("Damage Config"));
+
+	// If the damage config was successfully created'
 	if (DamageConfig)
 	{
 		// Configure the damage config
-		DamageConfig->SetMaxAge(BaseEnemy->EnemyType.MemoryTime);
-
-		// Set the dominant sense for the perception component
-		if (BaseEnemy->EnemyType.DominantSense == EDominantSense::Feel)
-		{
-			GetPerceptionComponent()->SetDominantSense(*DamageConfig->GetSenseImplementation());
-		}		
+		DamageConfig->SetMaxAge(0.0f);
 		// Configure the perception component with the damage config
 		GetPerceptionComponent()->ConfigureSense(*DamageConfig);
 	}
@@ -172,8 +208,6 @@ void AAICBaseEnemy::SetupSenseConfigDamage()
 // Called when a target is perceived
 void AAICBaseEnemy::OnTargetPerceived(AActor* Actor, FAIStimulus Stimulus)
 {
-	UE_LOG(LogTemp, Error, TEXT("Perceived"));
-	
 	// If the stimulus was not successfully sensed, return
 	if (!Stimulus.WasSuccessfullySensed()) return;
 
