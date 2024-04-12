@@ -13,7 +13,8 @@ struct FSightValues : public FTableRowBase
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sense", config, meta = (UIMin = 0.0, ClampMin = 0.0))
 	float LoseSightRadius = SightRadius + 500.0f;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sense", config, meta=(UIMin = 0.0, ClampMin = 0.0, UIMax = 180.0, ClampMax = 180.0, DisplayName="PeripheralVisionHalfAngleDegrees"))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sense", config, meta=(UIMin = 0.0, ClampMin = 0.0, UIMax
+		= 180.0, ClampMax = 180.0, DisplayName="PeripheralVisionHalfAngleDegrees"))
 	float PeripheralVisionAngleDegrees = 60.0f;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sense", config)
