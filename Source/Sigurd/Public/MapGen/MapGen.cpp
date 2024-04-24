@@ -1,5 +1,10 @@
 ﻿#include "MapGen.h"
 
+#include "AssetToolsModule.h"
+#include "HighResScreenshot.h"
+#include "ImageUtils.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+
 
 /**
  * Constructor for the AMapGen class.
@@ -89,6 +94,16 @@ void AMapGen::GenerateGrid()
     ModuleNumbers.SetNum(GridSize.X);
     ModuleRotations.SetNum(GridSize.X);
 
+    // Crear una textura 
+    int32 Width = GridSize.X;
+    int32 Height = GridSize.Y;
+    UTexture2D* Texture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
+
+    // Acceder a los datos de la textura
+    FColor FillColor = FColor::White; 
+    FColor* MipData = static_cast<FColor*>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
+            
+    // GRID
     for (int i = 0; i < GridSize.X; i++)
     {
         ModuleNumbers[i].SetNum(GridSize.Y);
@@ -99,20 +114,45 @@ void AMapGen::GenerateGrid()
     {
         for (int y = 0; y < GridSize.Y; y++)
         {
+            float NoiseValue = FNoise::SimplexNoise((x / 10.0f) + Seed, (y / 10.0f) + Seed,MFrequency, MAmplitude, MLacunarity, MPersistence);
+            FillColor = FColor(NoiseValue * 255, NoiseValue * 255, NoiseValue * 255, 255);
+
             if (x == 0 || y == 0 || x == GridSize.X - 1 || y == GridSize.Y - 1)
             {
                 ModuleNumbers[x][y] = 0;
                 ModuleRotations[x][y] = 0;
+                
             }else
             {
-                const float NoiseValue = FNoise::SimplexNoise((x / 10.0f) + Seed, (y / 10.0f) + Seed,MFrequency, MAmplitude, MLacunarity, MPersistence);
                 const float MappedValue = (NoiseValue + 1) / 2.0f;
-
                 ModuleNumbers[x][y] = (MappedValue > 0.5) ? 1 : 0;
                 ModuleRotations[x][y] = 0;
+                FillColor = (MappedValue > 0.5) ? FColor::Green : FillColor;
             }
+            
+            int32 CurPixelIndex = (y * Width) + x;
+
+            MipData[CurPixelIndex] = FillColor;
         }
     }
+    
+    Texture->PlatformData->Mips[0].BulkData.Unlock();
+    Texture->UpdateResource();
+
+    // Guardar la textura como un archivo PNG
+    FString TextureDirectory = FPaths::ProjectContentDir() + TEXT("ProceduralTextures/");
+    FString TextureFilename = TextureDirectory + TEXT("MapTexture.png");
+
+    // Convert the texture to a PNG
+    FTexture2DMipMap& Mip = Texture->PlatformData->Mips[0];
+    uint8* Pixels = static_cast<uint8*>(Mip.BulkData.Lock(LOCK_READ_ONLY));
+    const TArray<FColor>& SrcData = reinterpret_cast<TArray<FColor>&>(Pixels);
+    TArray<uint8> CompressedPNG;
+    FImageUtils::CompressImageArray(Mip.SizeX, Mip.SizeY, SrcData, CompressedPNG);
+    Mip.BulkData.Unlock();
+
+    // Save the PNG to a file
+    FFileHelper::SaveArrayToFile(CompressedPNG, *TextureFilename);
 }
 
 /**
