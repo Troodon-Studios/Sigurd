@@ -43,6 +43,8 @@ private:
     FVector ModulesSize;
     AActor* GeneratedMap;
     UProceduralMeshComponent* ProceduralMesh;
+    FColor* MipData;
+    UTexture2D* Texture;
     
     // Functions
     void DeleteSmallPlots();
@@ -52,6 +54,8 @@ private:
     void SpawnModule(const int ModuleNumber, const FVector& Position, const FRotator& Rotation);
     void MergeMesh(const int ModuleNumber, const FVector& Position, const FRotator& Rotation);
     void GenerateExtras();
+    void GenerateTexture();
+    void InitializeTexture();
     
 public:
     
@@ -84,6 +88,10 @@ public:
     // Seed for random generation
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
     int Seed;
+
+    // Texture Quality
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
+    int32 ExtraDim = 10;
     
     // Function to generate the grid
     UFUNCTION(BlueprintCallable, Category = "Grid")
