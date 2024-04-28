@@ -12,7 +12,7 @@ AWeapon::AWeapon(){
 	RootComponent = WeaponMesh;
 }
 
-void AWeapon::SetWeaponData(FItemData NewWeaponData, ABaseCharacter* Character){
+void AWeapon::SetWeaponData(FWeaponData NewWeaponData, ABaseCharacter* Character){
 
 	Owner = Character;
 	WeaponData = NewWeaponData;
@@ -23,9 +23,15 @@ void AWeapon::SetWeaponData(FItemData NewWeaponData, ABaseCharacter* Character){
 	InitializeAbility(SecondAbility, WeaponData.SecondAbility);
 	InitializeAbility(ThirdAbility, WeaponData.ThirdAbility);
 	InitializeAbility(FourthAbility, WeaponData.FourthAbility);
+	InitializeAbility(BlockAbility, WeaponData.BlockAbility);
+	InitializeAbility(DodgeAbility, WeaponData.DodgeAbility);
+	InitializeAbility(ParryAbility, WeaponData.ParryAbility);
 }
 
 void AWeapon::InitializeAbility(UCombatAbility*& CombatAbility, TSubclassOf<UCombatAbility> Ability){
+	if (!Ability)
+		return;
+	
 	CombatAbility = NewObject<UCombatAbility>(this, Ability);
 	CombatAbility->Initialize(Owner);
 }

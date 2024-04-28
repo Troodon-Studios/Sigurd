@@ -79,19 +79,30 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 
 		EnhancedInputComponent->BindAction(InputActionValues.MoveAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::Move);
-
-		EnhancedInputComponent->BindAction(InputActionValues.RunAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartRunning);
-
-		EnhancedInputComponent->BindAction(InputActionValues.LightAttackAction , ETriggerEvent::Started, this, &ASigurdCharacter::LightAttack);
-		EnhancedInputComponent->BindAction(InputActionValues.HeavyAttackAction, ETriggerEvent::Started, this, &ASigurdCharacter::HeavyAttack);
 		
-		EnhancedInputComponent->BindAction(InputActionValues.FirstAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::FirstAbility);
-		EnhancedInputComponent->BindAction(InputActionValues.SecondAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::SecondAbility);
-		EnhancedInputComponent->BindAction(InputActionValues.ThirdAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::ThirdAbility);
-		EnhancedInputComponent->BindAction(InputActionValues.FourthAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::FourthAbility);
-
-		EnhancedInputComponent->BindAction(InputActionValues.DodgeAction, ETriggerEvent::Started, this, &ASigurdCharacter::Dodge);
-		EnhancedInputComponent->BindAction(InputActionValues.BlockAction, ETriggerEvent::Started, this, &ASigurdCharacter::Block);
+		EnhancedInputComponent->BindAction(InputActionValues.RunAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::StartRunning);
+		EnhancedInputComponent->BindAction(InputActionValues.RunAction, ETriggerEvent::Completed, this, &ASigurdCharacter::StopRunning);
+		EnhancedInputComponent->BindAction(InputActionValues.RunAction, ETriggerEvent::Canceled, this, &ASigurdCharacter::StopRunning);
+		
+		EnhancedInputComponent->BindAction(InputActionValues.LightAttackAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartLightAbility);
+		EnhancedInputComponent->BindAction(InputActionValues.LightAttackAction, ETriggerEvent::Completed, this, &ASigurdCharacter::EndAbility);
+		
+		EnhancedInputComponent->BindAction(InputActionValues.HeavyAttackAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartHeavyAbility);
+		EnhancedInputComponent->BindAction(InputActionValues.HeavyAttackAction, ETriggerEvent::Completed, this, &ASigurdCharacter::EndAbility);
+		
+		EnhancedInputComponent->BindAction(InputActionValues.FirstAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartFirstAbility);
+		EnhancedInputComponent->BindAction(InputActionValues.FirstAbilityAction, ETriggerEvent::Completed, this, &ASigurdCharacter::EndAbility);
+		EnhancedInputComponent->BindAction(InputActionValues.SecondAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartSecondAbility);
+		EnhancedInputComponent->BindAction(InputActionValues.SecondAbilityAction, ETriggerEvent::Completed, this, &ASigurdCharacter::EndAbility);
+		EnhancedInputComponent->BindAction(InputActionValues.ThirdAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartThirdAbility);
+		EnhancedInputComponent->BindAction(InputActionValues.ThirdAbilityAction, ETriggerEvent::Completed, this, &ASigurdCharacter::EndAbility);
+		EnhancedInputComponent->BindAction(InputActionValues.FourthAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartFourthAbility);
+		EnhancedInputComponent->BindAction(InputActionValues.FourthAbilityAction, ETriggerEvent::Completed, this, &ASigurdCharacter::EndAbility);
+		 
+		EnhancedInputComponent->BindAction(InputActionValues.DodgeAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartDodge);
+		EnhancedInputComponent->BindAction(InputActionValues.ParryAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartParry);
+		EnhancedInputComponent->BindAction(InputActionValues.BlockAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartBlock);
+		
 	}
 	else{
 		UE_LOG(LogTemplateCharacter, Error,
@@ -127,34 +138,45 @@ void ASigurdCharacter::StartRunning(){
 	StaminaComponent->RunAction();
 }
 
-void ASigurdCharacter::LightAttack(){
-	CombatComponent->LightAttack();
+void ASigurdCharacter::StopRunning(){
+	StaminaComponent->StopRunning();
 }
 
-void ASigurdCharacter::HeavyAttack(){
-	CombatComponent->HeavyAttack();
+void ASigurdCharacter::StartLightAbility(){
+	CombatComponent->StartLightAbility();
 }
 
-void ASigurdCharacter::FirstAbility(){
-	CombatComponent->FirstAbility();
+void ASigurdCharacter::StartHeavyAbility(){
+	CombatComponent->StartHeavyAbility();
 }
 
-void ASigurdCharacter::SecondAbility(){
-	CombatComponent->SecondAbility();
+void ASigurdCharacter::StartFirstAbility(){
+	CombatComponent->StartFirstAbility();
 }
 
-void ASigurdCharacter::ThirdAbility(){
-	CombatComponent->ThirdAbility();
+void ASigurdCharacter::StartSecondAbility(){
+	CombatComponent->StartSecondAbility();
 }
 
-void ASigurdCharacter::FourthAbility(){
-	CombatComponent->FourthAbility();
+void ASigurdCharacter::StartThirdAbility(){
+	CombatComponent->StartThirdAbility();
+}
+
+void ASigurdCharacter::StartFourthAbility(){
+	CombatComponent->StartFourthAbility();
+}
+
+void ASigurdCharacter::EndAbility(){
+	CombatComponent->EndAbility();
 }
 
 void ASigurdCharacter::TakeDamageSigurd(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
                                         class AController* InstigatedBy, AActor* DamageCauser) {
 	UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
 	//CombatComponent->TakeDamage(Damage, ObjectInstance);
+	//HealthComponent->TakeDamageWithType(ObjectInstance, Damage);
+	CombatComponent->TakeDamage(ObjectInstance, Damage);
+	
 }
 
 /*void ASigurdCharacter::TakeDamage_Implementation(float damage){
@@ -163,10 +185,18 @@ void ASigurdCharacter::TakeDamageSigurd(AActor* DamagedActor, float Damage, cons
 }*/
 
 
-void ASigurdCharacter::Dodge() {
-	//CombatComponent->Dodge();
+void ASigurdCharacter::StartDodge() {
+	CombatComponent->StartDodge();
+}
+
+void ASigurdCharacter::StartParry(){
+	CombatComponent->StartParry();
+}
+
+void ASigurdCharacter::StartBlock(){
+	CombatComponent->StartBlock();
 }
 
 void ASigurdCharacter::Block() {
-	//CombatComponent->Block();
+	CombatComponent->BlockAbility();
 }

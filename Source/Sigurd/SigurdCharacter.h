@@ -42,23 +42,35 @@ public:
 	//Movement
 	void Move(const FInputActionValue& Value);
 	void StartRunning();
-
-	//Combat	
-	void LightAttack();
-	void HeavyAttack();
-	void FirstAbility();
-	void SecondAbility();
-	void ThirdAbility();
-	void FourthAbility();
+	void StopRunning();
 	
-	void TakeDamageSigurd(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
-	                      class AController* InstigatedBy, AActor* DamageCauser) ;
-	/*void TakeDamage_Implementation(float damage) override;*/
-	void Dodge();
+	//Combat	
+	
+	void StartLightAbility();
+	void StartHeavyAbility();
+
+	void StartFirstAbility();
+	void StartSecondAbility();
+	void StartThirdAbility();
+	void StartFourthAbility();
+
+	void EndAbility();
+
+	void StartDodge();
+	void StartParry();
+	void StartBlock();
 	void Block();
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void TakeDamageSigurd(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
+	                      class AController* InstigatedBy, AActor* DamageCauser) ;
+	
+	/*void TakeDamage_Implementation(float damage) override;*/
+	
 
-
+	
+	
+	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;	
 	virtual void BeginPlay() override;
 	

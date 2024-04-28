@@ -18,6 +18,7 @@ void UMeleeAttack::Initialize(ABaseCharacter* InOwner){
 }
 
 void UMeleeAttack::Execute(FName SectionName){
+	Owner->GetCombatComponent()->CombatState = ECombatState::Attacking;
 	if (WeaponCollider->OnComponentBeginOverlap.IsAlreadyBound(this, &UMeleeAttack::OnWeaponColliderOverlap)){
 		bSelfInterrupt = true;
 	}
@@ -50,6 +51,7 @@ void UMeleeAttack::OnWeaponColliderOverlap(UPrimitiveComponent* OverlappedCompon
 }
 
 void UMeleeAttack::PlayAttackAnimation(UAnimMontage* InMontage, ABaseCharacter* InOwner, FName SectionName){
+	Owner->GetStaminaComponent()->DecreaseStamina(StaminaCost);
 	UAnimInstance* AnimInstance = InOwner->GetMesh()->GetAnimInstance();
 
 	if (AnimInstance){

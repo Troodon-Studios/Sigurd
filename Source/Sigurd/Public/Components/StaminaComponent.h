@@ -21,7 +21,8 @@ public:
 
 	UCharacterMovementComponent* CharacterMovement;
 
-	TEnumAsByte<EStaminaState> StaminaState;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
+	EStaminaState StaminaState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stamina")
 	float MaxStamina;
@@ -70,6 +71,7 @@ private:
 	void ExhaustedRegenStamina();
 	void StartStaminaRegen();
 	void DecayStamina();
+	void StartExhaust();
 	
 protected:
 	virtual void BeginPlay() override;

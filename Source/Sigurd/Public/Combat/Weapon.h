@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CombatAbility.h"
-#include "ItemData.h"
+#include "..\WeaponData.h"
 #include "MeleeAttack.h"
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
@@ -24,16 +24,27 @@ public:
 	UStaticMeshComponent* WeaponMesh;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	FItemData WeaponData;
+	FWeaponData WeaponData;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UCombatAbility* LightAttackAbility;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UCombatAbility* HeavyAttackAbility;
-	UCombatAbility* FirstAbility;
-	UCombatAbility* SecondAbility;
-	UCombatAbility* ThirdAbility;
-	UCombatAbility* FourthAbility;	
 
-	virtual void SetWeaponData(FItemData NewWeaponData, ABaseCharacter* Character);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UCombatAbility* FirstAbility;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UCombatAbility* SecondAbility;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UCombatAbility* ThirdAbility;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UCombatAbility* FourthAbility;
+	
+	UCombatAbility* BlockAbility;
+	UCombatAbility* DodgeAbility;
+	UCombatAbility* ParryAbility;
+
+	virtual void SetWeaponData(FWeaponData NewWeaponData, ABaseCharacter* Character);
 
 private:
 	void InitializeAbility(UCombatAbility*& CombatAbility, TSubclassOf<UCombatAbility> Ability);

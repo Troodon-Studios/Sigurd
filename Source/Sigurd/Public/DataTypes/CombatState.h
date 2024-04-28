@@ -6,6 +6,7 @@
 UENUM()
 enum class ECombatState : uint8 {
 	Idle,
+	ChargingAttack,
 	Attacking,
 	QueuingAttack,
 	AttackQueued,
@@ -18,8 +19,8 @@ enum class ECombatState : uint8 {
 UENUM()
 enum class EAttackState : uint8{
 	Idle,
-	LightAttack,
-	HeavyAttack,
+	LightAbility,
+	HeavyAbility,
 	FirstAbility,
 	SecondAbility,
 	ThirdAbility,

@@ -21,14 +21,16 @@ void UHealthComponent::TakeDamage(float Damage, EDamageType AttackerType){
 	{
 		FDamageData* row = DamageTable->FindRow<FDamageData>(
 				   FName(*FString::Printf(TEXT("%d_%d"), static_cast<int32>(AttackerType), static_cast<int32>(SelfType))), TEXT(""));
-		
 		if (row)
 		{
 			damageMultiplier = row->multiplier;
 		}
 	}
 
-	CurrentHealth -= Damage * damageMultiplier;
+	float finalDamage = Damage * damageMultiplier;
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Damage: %f"), finalDamage));
+
+	CurrentHealth -= finalDamage;
 	if (CurrentHealth <= 0)
 	{
 		// Die
