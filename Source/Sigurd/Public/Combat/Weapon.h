@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "CombatAbility.h"
 #include "..\WeaponData.h"
-#include "MeleeAttack.h"
+#include "MeleeAbility.h"
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 

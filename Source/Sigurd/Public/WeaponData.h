@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Combat/CombatAbility.h"
-#include "Combat/MeleeAttack.h"
+#include "Combat/MeleeAbility.h"
 #include "GameFramework/Actor.h"
 #include "Engine/StaticMesh.h"
 #include "WeaponData.generated.h"

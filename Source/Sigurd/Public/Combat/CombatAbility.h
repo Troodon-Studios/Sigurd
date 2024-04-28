@@ -49,8 +49,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	virtual void Execute(FName SectionName = NAME_None);
 	
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	virtual void ExecuteSection(FName SectionName);
+	// UFUNCTION(BlueprintCallable, Category = "Combat")
+	// virtual void ExecuteSection(FName SectionName);
 
 	virtual void OnAnimationEnded(UAnimMontage* InMontage, bool bInterrupted);
 
@@ -61,9 +61,10 @@ private:
 protected:
 	ABaseCharacter* Owner;
 	
-	void PlayAnimation(UAnimMontage* InMontage, ABaseCharacter* InOwner);
-	void PlayAnimationSection(UAnimMontage* InMontage, FName SectionName, ABaseCharacter* InOwner);
+	//void PlayAnimation(UAnimMontage* InMontage, ABaseCharacter* InOwner);
+	virtual void PlayAnimationSection(UAnimMontage* InMontage, FName SectionName, ABaseCharacter* InOwner);
 
+	virtual void StopMontage(UAnimInstance* AnimInstance ,UAnimMontage* InMontage);
 	
 	
 };
