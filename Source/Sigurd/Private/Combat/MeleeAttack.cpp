@@ -1,78 +1,78 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
+//Bind and unbind is necessary to avoid multiple bindings in the same or different abilities
 
-#include "Combat/MeleeAttack.h"
+
+#include "Combat/MeleeAbility.h"
 #include "Characters/BaseCharacter.h"
 #include "Combat/MeleeWeapon.h"
 
-void UMeleeAttack::ExecuteAttack(UBoxComponent* Collider, FName SectionName){
-	if (WeaponCollider->OnComponentBeginOverlap.IsAlreadyBound(this, &UMeleeAttack::OnWeaponColliderOverlap)){
-		bSelfInterrupt = true;
-	}
-	PlayAttackAnimation(Montage, Owner, SectionName);
-}
+// void UMeleeAttack::ExecuteAttack(UBoxComponent* Collider, FName SectionName){
+// 	if (WeaponCollider->OnComponentBeginOverlap.IsAlreadyBound(this, &UMeleeAttack::OnWeaponColliderOverlap)){
+// 		bSelfInterrupt = true;
+// 	}
+// 	PlayAttackAnimation(Montage, Owner, SectionName);
+// }
 
 void UMeleeAttack::Initialize(ABaseCharacter* InOwner){
 	Super::Initialize(InOwner);
+
+	if (!GetOuter()->IsA<AMeleeWeapon>()){
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Melee Ability in non melee weapon");
+	}
+		
 	WeaponCollider = Cast<AMeleeWeapon>(GetOuter())->WeaponCollider;
 }
 
 void UMeleeAttack::Execute(FName SectionName){
+	
+	//If already bound means that ability was interrupted with another ability and should not remove overlap
+	//If ability is interrupted new ability execute will be called before old animation ends
 	if (WeaponCollider->OnComponentBeginOverlap.IsAlreadyBound(this, &UMeleeAttack::OnWeaponColliderOverlap)){
-		bSelfInterrupt = true;
+		bShouldRemoveOverlap = false;
 	}
-	PlayAttackAnimation(Montage, Owner, SectionName);
+	
+	Super::Execute(SectionName);
 }
 
-void UMeleeAttack::CancelAttack(){
+void UMeleeAttack::RemoveOverlap(){
 	if (WeaponCollider){
 		WeaponCollider->OnComponentBeginOverlap.RemoveDynamic(this, &UMeleeAttack::OnWeaponColliderOverlap);
 	}
 }
 
 void UMeleeAttack::OnAnimationEnded(UAnimMontage* InMontage, bool bInterrupted){
-	if (bSelfInterrupt){
-		bSelfInterrupt = false;
+	if (!bShouldRemoveOverlap){
+		bShouldRemoveOverlap = true;
 		return;
 	}
-	CancelAttack();
+	RemoveOverlap();
 }
 
 void UMeleeAttack::OnWeaponColliderOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
                                            UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult){
+	//TODO Create map of actors if collide and not in map damage, add to map, if in map, ignore
 	if (OtherActor == Cast<AActor>(Owner))
 		return;
 
 	if (!WeaponCollider)
 		return;
 	
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Description);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, "Hit");
 }
 
-void UMeleeAttack::PlayAttackAnimation(UAnimMontage* InMontage, ABaseCharacter* InOwner, FName SectionName){
-	UAnimInstance* AnimInstance = InOwner->GetMesh()->GetAnimInstance();
-
-	if (AnimInstance){
-		if (AnimInstance->Montage_IsPlaying(InMontage)){
-			AnimInstance->Montage_Stop(0.2f, InMontage);
-			CancelAttack();
-		}
-		
-		if (!WeaponCollider->OnComponentBeginOverlap.IsAlreadyBound(this, &UMeleeAttack::OnWeaponColliderOverlap)){
-			WeaponCollider->OnComponentBeginOverlap.AddDynamic(this, &UMeleeAttack::OnWeaponColliderOverlap);
-		}
-
-		AnimInstance->Montage_Play(InMontage, 1.5);
-		
-		if (SectionName != NAME_None){
-			AnimInstance->Montage_JumpToSection(SectionName, InMontage);
-		}
-
-		// Create a variable of type FOnMontageEnded and assign the delegate to it
-		FOnMontageEnded OnMontageEndedDelegate;
-		OnMontageEndedDelegate.BindUObject(this, &UCombatAbility::OnAnimationEnded);
-
-		// Pass the variable to Montage_SetEndDelegate
-		AnimInstance->Montage_SetEndDelegate(OnMontageEndedDelegate, InMontage);
+void UMeleeAttack::PlayAnimationSection(UAnimMontage* InMontage, FName SectionName, ABaseCharacter* InOwner){
+	
+	if (!WeaponCollider->OnComponentBeginOverlap.IsAlreadyBound(this, &UMeleeAttack::OnWeaponColliderOverlap)){
+		WeaponCollider->OnComponentBeginOverlap.AddDynamic(this, &UMeleeAttack::OnWeaponColliderOverlap);
 	}
+
+	Super::PlayAnimationSection(InMontage, SectionName, InOwner);
+	
+	
+}
+
+void UMeleeAttack::StopMontage(UAnimInstance* AnimInstance, UAnimMontage* InMontage){
+	Super::StopMontage(AnimInstance, InMontage);
+	RemoveOverlap();
 }

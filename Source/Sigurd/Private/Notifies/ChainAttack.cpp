@@ -19,6 +19,7 @@ void UChainAttack::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
 
 void UChainAttack::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
 	const FAnimNotifyEventReference& EventReference){
+	
 	if (CombatComponent){
 
 		CombatComponent->ProcessChain(sectionName);

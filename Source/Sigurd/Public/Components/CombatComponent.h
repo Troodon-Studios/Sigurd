@@ -13,25 +13,36 @@ class SIGURD_API UCombatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
+private:
+	UPROPERTY()
+	ABaseCharacter* Owner;
+
 public:
 
 	virtual void BeginPlay() override;
 
 	UCombatComponent();
 
-	TEnumAsByte<ECombatState> CombatState;
-
-	TEnumAsByte<EAttackState> AttackState;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	ECombatState CombatState;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	TSubclassOf<AWeapon> DefaultWeapon;
+	EAttackState AttackState;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	FDataTableRowHandle DefaultRightWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	FDataTableRowHandle DefaultLeftWeapon;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	AWeapon* EquippedWeapon;
+	AWeapon* RightHandWeapon;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	AWeapon* LeftHandWeapon;
 
-	// UFUNCTION(BlueprintCallable, Category = "Combat")
-	// void TakeDamage(float Damage, UObject* DamageType);
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void TakeDamage(UObject* DamageType, float Damage);
 
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
@@ -39,20 +50,34 @@ public:
 
 	void ActivateAbility(EAttackState Ability);
 
-	void LightAttack();
-	void HeavyAttack();
+	void StartLightAbility();
+	void StartHeavyAbility();
 
-	void FirstAbility();
-	void SecondAbility();
-	void ThirdAbility();
-	void FourthAbility();
+	void StartFirstAbility();
+	void StartSecondAbility();
+	void StartThirdAbility();
+	void StartFourthAbility();
 
-	void AbilityController(UCombatAbility* Ability, FName SectionName);
+	void EndAbility();
+
+	void StartDodge();
+	void StartParry();
+	void StartBlock();
+	
+	void BlockAbility();
+	void DodgeAbility();
+	
+	void AbilityController(UCombatAbility* Ability, FName SectionName = NAME_None);
 
 	void ChangeWeaponLight(float Intensity);
 	void ChangeWeaponLightColor(FLinearColor Color);
 
 	void ProcessAttack(FName SectionName = NAME_None);
 	void ProcessChain(FName SectionName = NAME_None);
-	
+
+
+
+private:
+	void InitializeWeapon(AWeapon*& Weapon, FDataTableRowHandle WeaponRow);
+
 };

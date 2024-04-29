@@ -7,28 +7,65 @@
 
 void UCombatComponent::BeginPlay(){
 	Super::BeginPlay();
+	Owner = Cast<ABaseCharacter>(GetOwner());
+	
+	EquipWeapon(DefaultRightWeapon);
+	EquipWeapon(DefaultLeftWeapon);
 }
 
 UCombatComponent::UCombatComponent(){
+	
 	CombatState = ECombatState::Idle;
 	AttackState = EAttackState::Idle;
+	
+}
+
+//TODO break block and stun character if stamina is 0
+//TODO break into different functions
+
+void UCombatComponent::TakeDamage(UObject* DamageType, float Damage){
+	switch (CombatState){
+	case ECombatState::Blocking:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Blocking"));
+		Owner->GetStaminaComponent()->DecreaseStamina(Damage);
+		break;
+	case ECombatState::Dodging:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Dodging"));
+		break;
+	case ECombatState::Parrying:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Parrying"));
+		break;
+	default:
+		Owner->GetHealthComponent()->TakeDamageWithType(DamageType, Damage);
+		break;
+	}
 }
 
 void UCombatComponent::EquipWeapon(FDataTableRowHandle Weapon){
-	if (EquippedWeapon){
-		EquippedWeapon->Destroy();
+
+	if (Weapon.IsNull()){
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Weapon To Equip"));
+		return;
 	}
+	
+	FWeaponData WeaponData = *Weapon.GetRow<FWeaponData>(FString::Printf(TEXT("%s"), *Weapon.RowName.ToString()));
 
-	FItemData WeaponData = *Weapon.GetRow<FItemData>(FString::Printf(TEXT("%s"), *Weapon.RowName.ToString()));
-
-	EquippedWeapon = GetWorld()->SpawnActor<AWeapon>(WeaponData.WeaponClass);
-	EquippedWeapon->AttachToComponent(Cast<ABaseCharacter>(GetOwner())->GetMesh(),
-	                                  FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponData.SocketName);
-	EquippedWeapon->SetWeaponData(WeaponData, Cast<ABaseCharacter>(GetOwner()));
+	switch (WeaponData.SocketName){
+	case ESocket::RH_Socket:
+		InitializeWeapon(RightHandWeapon, Weapon);
+		break;
+	case ESocket::LH_Socket:
+		InitializeWeapon(LeftHandWeapon, Weapon);
+		break;
+	default:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Socket"));
+		break;
+	}
 }
 
 void UCombatComponent::ActivateAbility(EAttackState Ability){
-	if (EquippedWeapon){
+	
+	if (RightHandWeapon){
 		if (AttackState == EAttackState::Idle){
 			AttackState = Ability;
 		}
@@ -36,49 +73,66 @@ void UCombatComponent::ActivateAbility(EAttackState Ability){
 	}
 }
 
-void UCombatComponent::LightAttack(){
-	ActivateAbility(EAttackState::LightAttack);
+void UCombatComponent::StartLightAbility(){
+	ActivateAbility(EAttackState::LightAbility);
 }
 
-void UCombatComponent::HeavyAttack(){
-	ActivateAbility(EAttackState::HeavyAttack);
+void UCombatComponent::StartHeavyAbility(){
+	ActivateAbility(EAttackState::HeavyAbility);
 }
 
-void UCombatComponent::FirstAbility(){
+void UCombatComponent::StartFirstAbility(){
 	ActivateAbility(EAttackState::FirstAbility);
 }
 
-void UCombatComponent::SecondAbility(){
+void UCombatComponent::StartSecondAbility(){
 	ActivateAbility(EAttackState::SecondAbility);
 }
 
-void UCombatComponent::ThirdAbility(){
+void UCombatComponent::StartThirdAbility(){
 	ActivateAbility(EAttackState::ThirdAbility);
 }
 
-void UCombatComponent::FourthAbility(){
+void UCombatComponent::StartFourthAbility(){
 	ActivateAbility(EAttackState::FourthAbility);
 }
 
-void UCombatComponent::AbilityController(UCombatAbility* Ability, FName SectionName){
-	switch (CombatState){
-	case ECombatState::Idle:
-		Ability->Execute(SectionName);
-		CombatState = ECombatState::Attacking;
-		break;
-	case ECombatState::QueuingAttack:
-		if (Ability->combable || Ability->chainable){
-			CombatState = ECombatState::AttackQueued;
-			ChangeWeaponLightColor(FColor::Green);
-		}
-		break;
-	}
+void UCombatComponent::BlockAbility(){
+	LeftHandWeapon->BlockAbility->StartAbility();
 	
 }
 
+void UCombatComponent::DodgeAbility(){
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Dodge"));
+	AbilityController(RightHandWeapon->DodgeAbility);
+}
+
+void UCombatComponent::AbilityController(UCombatAbility* Ability, FName SectionName){
+	if (Ability != nullptr){
+		switch (CombatState){
+		case ECombatState::Idle:
+			Ability->StartAbility(SectionName);
+			break;
+		case ECombatState::QueuingAttack:
+			if (Ability->Combable || Ability->Chainable){
+				CombatState = ECombatState::AttackQueued;
+				ChangeWeaponLightColor(FColor::Green);
+			}
+			break;
+		case ECombatState::ExecuteQueuedAttack:
+			Ability->StartAbility(SectionName);
+			ChangeWeaponLight(0);
+			break;
+		}
+	} else {
+		AttackState = EAttackState::Idle;
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Ability"));
+	}
+}
+
 void UCombatComponent::ChangeWeaponLight(float Intensity){
-	if (EquippedWeapon->WeaponMesh){
-		UMaterialInstanceDynamic* OwnerMaterial = EquippedWeapon->WeaponMesh->CreateAndSetMaterialInstanceDynamic(0);
+	if (RightHandWeapon->WeaponMesh){
+		UMaterialInstanceDynamic* OwnerMaterial = RightHandWeapon->WeaponMesh->CreateAndSetMaterialInstanceDynamic(0);
 		if (OwnerMaterial){
 			OwnerMaterial->SetScalarParameterValue("EmissiveIntensity", Intensity);
 		}
@@ -86,39 +140,36 @@ void UCombatComponent::ChangeWeaponLight(float Intensity){
 }
 
 void UCombatComponent::ChangeWeaponLightColor(FLinearColor Color){
-	if (EquippedWeapon->WeaponMesh){
-		UMaterialInstanceDynamic* OwnerMaterial = EquippedWeapon->WeaponMesh->CreateAndSetMaterialInstanceDynamic(0);
+	if (RightHandWeapon->WeaponMesh){
+		UMaterialInstanceDynamic* OwnerMaterial = RightHandWeapon->WeaponMesh->CreateAndSetMaterialInstanceDynamic(0);
 		if (OwnerMaterial){
 			OwnerMaterial->SetVectorParameterValue("EmissiveColor", Color);
 		}
 	}
 }
 
-
-
 void UCombatComponent::ProcessAttack(FName SectionName){
 	switch (AttackState){
 	case EAttackState::Idle:
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Idle"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Cannot Process Attack"));
 		break;
-	case EAttackState::LightAttack:
-		AbilityController(EquippedWeapon->LightAttackAbility, SectionName);
+	case EAttackState::LightAbility:
+		AbilityController(RightHandWeapon->LightAttackAbility, SectionName);
 		break;
-	case EAttackState::HeavyAttack:
-		AbilityController(EquippedWeapon->HeavyAttackAbility, SectionName);
+	case EAttackState::HeavyAbility:
+		AbilityController(RightHandWeapon->HeavyAttackAbility, SectionName);
 		break;
 	case EAttackState::FirstAbility:
-		AbilityController(EquippedWeapon->FirstAbility, SectionName);
-		AttackState = EAttackState::Idle;
+		AbilityController(RightHandWeapon->FirstAbility, SectionName);
 		break;
 	case EAttackState::SecondAbility:
-		AbilityController(EquippedWeapon->SecondAbility, SectionName);		AttackState = EAttackState::Idle;
+		AbilityController(RightHandWeapon->SecondAbility, SectionName);
 		break;
 	case EAttackState::ThirdAbility:
-		AbilityController(EquippedWeapon->ThirdAbility, SectionName);		AttackState = EAttackState::Idle;
+		AbilityController(RightHandWeapon->ThirdAbility, SectionName);
 		break;
 	case EAttackState::FourthAbility:
-		AbilityController(EquippedWeapon->FourthAbility, SectionName);		AttackState = EAttackState::Idle;
+		AbilityController(RightHandWeapon->FourthAbility, SectionName);
 		break;
 	default:
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Attack State"));
@@ -128,37 +179,74 @@ void UCombatComponent::ProcessAttack(FName SectionName){
 
 void UCombatComponent::ProcessChain(FName SectionName){
 	if (CombatState == ECombatState::AttackQueued){
-		switch (AttackState){
-		case EAttackState::Idle:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Idle"));
+		CombatState = ECombatState::ExecuteQueuedAttack;
+		ProcessAttack(SectionName);
+	}
+}
+
+void UCombatComponent::EndAbility(){
+	
+	switch (AttackState){
+		case EAttackState::LightAbility:
+			RightHandWeapon->LightAttackAbility->EndAbility();
 			break;
-		case EAttackState::LightAttack:
-			EquippedWeapon->LightAttackAbility->Execute(SectionName);
-			break;
-		case EAttackState::HeavyAttack:
-			EquippedWeapon->HeavyAttackAbility->Execute(SectionName);
+		case EAttackState::HeavyAbility:
+			RightHandWeapon->HeavyAttackAbility->EndAbility();
 			break;
 		case EAttackState::FirstAbility:
-		AbilityController(EquippedWeapon->FirstAbility, SectionName);
+			RightHandWeapon->FirstAbility->EndAbility();
 			break;
 		case EAttackState::SecondAbility:
-		AbilityController(EquippedWeapon->SecondAbility, SectionName);
+			RightHandWeapon->SecondAbility->EndAbility();
 			break;
 		case EAttackState::ThirdAbility:
-		AbilityController(EquippedWeapon->ThirdAbility, SectionName);
+			RightHandWeapon->ThirdAbility->EndAbility();
 			break;
 		case EAttackState::FourthAbility:
-		AbilityController(EquippedWeapon->FourthAbility, SectionName);
+			RightHandWeapon->FourthAbility->EndAbility();
 			break;
-		default:
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Attack State"));
-			break;
-		}
-		CombatState = ECombatState::Attacking;
-		ChangeWeaponLight(0);
-	}
-	else{
-		ChangeWeaponLightColor(FColor::Red);
 		
 	}
+}
+
+void UCombatComponent::StartDodge(){
+	if (!RightHandWeapon->DodgeAbility){
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Dodge Ability"));
+		return;
+	}
+	AbilityController(RightHandWeapon->DodgeAbility);
+}
+
+void UCombatComponent::StartParry(){
+	if (!RightHandWeapon->ParryAbility){
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Parry Ability"));
+		return;
+	}
+	AbilityController(RightHandWeapon->ParryAbility);
+}
+
+void UCombatComponent::StartBlock(){
+	if (!LeftHandWeapon->BlockAbility){
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Block Ability"));
+		return;
+	}
+	AbilityController(LeftHandWeapon->BlockAbility);
+}
+
+void UCombatComponent::InitializeWeapon(AWeapon*& Weapon, FDataTableRowHandle WeaponRow){
+	if (WeaponRow.IsNull()){
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Weapon"));
+		return;
+	}
+
+	if (Weapon){
+		Weapon->Destroy();
+	}
+
+	FWeaponData WeaponData = *WeaponRow.GetRow<FWeaponData>(FString::Printf(TEXT("%s"), *WeaponRow.RowName.ToString()));
+	Weapon = GetWorld()->SpawnActor<AWeapon>(WeaponData.WeaponClass);
+	Weapon->AttachToComponent(Cast<ABaseCharacter>(GetOwner())->GetMesh(),
+	                          FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+	                          GetSocketName(WeaponData.SocketName));
+	Weapon->SetWeaponData(WeaponData, Cast<ABaseCharacter>(GetOwner()));
 }

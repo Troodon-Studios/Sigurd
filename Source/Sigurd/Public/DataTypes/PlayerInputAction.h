@@ -35,16 +35,13 @@ struct FInputActionValues{
 	UInputAction* RunAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* NextWeaponAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* PreviousWeaponAction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* DodgeAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* BlockAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* ParryAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* AbilityModeAction;

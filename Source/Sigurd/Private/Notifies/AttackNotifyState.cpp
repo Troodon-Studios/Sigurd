@@ -33,9 +33,9 @@ UBoxComponent* UAttackNotifyState::GetWeaponCollider(const USkeletalMeshComponen
 	{
 		if (UCombatComponent* CombatComp = Owner->FindComponentByClass<UCombatComponent>())
 		{
-			if (CombatComp->EquippedWeapon)
+			if (CombatComp->RightHandWeapon)
 			{				
-				return Cast<AMeleeWeapon>(CombatComp->EquippedWeapon)->WeaponCollider;
+				return Cast<AMeleeWeapon>(CombatComp->RightHandWeapon)->WeaponCollider;
 			}
 		}
 	}

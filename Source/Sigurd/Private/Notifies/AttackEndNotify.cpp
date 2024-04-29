@@ -3,6 +3,7 @@
 
 #include "Notifies/AttackEndNotify.h"
 
+#include "Characters/BaseCharacter.h"
 
 
 void UAttackEndNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
@@ -16,12 +17,23 @@ void UAttackEndNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
 }
 
 UCombatComponent* UAttackEndNotify::GetCombatComponent(const USkeletalMeshComponent* MeshComp){
-	if (const AActor* Owner = MeshComp->GetOwner())
+
+	if (const ABaseCharacter* Owner = Cast<ABaseCharacter>(MeshComp->GetOwner()))
 	{
-		if (UCombatComponent* CombatComp = Owner->FindComponentByClass<UCombatComponent>())
+		if (UCombatComponent* CombatComp = Owner->GetCombatComponent())
 		{
+			Owner->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 			return CombatComp;
 		}
 	}
+
+	
+	// if (const AActor* Owner = MeshComp->GetOwner())
+	// {
+	// 	if (UCombatComponent* CombatComp = Owner->FindComponentByClass<UCombatComponent>())
+	// 	{
+	// 		return CombatComp;
+	// 	}
+	// }
 	return nullptr;
 }

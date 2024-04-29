@@ -13,8 +13,8 @@ UStaminaComponent::UStaminaComponent(){
 	StaminaDecayRate = 0.3f;
 	TickRate = 0.01f;
 	DelayTime = 1.0f;
-	RunningSpeed = 900;
-	WalkingSpeed = 700;
+	RunningSpeed = 800;
+	WalkingSpeed = 500;
 	ExhaustedSpeed = 500;
 }
 
@@ -45,21 +45,22 @@ void UStaminaComponent::DelayedStaminaRegen(float delay){
 }
 
 void UStaminaComponent::RunAction(){
+	
 	if (StaminaState == EStaminaState::Idle){
 		StaminaState = EStaminaState::Running;
 		CurrentStamina -= 5;
 		CharacterMovement->MaxWalkSpeed = RunningSpeed;
 		StartStaminaDecay();
-	}
-	else if (StaminaState == EStaminaState::Running){
-		StaminaState = EStaminaState::Idle;
-		StopRunning();
-	}
+	}	
 }
 
 void UStaminaComponent::StopRunning(){
-	CharacterMovement->MaxWalkSpeed = (StaminaState == EStaminaState::Exhausted) ? ExhaustedSpeed : WalkingSpeed;
-	StopStaminaDecay();
+	if (StaminaState == EStaminaState::Running){
+		StaminaState = EStaminaState::Idle;
+		CharacterMovement->MaxWalkSpeed = WalkingSpeed;
+		StopStaminaDecay();
+	}
+
 }
 
 void UStaminaComponent::StopStaminaRegen(){
@@ -82,9 +83,9 @@ void UStaminaComponent::DecreaseStamina(float amount){
 	CurrentStamina -= amount;
 	if (CurrentStamina < 0){
 		CurrentStamina = 0;
-		CharacterMovement->MaxWalkSpeed = ExhaustedSpeed;
-		DelayedStaminaRegen(DelayTime);
+		StartExhaust();
 	}
+	DelayedStaminaRegen(DelayTime);
 }
 
 void UStaminaComponent::RegenStamina(){
@@ -109,16 +110,23 @@ void UStaminaComponent::ExhaustedRegenStamina(){
 }
 
 void UStaminaComponent::DecayStamina(){
+	if ( CharacterMovement->Velocity.IsNearlyZero())
+		return;
+	
 	CurrentStamina -= StaminaDecayRate;
-
 	if (CurrentStamina < 0){
 		CurrentStamina = 0;
 		StaminaState = EStaminaState::Exhausted;
-		StopRunning();
-	} else if ( CharacterMovement->Velocity.IsNearlyZero()){
-		StaminaState = EStaminaState::Idle;
-		StopRunning();
+		StartExhaust();
 	}
+	
+}
+
+void UStaminaComponent::StartExhaust(){
+	StaminaState = EStaminaState::Exhausted;
+	CharacterMovement->MaxWalkSpeed = ExhaustedSpeed;
+	StopStaminaDecay();	
+	
 }
 
 float UStaminaComponent::GetStaminaPercentage(){

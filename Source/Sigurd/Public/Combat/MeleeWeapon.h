@@ -17,6 +17,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UBoxComponent* WeaponCollider;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
