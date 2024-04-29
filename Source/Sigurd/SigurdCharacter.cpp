@@ -51,10 +51,7 @@ ASigurdCharacter::ASigurdCharacter() : ABaseCharacter(){
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	// Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
-
-	
+	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm	
 }
 
 void ASigurdCharacter::BeginPlay(){
@@ -70,7 +67,6 @@ void ASigurdCharacter::BeginPlay(){
 			Subsystem->AddMappingContext(InputActionValues.DefaultMappingContext, 0);
 		}
 	}
-
 	
 }
 
@@ -89,12 +85,10 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(InputActionValues.LightAttackAction , ETriggerEvent::Started, this, &ASigurdCharacter::LightAttack);
 		EnhancedInputComponent->BindAction(InputActionValues.HeavyAttackAction, ETriggerEvent::Started, this, &ASigurdCharacter::HeavyAttack);
 		
-
-
-		EnhancedInputComponent->BindAction(InputActionValues.NextWeaponAction, ETriggerEvent::Started, this,
-		                                   &ASigurdCharacter::NextWeapon);
-		EnhancedInputComponent->BindAction(InputActionValues.PreviousWeaponAction, ETriggerEvent::Started, this,
-		                                   &ASigurdCharacter::PreviousWeapon);
+		EnhancedInputComponent->BindAction(InputActionValues.FirstAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::FirstAbility);
+		EnhancedInputComponent->BindAction(InputActionValues.SecondAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::SecondAbility);
+		EnhancedInputComponent->BindAction(InputActionValues.ThirdAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::ThirdAbility);
+		EnhancedInputComponent->BindAction(InputActionValues.FourthAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::FourthAbility);
 
 		EnhancedInputComponent->BindAction(InputActionValues.DodgeAction, ETriggerEvent::Started, this, &ASigurdCharacter::Dodge);
 		EnhancedInputComponent->BindAction(InputActionValues.BlockAction, ETriggerEvent::Started, this, &ASigurdCharacter::Block);
@@ -141,6 +135,22 @@ void ASigurdCharacter::HeavyAttack(){
 	CombatComponent->HeavyAttack();
 }
 
+void ASigurdCharacter::FirstAbility(){
+	CombatComponent->FirstAbility();
+}
+
+void ASigurdCharacter::SecondAbility(){
+	CombatComponent->SecondAbility();
+}
+
+void ASigurdCharacter::ThirdAbility(){
+	CombatComponent->ThirdAbility();
+}
+
+void ASigurdCharacter::FourthAbility(){
+	CombatComponent->FourthAbility();
+}
+
 void ASigurdCharacter::TakeDamageSigurd(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
                                         class AController* InstigatedBy, AActor* DamageCauser) {
 	UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
@@ -152,17 +162,6 @@ void ASigurdCharacter::TakeDamageSigurd(AActor* DamagedActor, float Damage, cons
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("CustomTakeDamage_Implementation"));
 }*/
 
-void ASigurdCharacter::NextWeapon() {
-	//if (CombatComponent->WeaponDataInventory.Num() != 0){
-	//	CombatComponent->NextWeapon();
-	//}
-}
-
-void ASigurdCharacter::PreviousWeapon() {
-	//if (CombatComponent->WeaponDataInventory.Num() != 0){
-	//	CombatComponent->PreviousWeapon();
-	//}
-}
 
 void ASigurdCharacter::Dodge() {
 	//CombatComponent->Dodge();

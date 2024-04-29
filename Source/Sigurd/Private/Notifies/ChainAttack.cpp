@@ -10,6 +10,7 @@ void UChainAttack::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
 	
 	if(CombatComponent){
 		CombatComponent->CombatState = ECombatState::QueuingAttack;
+		CombatComponent->AttackState = EAttackState::Idle;
 		CombatComponent->ChangeWeaponLight(10);
 		CombatComponent->ChangeWeaponLightColor(FLinearColor::Blue);
 	}
@@ -20,7 +21,7 @@ void UChainAttack::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase
 	const FAnimNotifyEventReference& EventReference){
 	if (CombatComponent){
 
-		CombatComponent->ChainAttack(sectionName);
+		CombatComponent->ProcessChain(sectionName);
 	}
 }
 

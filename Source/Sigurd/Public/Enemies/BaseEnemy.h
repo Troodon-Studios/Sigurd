@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "AICBaseEnemy.h"
-#include "BehaviorTree/BehaviorTree.h"
 #include "Components/CombatComponent.h"
 #include "Components/StaminaComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "PatrolRoute.h"
+#include "Slots.h"
 #include "Characters/BaseCharacter.h"
+#include  "EnemyStructs.h"
 #include "Components/TokenComponent.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/AICoreInterface.h"
@@ -19,24 +20,24 @@ UCLASS()
 class SIGURD_API ABaseEnemy : public ABaseCharacter, public IAICoreInterface
 {
 	GENERATED_BODY()
-	
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* WeaponMesh;
 	
 public:
 	// Sets default values for this character's properties
 	ABaseEnemy();
 
 	// AI Variables
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="AI")
-	TObjectPtr<UBehaviorTree> BehaviourTree;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="AI")
 	APatrolRoute* PatrolRoute;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Combat")
-	double AttackRadius = 150.0;
+	FEnemyType EnemyType;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Combat")
-	double DefendRadius = 350.0;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="AI")
+	FSlots Slot;
+	
 
 protected:
 	// Called when the game starts or when spawned
@@ -55,6 +56,7 @@ public:
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	void SetUpEnemyType();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -67,3 +69,4 @@ private:
 
 	
 };
+

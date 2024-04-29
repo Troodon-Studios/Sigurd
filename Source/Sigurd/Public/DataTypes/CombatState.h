@@ -9,9 +9,18 @@ enum class ECombatState : uint8 {
 	Attacking,
 	QueuingAttack,
 	AttackQueued,
-	LightAttackQueued,
-	HeavyAttackQueued,
 	Dodging,
 	Blocking,
 	Parrying,
+};
+
+UENUM()
+enum class EAttackState : uint8{
+	Idle,
+	LightAttack,
+	HeavyAttack,
+	FirstAbility,
+	SecondAbility,
+	ThirdAbility,
+	FourthAbility,
 };

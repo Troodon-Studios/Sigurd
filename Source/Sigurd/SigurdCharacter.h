@@ -26,6 +26,8 @@ class ASigurdCharacter : public ABaseCharacter /*, public IDamageableInterface*/
 {
 	GENERATED_BODY()
 
+public:
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 
@@ -34,35 +36,32 @@ class ASigurdCharacter : public ABaseCharacter /*, public IDamageableInterface*/
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	FInputActionValues InputActionValues;
-
-public:
+	
 	ASigurdCharacter();
-
-protected:
 
 	//Movement
 	void Move(const FInputActionValue& Value);
-	void StartRunning() ;
+	void StartRunning();
 
 	//Combat	
-	void LightAttack() ;
-	void HeavyAttack() ;
-	UFUNCTION()
+	void LightAttack();
+	void HeavyAttack();
+	void FirstAbility();
+	void SecondAbility();
+	void ThirdAbility();
+	void FourthAbility();
+	
 	void TakeDamageSigurd(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 	                      class AController* InstigatedBy, AActor* DamageCauser) ;
 	/*void TakeDamage_Implementation(float damage) override;*/
-	void Dodge() ;
-	void Block() ;
+	void Dodge();
+	void Block();
 
-	//Inventory
-	void NextWeapon() ;
-	void PreviousWeapon() ;
 
-protected:
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;	
 	virtual void BeginPlay() override;
-
-public:
+	
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const{ return CameraBoom; }
 	/** Returns FollowCamera subobject **/

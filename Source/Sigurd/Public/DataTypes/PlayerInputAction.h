@@ -20,6 +20,18 @@ struct FInputActionValues{
 	UInputAction* HeavyAttackAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* FirstAbilityAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* SecondAbilityAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* ThirdAbilityAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* FourthAbilityAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* RunAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
@@ -33,5 +45,7 @@ struct FInputActionValues{
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* BlockAction;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* AbilityModeAction;
 };

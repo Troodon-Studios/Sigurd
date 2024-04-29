@@ -26,13 +26,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	FItemData WeaponData;
 
-	UPROPERTY()
 	UCombatAbility* LightAttackAbility;
-	UPROPERTY()
 	UCombatAbility* HeavyAttackAbility;
+	UCombatAbility* FirstAbility;
+	UCombatAbility* SecondAbility;
+	UCombatAbility* ThirdAbility;
+	UCombatAbility* FourthAbility;	
 
 	virtual void SetWeaponData(FItemData NewWeaponData, ABaseCharacter* Character);
 
-	virtual void LightAttack(FName SectionName);
-	virtual void HeavyAttack(FName SectionName);
+private:
+	void InitializeAbility(UCombatAbility*& CombatAbility, TSubclassOf<UCombatAbility> Ability);
 };

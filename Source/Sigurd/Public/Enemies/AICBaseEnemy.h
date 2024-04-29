@@ -11,6 +11,8 @@
 #include "Perception/AISenseConfig_Sight.h"
 #include "AICBaseEnemy.generated.h"
 
+class ABaseEnemy;
+
 UCLASS()
 class SIGURD_API AAICBaseEnemy : public AAIController
 {
@@ -19,7 +21,8 @@ class SIGURD_API AAICBaseEnemy : public AAIController
 public:
 	
 	virtual void OnPossess(APawn* InPawn) override;
-	
+	void ReConfigureSenseConfig();
+
 	// Sets default values for this actor's properties
 	explicit AAICBaseEnemy(FObjectInitializer const& ObjectInitializer = FObjectInitializer::Get());
 	
@@ -48,6 +51,7 @@ private:
 	FName DefendRadiusKn = "DefendRadius";
 	EEnemyState ActualState;
 	UBlackboardComponent* BlackboardComponent;
+	ABaseEnemy* BaseEnemy;
 	
 	// AI Perception Config
 	void SetAIPerception();
@@ -62,6 +66,8 @@ private:
 	UAISenseConfig_Sight* SightConfig;
 	UAISenseConfig_Hearing* HearingConfig;
 	UAISenseConfig_Damage* DamageConfig;
+
+	UAIPerceptionComponent* PerceptionComponent;
 	
 	UFUNCTION()
 	void OnTargetPerceived(AActor* Actor, FAIStimulus Stimulus);

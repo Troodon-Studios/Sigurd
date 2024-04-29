@@ -10,6 +10,7 @@ void UAttackEndNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBas
 
 	if (UCombatComponent* CombatComp = GetCombatComponent(MeshComp)){
 		CombatComp->CombatState = ECombatState::Idle;
+		CombatComp->AttackState = EAttackState::Idle;
 		CombatComp->ChangeWeaponLight(0);
 	}
 }

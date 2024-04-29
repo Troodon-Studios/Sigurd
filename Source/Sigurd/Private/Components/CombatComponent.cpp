@@ -11,6 +11,7 @@ void UCombatComponent::BeginPlay(){
 
 UCombatComponent::UCombatComponent(){
 	CombatState = ECombatState::Idle;
+	AttackState = EAttackState::Idle;
 }
 
 void UCombatComponent::EquipWeapon(FDataTableRowHandle Weapon){
@@ -26,45 +27,53 @@ void UCombatComponent::EquipWeapon(FDataTableRowHandle Weapon){
 	EquippedWeapon->SetWeaponData(WeaponData, Cast<ABaseCharacter>(GetOwner()));
 }
 
-void UCombatComponent::LightAttack(){
+void UCombatComponent::ActivateAbility(EAttackState Ability){
 	if (EquippedWeapon){
-		if (CombatState == ECombatState::Idle){
-			CombatState = ECombatState::Attacking;
-			EquippedWeapon->LightAttack(NAME_None);
+		if (AttackState == EAttackState::Idle){
+			AttackState = Ability;
 		}
-		else if (CombatState == ECombatState::QueuingAttack){
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Light Attack Queued"));
-			CombatState = ECombatState::LightAttackQueued;
-			ChangeWeaponLightColor(FLinearColor::Green);
-		}
+		ProcessAttack();
 	}
+}
+
+void UCombatComponent::LightAttack(){
+	ActivateAbility(EAttackState::LightAttack);
 }
 
 void UCombatComponent::HeavyAttack(){
-	if (EquippedWeapon){
-		if (CombatState == ECombatState::Idle){
-			CombatState = ECombatState::Attacking;
-			EquippedWeapon->HeavyAttack(NAME_None);
-		}
-		else if (CombatState == ECombatState::QueuingAttack){
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Heavy Attack Queued"));
-			CombatState = ECombatState::HeavyAttackQueued;
-			ChangeWeaponLightColor(FLinearColor::Green);
-		}
-	}
+	ActivateAbility(EAttackState::HeavyAttack);
 }
 
-void UCombatComponent::ChainAttack(FName SectionName){
-	if (EquippedWeapon){
-		if (CombatState == ECombatState::LightAttackQueued){
-			ChangeWeaponLight(0);
-			EquippedWeapon->LightAttack(SectionName);
+void UCombatComponent::FirstAbility(){
+	ActivateAbility(EAttackState::FirstAbility);
+}
+
+void UCombatComponent::SecondAbility(){
+	ActivateAbility(EAttackState::SecondAbility);
+}
+
+void UCombatComponent::ThirdAbility(){
+	ActivateAbility(EAttackState::ThirdAbility);
+}
+
+void UCombatComponent::FourthAbility(){
+	ActivateAbility(EAttackState::FourthAbility);
+}
+
+void UCombatComponent::AbilityController(UCombatAbility* Ability, FName SectionName){
+	switch (CombatState){
+	case ECombatState::Idle:
+		Ability->Execute(SectionName);
+		CombatState = ECombatState::Attacking;
+		break;
+	case ECombatState::QueuingAttack:
+		if (Ability->combable || Ability->chainable){
+			CombatState = ECombatState::AttackQueued;
+			ChangeWeaponLightColor(FColor::Green);
 		}
-		else{
-			ChangeWeaponLightColor(FLinearColor::Red);
-			CombatState = ECombatState::Attacking;
-		}
+		break;
 	}
+	
 }
 
 void UCombatComponent::ChangeWeaponLight(float Intensity){
@@ -82,5 +91,74 @@ void UCombatComponent::ChangeWeaponLightColor(FLinearColor Color){
 		if (OwnerMaterial){
 			OwnerMaterial->SetVectorParameterValue("EmissiveColor", Color);
 		}
+	}
+}
+
+
+
+void UCombatComponent::ProcessAttack(FName SectionName){
+	switch (AttackState){
+	case EAttackState::Idle:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Idle"));
+		break;
+	case EAttackState::LightAttack:
+		AbilityController(EquippedWeapon->LightAttackAbility, SectionName);
+		break;
+	case EAttackState::HeavyAttack:
+		AbilityController(EquippedWeapon->HeavyAttackAbility, SectionName);
+		break;
+	case EAttackState::FirstAbility:
+		AbilityController(EquippedWeapon->FirstAbility, SectionName);
+		AttackState = EAttackState::Idle;
+		break;
+	case EAttackState::SecondAbility:
+		AbilityController(EquippedWeapon->SecondAbility, SectionName);		AttackState = EAttackState::Idle;
+		break;
+	case EAttackState::ThirdAbility:
+		AbilityController(EquippedWeapon->ThirdAbility, SectionName);		AttackState = EAttackState::Idle;
+		break;
+	case EAttackState::FourthAbility:
+		AbilityController(EquippedWeapon->FourthAbility, SectionName);		AttackState = EAttackState::Idle;
+		break;
+	default:
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Attack State"));
+		break;
+	}
+}
+
+void UCombatComponent::ProcessChain(FName SectionName){
+	if (CombatState == ECombatState::AttackQueued){
+		switch (AttackState){
+		case EAttackState::Idle:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Idle"));
+			break;
+		case EAttackState::LightAttack:
+			EquippedWeapon->LightAttackAbility->Execute(SectionName);
+			break;
+		case EAttackState::HeavyAttack:
+			EquippedWeapon->HeavyAttackAbility->Execute(SectionName);
+			break;
+		case EAttackState::FirstAbility:
+		AbilityController(EquippedWeapon->FirstAbility, SectionName);
+			break;
+		case EAttackState::SecondAbility:
+		AbilityController(EquippedWeapon->SecondAbility, SectionName);
+			break;
+		case EAttackState::ThirdAbility:
+		AbilityController(EquippedWeapon->ThirdAbility, SectionName);
+			break;
+		case EAttackState::FourthAbility:
+		AbilityController(EquippedWeapon->FourthAbility, SectionName);
+			break;
+		default:
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Attack State"));
+			break;
+		}
+		CombatState = ECombatState::Attacking;
+		ChangeWeaponLight(0);
+	}
+	else{
+		ChangeWeaponLightColor(FColor::Red);
+		
 	}
 }
