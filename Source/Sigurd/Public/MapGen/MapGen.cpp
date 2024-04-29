@@ -105,12 +105,12 @@ void AMapGen::GenerateTexture(bool useOwnSettings)
 {
 	InitializeTexture();
 
-	const float MFrequency = useOwnSettings ? TextNoiseValues.Frequency : Setting->NoiseValues.Frequency;
+	const float MFrequency = useOwnSettings ? TextNoiseValues.Frequency/10 : Setting->NoiseValues.Frequency;
 	const float MAmplitude = useOwnSettings ? TextNoiseValues.Amplitude : Setting->NoiseValues.Amplitude;
 	const float MLacunarity = useOwnSettings ? TextNoiseValues.Lacunarity : Setting->NoiseValues.Lacunarity;
-	const float MPersistence = useOwnSettings ? TextNoiseValues.Persistence : Setting->NoiseValues.Persistence;
+	const float MPersistence = useOwnSettings ? TextNoiseValues.Persistence/10 : Setting->NoiseValues.Persistence;
 
-	int32 ExtraDimLoc = useOwnSettings ? ExtraDim : ExtraDim/10;
+	int32 ExtraDimLoc = ExtraDim;
 	FColor FillColor = FColor::White;
 	int32 Width = GridSize.X * ExtraDim;
 
