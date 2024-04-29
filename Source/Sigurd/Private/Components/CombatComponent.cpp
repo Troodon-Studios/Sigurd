@@ -14,8 +14,10 @@ void UCombatComponent::BeginPlay(){
 }
 
 UCombatComponent::UCombatComponent(){
+	
 	CombatState = ECombatState::Idle;
 	AttackState = EAttackState::Idle;
+	
 }
 
 //TODO break block and stun character if stamina is 0
@@ -35,8 +37,6 @@ void UCombatComponent::TakeDamage(UObject* DamageType, float Damage){
 		break;
 	default:
 		Owner->GetHealthComponent()->TakeDamageWithType(DamageType, Damage);
-		
-
 		break;
 	}
 }

@@ -15,6 +15,8 @@ UCombatAbility::UCombatAbility(){
 
 void UCombatAbility::StartAbility(FName SectionName){
 
+
+
 	if (Owner->GetStaminaComponent()->StaminaState == EStaminaState::Exhausted){
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Exhausted");
 		Owner->GetCombatComponent()->AttackState = EAttackState::Idle;
@@ -80,6 +82,7 @@ void UCombatAbility::PlayAnimationSection(UAnimMontage* InMontage, FName Section
 		StopMontage(AnimInstance, InMontage);
 	}
 
+	Owner->GetCharacterMovement()->DisableMovement();
 	AnimInstance->Montage_Play(InMontage, 1);
 	
 	if (SectionName != NAME_None){

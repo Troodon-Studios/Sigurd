@@ -99,7 +99,7 @@ void ASigurdCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		EnhancedInputComponent->BindAction(InputActionValues.FourthAbilityAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartFourthAbility);
 		EnhancedInputComponent->BindAction(InputActionValues.FourthAbilityAction, ETriggerEvent::Completed, this, &ASigurdCharacter::EndAbility);
 		 
-		EnhancedInputComponent->BindAction(InputActionValues.DodgeAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartDodge);
+		EnhancedInputComponent->BindAction(InputActionValues.DodgeAction, ETriggerEvent::Triggered, this, &ASigurdCharacter::StartDodge);
 		EnhancedInputComponent->BindAction(InputActionValues.ParryAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartParry);
 		EnhancedInputComponent->BindAction(InputActionValues.BlockAction, ETriggerEvent::Started, this, &ASigurdCharacter::StartBlock);
 		
