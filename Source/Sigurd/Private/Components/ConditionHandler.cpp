@@ -1,6 +1,7 @@
 ﻿
 #include "Components/ConditionHandler.h"
 
+#include "Characters/BaseCharacter.h"
 #include "Components/ConditionComponent.h"
 
 UConditionHandler::UConditionHandler(){
@@ -12,10 +13,11 @@ UConditionHandler::UConditionHandler(){
 	ConditionElementFunctionMap.Add(TPair<ECondition, Element>(ECondition::Freeze, Element::Ice), [this](){StartFreezing();});
 }
 
-void UConditionHandler::Initialize(UConditionComponent* ParentConditionComponent){
-	this->ConditionComponent = ParentConditionComponent;
-	this->HealthComponent = ConditionComponent->GetOwner()->FindComponentByClass<UHealthComponent>();
-	this->MovementComponent = ConditionComponent->GetOwner()->FindComponentByClass<UCharacterMovementComponent>();
+void UConditionHandler::Initialize(ABaseCharacter* InOwnerCharacter){
+	this->OwnerCharacter = InOwnerCharacter;
+	ConditionComponent = this->OwnerCharacter->GetConditionComponent();
+	HealthComponent = this->OwnerCharacter->GetHealthComponent();
+	MovementComponent = this->OwnerCharacter->GetCharacterMovement();
 }
 
 void UConditionHandler::StartBurning(){

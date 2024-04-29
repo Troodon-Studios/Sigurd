@@ -9,30 +9,16 @@
 #include "Components/StaminaComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "PatrolRoute.h"
+#include "Characters/BaseCharacter.h"
 #include "Components/TokenComponent.h"
 #include "GameFramework/Character.h"
 #include "Interfaces/AICoreInterface.h"
 #include "BaseEnemy.generated.h"
 
 UCLASS()
-class SIGURD_API ABaseEnemy : public ACharacter, public IAICoreInterface
+class SIGURD_API ABaseEnemy : public ABaseCharacter, public IAICoreInterface
 {
 	GENERATED_BODY()
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	UStaticMeshComponent* WeaponMesh;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
-	UStaminaComponent* StaminaComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-	UCombatComponent* CombatComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = "true"))
-	UHealthComponent* HealthComponent;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-	UTokenComponent* TokenComponent;
 	
 	
 public:

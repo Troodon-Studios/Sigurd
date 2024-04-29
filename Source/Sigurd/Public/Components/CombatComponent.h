@@ -3,11 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HealthComponent.h"
-#include "ItemData.h"
+#include "Combat/Weapon.h"
 #include "DataTypes/CombatState.h"
-#include "StaminaComponent.h"
-#include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
 
@@ -16,59 +13,34 @@ class SIGURD_API UCombatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
-	// Sets default values for this component's properties
+public:
+
+	virtual void BeginPlay() override;
+
 	UCombatComponent();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	TEnumAsByte<ECombatState> CombatState;
 
-	int ComboCount = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	TSubclassOf<AWeapon> DefaultWeapon;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	int CurrentWeapon;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	AWeapon* EquippedWeapon;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	TArray<FItemData> WeaponInventory;
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void AddWeaponToInventory(FDataTableRowHandle Weapon);
+	// UFUNCTION(BlueprintCallable, Category = "Combat")
+	// void TakeDamage(float Damage, UObject* DamageType);
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void NextWeapon();
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void PreviousWeapon();
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void ExecuteCurrentWeaponComboMontage(FName SectionName);
-	void ExecuteCurrentWeaponDodgeMontage();
-	void ExecuteCurrentWeaponBlockMontage();
-	
-	UStaminaComponent* StaminaComponent;
-	UHealthComponent* HealthComponent;
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void Dodge();
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void Block();
+	void EquipWeapon(FDataTableRowHandle Weapon);
 
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void Attack();
-	void EndAttack();
+	void LightAttack();
+	void HeavyAttack();
 
-	void QueueAttack(FName SectionName);
-
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void TakeDamage(float Damage, UObject* DamageType);
-
-	void IncreaseComboCount();
+	void ChainAttack(FName SectionName);
 
 	void ChangeWeaponLight(float Intensity);
 	void ChangeWeaponLightColor(FLinearColor Color);
-
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
 	
 };

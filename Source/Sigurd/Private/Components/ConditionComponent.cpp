@@ -3,6 +3,8 @@
 
 #include "Components/ConditionComponent.h"
 
+#include "Characters/BaseCharacter.h"
+
 
 // Sets default values for this component's properties
 UConditionComponent::UConditionComponent(){
@@ -12,7 +14,7 @@ UConditionComponent::UConditionComponent(){
 }
 
 void UConditionComponent::BeginPlay(){
-	ConditionHandler->Initialize(this);
+	ConditionHandler->Initialize(Cast<ABaseCharacter>(GetOwner()));
 }
 
 void UConditionComponent::AddBurn_Implementation(){

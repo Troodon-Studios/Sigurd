@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Actor/Weapon.h"
+#include "Characters/BaseCharacter.h"
 #include "Components/CombatComponent.h"
 #include "Components/ConditionComponent.h"
 #include "Components/HealthComponent.h"
@@ -22,7 +22,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ASigurdCharacter : public ACharacter /*, public IDamageableInterface*/
+class ASigurdCharacter : public ABaseCharacter /*, public IDamageableInterface*/
 {
 	GENERATED_BODY()
 
@@ -31,24 +31,6 @@ class ASigurdCharacter : public ACharacter /*, public IDamageableInterface*/
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	UStaticMeshComponent* WeaponMesh;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Stamina", meta = (AllowPrivateAccess = "true"))
-	UStaminaComponent* StaminaComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-	UCombatComponent* CombatComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health", meta = (AllowPrivateAccess = "true"))
-	UHealthComponent* HealthComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Condition", meta = (AllowPrivateAccess = "true"))
-	UConditionComponent* ConditionComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-	UTokenComponent* TokenComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	FInputActionValues InputActionValues;

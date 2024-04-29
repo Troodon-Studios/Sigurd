@@ -6,7 +6,7 @@
 void UParryNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
 									 float TotalDuration, const FAnimNotifyEventReference& EventReference){
 	if (UCombatComponent* CombatComp = GetCombatComponent(MeshComp)){
-		CombatComp->CombatState = ECombatState::Parrying;
+		//CombatComp->CombatState = ECombatState::Parrying;
 	}
 
 
@@ -16,7 +16,7 @@ void UParryNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSeque
 void UParryNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
 	const FAnimNotifyEventReference& EventReference){
 	if (UCombatComponent* CombatComp = GetCombatComponent(MeshComp)){
-		CombatComp->CombatState = ECombatState::Blocking;
+		//CombatComp->CombatState = ECombatState::Blocking;
 	}
 
 }

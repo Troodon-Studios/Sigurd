@@ -3,15 +3,15 @@
 
 #include "Notifies/AttackNotifyState.h"
 
-
+#include "Combat/MeleeWeapon.h"
 
 
 void UAttackNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
                                      float TotalDuration, const FAnimNotifyEventReference& EventReference){
-	if (UCombatComponent* CombatComp = GetCombatComponent(MeshComp)){
-		CombatComp->CombatState = ECombatState::QueuingAttack;
-		CombatComp->ChangeWeaponLightColor(FLinearColor(0, 0, 1, 1));
-		CombatComp->ChangeWeaponLight(1);
+	if (UBoxComponent* WeaponCollider = GetWeaponCollider(MeshComp)){
+		WeaponCollider->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		WeaponCollider->SetHiddenInGame(false);
+		
 	}
 
 
@@ -20,20 +20,23 @@ void UAttackNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequ
 
 void UAttackNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
 	const FAnimNotifyEventReference& EventReference){
-	if (UCombatComponent* CombatComp = GetCombatComponent(MeshComp)){
-		CombatComp->QueueAttack(sectionName);
-		CombatComp->ChangeWeaponLight(0);
+	if (UBoxComponent* WeaponCollider = GetWeaponCollider(MeshComp)){
+		WeaponCollider->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		WeaponCollider->SetHiddenInGame(true);
 	}
 
 
 }
 
-UCombatComponent* UAttackNotifyState::GetCombatComponent(const USkeletalMeshComponent* MeshComp){
+UBoxComponent* UAttackNotifyState::GetWeaponCollider(const USkeletalMeshComponent* MeshComp){
 	if (const AActor* Owner = MeshComp->GetOwner())
 	{
 		if (UCombatComponent* CombatComp = Owner->FindComponentByClass<UCombatComponent>())
 		{
-			return CombatComp;
+			if (CombatComp->EquippedWeapon)
+			{				
+				return Cast<AMeleeWeapon>(CombatComp->EquippedWeapon)->WeaponCollider;
+			}
 		}
 	}
 	return nullptr;

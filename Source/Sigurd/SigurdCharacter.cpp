@@ -18,18 +18,10 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 //////////////////////////////////////////////////////////////////////////
 // ASigurdCharacter
 
-ASigurdCharacter::ASigurdCharacter(){
+ASigurdCharacter::ASigurdCharacter() : ABaseCharacter(){
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
-	StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
-	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
-	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
-	ConditionComponent = CreateDefaultSubobject<UConditionComponent>(TEXT("ConditionComponent"));
-	TokenComponent = CreateDefaultSubobject<UTokenComponent>(TEXT("TokenComponent"));
-
-	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponMesh"));
-	WeaponMesh->SetupAttachment(GetMesh(), FName("RH_Socket"));
+	
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -61,29 +53,12 @@ ASigurdCharacter::ASigurdCharacter(){
 	// Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
 	
 }
 
 void ASigurdCharacter::BeginPlay(){
 	Super::BeginPlay();
-
-	if (StaminaComponent){
-		StaminaComponent->RegisterComponent();
-	}
-
-	if (CombatComponent){
-		CombatComponent->RegisterComponent();
-	}
-
-	if (HealthComponent){
-		HealthComponent->RegisterComponent();
-	}
-
-	if (ConditionComponent){
-		ConditionComponent->RegisterComponent();
-	}
 
 	OnTakeAnyDamage.AddDynamic(this, &ASigurdCharacter::TakeDamageSigurd);
 	
@@ -95,6 +70,8 @@ void ASigurdCharacter::BeginPlay(){
 			Subsystem->AddMappingContext(InputActionValues.DefaultMappingContext, 0);
 		}
 	}
+
+	
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -156,20 +133,18 @@ void ASigurdCharacter::StartRunning(){
 	StaminaComponent->RunAction();
 }
 
-
 void ASigurdCharacter::LightAttack(){
-	CombatComponent->Attack();
+	CombatComponent->LightAttack();
 }
 
 void ASigurdCharacter::HeavyAttack(){
-	CombatComponent->Attack();
+	CombatComponent->HeavyAttack();
 }
-
 
 void ASigurdCharacter::TakeDamageSigurd(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
                                         class AController* InstigatedBy, AActor* DamageCauser) {
 	UObject* ObjectInstance = const_cast<UObject*>(static_cast<const UObject*>(DamageType));
-	CombatComponent->TakeDamage(Damage, ObjectInstance);
+	//CombatComponent->TakeDamage(Damage, ObjectInstance);
 }
 
 /*void ASigurdCharacter::TakeDamage_Implementation(float damage){
@@ -178,23 +153,21 @@ void ASigurdCharacter::TakeDamageSigurd(AActor* DamagedActor, float Damage, cons
 }*/
 
 void ASigurdCharacter::NextWeapon() {
-	if (CombatComponent->WeaponInventory.Num() != 0){
-		CombatComponent->NextWeapon();
-		WeaponMesh->SetStaticMesh(CombatComponent->WeaponInventory[CombatComponent->CurrentWeapon].Mesh);
-	}
+	//if (CombatComponent->WeaponDataInventory.Num() != 0){
+	//	CombatComponent->NextWeapon();
+	//}
 }
 
 void ASigurdCharacter::PreviousWeapon() {
-	if (CombatComponent->WeaponInventory.Num() != 0){
-		CombatComponent->PreviousWeapon();
-		WeaponMesh->SetStaticMesh(CombatComponent->WeaponInventory[CombatComponent->CurrentWeapon].Mesh);
-	}
+	//if (CombatComponent->WeaponDataInventory.Num() != 0){
+	//	CombatComponent->PreviousWeapon();
+	//}
 }
 
 void ASigurdCharacter::Dodge() {
-	CombatComponent->Dodge();
+	//CombatComponent->Dodge();
 }
 
 void ASigurdCharacter::Block() {
-	CombatComponent->Block();
+	//CombatComponent->Block();
 }
