@@ -14,7 +14,7 @@ AWeapon::AWeapon(){
 
 void AWeapon::SetWeaponData(FWeaponData NewWeaponData, ABaseCharacter* Character){
 
-	Owner = Character;
+	BaseCharacter = Character;
 	WeaponData = NewWeaponData;
 	
 	InitializeAbility(LightAttackAbility, WeaponData.LightAttack);
@@ -33,5 +33,5 @@ void AWeapon::InitializeAbility(UCombatAbility*& CombatAbility, TSubclassOf<UCom
 		return;
 	
 	CombatAbility = NewObject<UCombatAbility>(this, Ability);
-	CombatAbility->Initialize(Owner);
+	CombatAbility->Initialize(BaseCharacter);
 }

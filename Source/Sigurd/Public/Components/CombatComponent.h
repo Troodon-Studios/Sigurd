@@ -14,6 +14,7 @@ class SIGURD_API UCombatComponent : public UActorComponent
 	GENERATED_BODY()
 
 private:
+	UPROPERTY()
 	ABaseCharacter* Owner;
 
 public:
@@ -66,7 +67,7 @@ public:
 	void BlockAbility();
 	void DodgeAbility();
 	
-	void AbilityController(UCombatAbility* Ability, FName SectionName);
+	void AbilityController(UCombatAbility* Ability, FName SectionName = NAME_None);
 
 	void ChangeWeaponLight(float Intensity);
 	void ChangeWeaponLightColor(FLinearColor Color);

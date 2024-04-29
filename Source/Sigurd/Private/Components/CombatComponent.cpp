@@ -64,6 +64,7 @@ void UCombatComponent::EquipWeapon(FDataTableRowHandle Weapon){
 }
 
 void UCombatComponent::ActivateAbility(EAttackState Ability){
+	
 	if (RightHandWeapon){
 		if (AttackState == EAttackState::Idle){
 			AttackState = Ability;
@@ -97,13 +98,13 @@ void UCombatComponent::StartFourthAbility(){
 }
 
 void UCombatComponent::BlockAbility(){
-
-	LeftHandWeapon->BlockAbility->Execute();
+	LeftHandWeapon->BlockAbility->StartAbility();
 	
 }
 
 void UCombatComponent::DodgeAbility(){
-	RightHandWeapon->DodgeAbility->Execute();
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Dodge"));
+	AbilityController(RightHandWeapon->DodgeAbility);
 }
 
 void UCombatComponent::AbilityController(UCombatAbility* Ability, FName SectionName){
@@ -213,7 +214,7 @@ void UCombatComponent::StartDodge(){
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Dodge Ability"));
 		return;
 	}
-	RightHandWeapon->DodgeAbility->StartAbility();
+	AbilityController(RightHandWeapon->DodgeAbility);
 }
 
 void UCombatComponent::StartParry(){
@@ -221,7 +222,7 @@ void UCombatComponent::StartParry(){
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Parry Ability"));
 		return;
 	}
-	RightHandWeapon->ParryAbility->StartAbility();
+	AbilityController(RightHandWeapon->ParryAbility);
 }
 
 void UCombatComponent::StartBlock(){
@@ -229,7 +230,7 @@ void UCombatComponent::StartBlock(){
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("No Block Ability"));
 		return;
 	}
-	LeftHandWeapon->BlockAbility->StartAbility();
+	AbilityController(LeftHandWeapon->BlockAbility);
 }
 
 void UCombatComponent::InitializeWeapon(AWeapon*& Weapon, FDataTableRowHandle WeaponRow){

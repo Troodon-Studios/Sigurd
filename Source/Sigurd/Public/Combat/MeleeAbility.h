@@ -6,9 +6,7 @@
 #include "CombatAbility.h"
 #include "MeleeAbility.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class SIGURD_API UMeleeAttack : public UCombatAbility{
 	GENERATED_BODY()
@@ -19,14 +17,15 @@ private:
 	UBoxComponent* WeaponCollider;
 
 public:
-
+	
 	virtual void Initialize(ABaseCharacter* InOwner) override;
 
-	//virtual void ExecuteAttack(UBoxComponent* Collider, FName SectionName);
+protected:
+
 	
 	virtual void Execute(FName SectionName) override;
 
-	void RemoveOverlap();
+	virtual void PlayAnimationSection(UAnimMontage* InMontage, FName SectionName, ABaseCharacter* InOwner) override;
 
 	virtual void OnAnimationEnded(UAnimMontage* InMontage, bool bInterrupted) override;
 
@@ -34,4 +33,6 @@ public:
 	void OnWeaponColliderOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 	virtual void StopMontage(UAnimInstance* AnimInstance, UAnimMontage* InMontage) override;
+
+	void RemoveOverlap();
 };

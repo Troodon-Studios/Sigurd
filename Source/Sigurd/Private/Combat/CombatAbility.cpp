@@ -55,36 +55,13 @@ void UCombatAbility::Initialize(ABaseCharacter* InOwner){
 }
 
 void UCombatAbility::Execute(FName SectionName){
-	Owner->GetCombatComponent()->CombatState = ECombatState::Attacking;
+	Owner->GetCombatComponent()->CombatState = AbiltyType;
 
 	if (Montage){
 		PlayAnimationSection(Montage, SectionName, Owner);
 	}
 }
 
-// void UCombatAbility::ExecuteSection(FName SectionName){
-// 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, Description);
-// 	PlayAnimationSection(Montage, SectionName, Owner);
-// }
-
-// void UCombatAbility::PlayAnimation(UAnimMontage* InMontage, ABaseCharacter* InOwner){
-// 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "PlayAnimation");
-//
-// 	if (UAnimInstance* AnimInstance = InOwner->GetMesh()->GetAnimInstance()){
-// 		if (AnimInstance->Montage_IsPlaying(NULL)){
-// 			AnimInstance->Montage_Stop(0.2f, NULL);
-// 		}
-//
-// 		AnimInstance->Montage_Play(InMontage, 1.5);
-//
-// 		// Create a variable of type FOnMontageEnded and assign the delegate to it
-// 		FOnMontageEnded OnMontageEndedDelegate;
-// 		OnMontageEndedDelegate.BindUObject(this, &UCombatAbility::OnAnimationEnded);
-//
-// 		// Pass the variable to Montage_SetEndDelegate
-// 		AnimInstance->Montage_SetEndDelegate(OnMontageEndedDelegate, InMontage);
-// 	}
-// }
 
 void UCombatAbility::OnAnimationEnded(UAnimMontage* InMontage, bool bInterrupted){
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Animation ended");

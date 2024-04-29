@@ -14,7 +14,8 @@ class SIGURD_API AWeapon : public AActor{
 	GENERATED_BODY()
 
 protected:
-	ABaseCharacter* Owner;
+	UPROPERTY()
+	ABaseCharacter* BaseCharacter;
 
 public:
 	// Sets default values for this actor's properties
@@ -39,9 +40,12 @@ public:
 	UCombatAbility* ThirdAbility;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UCombatAbility* FourthAbility;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UCombatAbility* BlockAbility;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UCombatAbility* DodgeAbility;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	UCombatAbility* ParryAbility;
 
 	virtual void SetWeaponData(FWeaponData NewWeaponData, ABaseCharacter* Character);

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "InputTriggers.h"
 #include "Components/BoxComponent.h"
+#include "DataTypes/CombatState.h"
 #include "UObject/Interface.h"
 #include "CombatAbility.generated.h"
 
@@ -16,6 +17,9 @@ class UCombatAbility : public UObject{
 
 public:
 	UCombatAbility();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	ECombatState AbiltyType = ECombatState::Attacking;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	bool IsChargedAbility;
@@ -37,31 +41,25 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	UAnimMontage* Montage;
-
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	virtual void StartAbility(FName SectionName = NAME_None);
-	
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	virtual void EndAbility();
 	
 	virtual void Initialize(ABaseCharacter* InOwner);
-
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	virtual void Execute(FName SectionName = NAME_None);
 	
-	// UFUNCTION(BlueprintCallable, Category = "Combat")
-	// virtual void ExecuteSection(FName SectionName);
+	virtual void StartAbility(FName SectionName = NAME_None);
+	
+	virtual void EndAbility();
+	
 
-	virtual void OnAnimationEnded(UAnimMontage* InMontage, bool bInterrupted);
 
 private:
 	FTimerHandle AbilityTimer;
 
-
 protected:
 	ABaseCharacter* Owner;
+
+	virtual void Execute(FName SectionName = NAME_None);
+
+	virtual void OnAnimationEnded(UAnimMontage* InMontage, bool bInterrupted);
 	
-	//void PlayAnimation(UAnimMontage* InMontage, ABaseCharacter* InOwner);
 	virtual void PlayAnimationSection(UAnimMontage* InMontage, FName SectionName, ABaseCharacter* InOwner);
 
 	virtual void StopMontage(UAnimInstance* AnimInstance ,UAnimMontage* InMontage);
