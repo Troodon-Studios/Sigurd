@@ -98,7 +98,7 @@ void AMapGen::InitializeTexture()
 	Texture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
 
 	// Acceder a los datos de la textura
-	MipData = static_cast<FColor*>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
+	MipData = static_cast<FColor*>(Texture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
 }
 
 void AMapGen::GenerateTexture(bool useOwnSettings)
@@ -215,7 +215,7 @@ void AMapGen::GenerateInMapTexture()
 void AMapGen::SaveTexture(FString name)
 {
 	// Save the texture as a PNG file
-	Texture->PlatformData->Mips[0].BulkData.Unlock();
+	Texture->GetPlatformData()->Mips[0].BulkData.Unlock();
 	Texture->UpdateResource();
 
 	// Guardar la textura como un archivo PNG
@@ -223,7 +223,7 @@ void AMapGen::SaveTexture(FString name)
 	FString TextureFilename = TextureDirectory + name;
 
 	// Convert the texture to a PNG
-	FTexture2DMipMap& Mip = Texture->PlatformData->Mips[0];
+	FTexture2DMipMap& Mip = Texture->GetPlatformData()->Mips[0];
 	uint8* Pixels = static_cast<uint8*>(Mip.BulkData.Lock(LOCK_READ_ONLY));
 	const TArray<FColor>& SrcData = reinterpret_cast<TArray<FColor>&>(Pixels);
 	TArray<uint8> CompressedPNG;
