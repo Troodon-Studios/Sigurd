@@ -1,330 +1,585 @@
 ﻿#include "MapGen.h"
 
+#include "AssetToolsModule.h"
+#include "HighResScreenshot.h"
+#include "ImageUtils.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 
 
-// Sets default values
-AMapGen::AMapGen(): Setting(nullptr), StaticMeshModule(nullptr), AuxiliarMesh(nullptr), ModuleMaterial(nullptr)
+/**
+ * Constructor for the AMapGen class.
+ * Initializes the class variables.
+ */
+AMapGen::AMapGen(): Setting(nullptr), StaticMeshModule(nullptr), GeneratedMap(nullptr), ProceduralMesh(nullptr),
+                    AuxiliarMesh(nullptr),
+                    ModuleMaterial(nullptr),
+                    bGenerate(false),
+                    MeshSectionIndex(0)
 {
-    // Set this actor to call Tick() every frame
-    PrimaryActorTick.bCanEverTick = true;
-
-    // Initialize grid dimensions and seed
-    GridSize = FVector2D(10, 10);
-    Seed = 0;
+	PrimaryActorTick.bCanEverTick = true;
+	GridSize = FVector2D(10, 10);
+	Seed = 0;
 }
 
-
-// Called when the game starts or when spawned
+/**
+ * Called when the game starts or when spawned.
+ * Initializes the RandomizeSeed variable and calls the Generate function.
+ */
 void AMapGen::BeginPlay()
 {
-    if (RandomizeSeed)
-    {
-        Seed = FMath::RandRange(0, 1000);
-    }
-    
-    Super::BeginPlay();
-    Generate();
+	Super::BeginPlay();
+	RandomizeSeed = false;
+	Generate();
 }
 
-// Called every frame
-void AMapGen::Tick(const float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-}
-
+/**
+ * Generates the map.
+ * If RandomizeSeed is true, a random seed is generated.
+ * Retrieves the noise settings and generates the grid.
+ * Deletes small plots and figures out the modules' positions.
+ * Generates extras.
+ */
 void AMapGen::Generate()
 {
-    Setting = NoiseSettings.Setting.GetRow<FNoiseSetting>(FString::Printf(TEXT("%s"), *NoiseSettings.Setting.RowName.ToString()));
+	if (RandomizeSeed)
+	{
+		Seed = FMath::RandRange(0, 1000);
+	}
 
-    if (!Setting)
-    {
-        UE_LOG(LogTemp, Error, TEXT("Noise setting not found"));
-        return;
-    }
+	Setting = NoiseSettings.Setting.GetRow<FNoiseSetting>(
+		FString::Printf(TEXT("%s"), *NoiseSettings.Setting.RowName.ToString()));
 
-    ModulesSize = Setting->ModuleTiles->ModulesSize;
-    
-    UE_LOG(LogTemp, Warning, TEXT("Started..."));
-    Offset = FVector(ModulesSize.X / 2.0f, ModulesSize.Y / 2.0f, ModulesSize.Z / 2.0f);
+	if (!Setting)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Noise setting not found"));
+		return;
+	}
 
-    UE_LOG(LogTemp, Warning, TEXT("Generating a new grid"));
-    GenerateGrid();
+	ModulesSize = Setting->ModuleTiles->ModulesSize;
+	Offset = FVector(ModulesSize.X / 2.0f, ModulesSize.Y / 2.0f, ModulesSize.Z / 2.0f);
 
-    UE_LOG(LogTemp, Warning, TEXT("Grid Generated, deleting small plots"));
-    DeleteSmallPlots();
+	GenerateGrid();
+	DeleteSmallPlots();
+	//GenerateInMapTexture();
+	GenerateTexture(true);
+	GenerateTexture(false);
+	MeshSectionIndex = 0;
 
-    UE_LOG(LogTemp, Warning, TEXT("Small plots deleted, figuring modules position"));
-    FigureModulesPosition();
-    
-    UE_LOG(LogTemp, Warning, TEXT("Modules positioned, generating extras"));
-    GenerateExtras();
+	if (!GeneratedMap || !ProceduralMesh)
+	{
+		GeneratedMap = GetWorld()->SpawnActor<APackedLevelActor>({500, 500, 0}, FRotator::ZeroRotator);
+	}
 
-    UE_LOG(LogTemp, Warning, TEXT("Extras generated, MapGen finished"));
-    
-    // Print the ModuleNumbers array
-    //MatrixFunctions.PrintMatrix(ModuleNumbers);
-    
+	if (ProceduralMesh)
+	{
+		ProceduralMesh->DestroyComponent();
+	}
+
+	ProceduralMesh = NewObject<UProceduralMeshComponent>(GeneratedMap);
+	ProceduralMesh->RegisterComponent();
+	ProceduralMesh->AttachToComponent(GeneratedMap->GetRootComponent(),
+	                                  FAttachmentTransformRules::KeepRelativeTransform);
+
+	FigureModulesPosition();
+	GenerateExtras();
 }
+
+/**
+ * Generates the grid for the map.
+ * Initializes the ModuleNumbers and ModuleRotations arrays.
+ * Calculates the noise value for each cell in the grid.
+ */
+
+void AMapGen::InitializeTexture()
+{
+	// Crear una textura
+	const int32 Width = GridSize.X * ExtraDim;
+	const int32 Height = GridSize.Y * ExtraDim;
+	Texture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
+
+	// Acceder a los datos de la textura
+	MipData = static_cast<FColor*>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
+}
+
+void AMapGen::GenerateTexture(bool useOwnSettings)
+{
+	InitializeTexture();
+
+	const float MFrequency = useOwnSettings ? TextNoiseValues.Frequency/10 : Setting->NoiseValues.Frequency;
+	const float MAmplitude = useOwnSettings ? TextNoiseValues.Amplitude : Setting->NoiseValues.Amplitude;
+	const float MLacunarity = useOwnSettings ? TextNoiseValues.Lacunarity : Setting->NoiseValues.Lacunarity;
+	const float MPersistence = useOwnSettings ? TextNoiseValues.Persistence/10 : Setting->NoiseValues.Persistence;
+
+	int32 ExtraDimLoc = ExtraDim;
+	FColor FillColor = FColor::White;
+	int32 Width = GridSize.X * ExtraDim;
+
+	// Recorrer ModuleNumbers
+	for (int x = 0; x < GridSize.X; x++)
+	{
+		for (int y = 0; y < GridSize.Y; y++)
+		{
+			for (int i = 0; i < ExtraDim; i++)
+			{
+				for (int j = 0; j < ExtraDim; j++)
+				{
+					const int32 CurPixelIndex = ((y * ExtraDim + j) * Width) + (x * ExtraDim + i);
+					// Calcular el valor de ruido
+					float NoiseValue = (FNoise::SimplexNoise(
+						((x * ExtraDim + i) / 10.0f) + Seed, ((y * ExtraDim + j) / 10.0f) + Seed, MFrequency,
+						MAmplitude, MLacunarity, MPersistence));
+
+
+					float minValue = -0.024097;
+					float maxValue = 0.024268;
+					NoiseValue = ((NoiseValue - minValue) / (maxValue - minValue)) * 255;
+					
+					FillColor = FColor::White;
+
+					FillColor.R += NoiseValue;
+					FillColor.G += NoiseValue;
+					FillColor.B += NoiseValue;
+
+					MipData[CurPixelIndex] = FillColor;
+				}
+			}
+		}
+	}
+	
+	SaveTexture(useOwnSettings ? TEXT("MapTexture_Glob.png") : TEXT("MapTexture_Det.png"));
+}
+
+void AMapGen::GenerateInMapTexture()
+{
+	InitializeTexture();
+
+	const float MFrequency = TextNoiseValues.Frequency;
+	const float MAmplitude = TextNoiseValues.Amplitude;
+	const float MLacunarity = TextNoiseValues.Lacunarity;
+	const float MPersistence = TextNoiseValues.Persistence;
+
+	FColor FillColor = FColor::White;
+	const int32 Width = GridSize.X * ExtraDim;
+
+	// Recorrer ModuleNumbers
+	for (int x = 0; x < GridSize.X; x++)
+	{
+		for (int y = 0; y < GridSize.Y; y++)
+		{
+			// Si el valor en ModuleNumbers es 1, oscurecer el color verde en función del ruido
+			if (ModuleNumbers[x][y] == 1)
+			{
+				for (int i = 0; i < ExtraDim; i++)
+				{
+					for (int j = 0; j < ExtraDim; j++)
+					{
+						const int32 CurPixelIndex = ((y * ExtraDim + j) * Width) + (x * ExtraDim + i);
+						// Calcular el valor de ruido
+						float NoiseValue = (FNoise::SimplexNoise(
+							((x * ExtraDim + i) / 10.0f) + Seed, ((y * ExtraDim + j) / 10.0f) + Seed, MFrequency,
+							MAmplitude, MLacunarity, MPersistence));
+
+
+						float minValue = -0.024097;
+						float maxValue = 0.024268;
+						NoiseValue = ((NoiseValue - minValue) / (maxValue - minValue)) * 255;
+
+
+						FillColor = FColor::White;
+
+						FillColor.R += NoiseValue;
+						FillColor.G += NoiseValue;
+						FillColor.B += NoiseValue;
+
+						MipData[CurPixelIndex] = FillColor;
+					}
+				}
+			}
+			// Si el valor en ModuleNumbers es 0, pintar de negro
+			else if (ModuleNumbers[x][y] == 0)
+			{
+				for (int i = 0; i < ExtraDim; i++)
+				{
+					for (int j = 0; j < ExtraDim; j++)
+					{
+						const int32 CurPixelIndex = ((y * ExtraDim + j) * Width) + (x * ExtraDim + i);
+						MipData[CurPixelIndex] = FColor::Black;
+					}
+				}
+			}
+		}
+	}
+	SaveTexture(TEXT("MapTexture_Masked.png"));
+}
+
+void AMapGen::SaveTexture(FString name)
+{
+	// Save the texture as a PNG file
+	Texture->PlatformData->Mips[0].BulkData.Unlock();
+	Texture->UpdateResource();
+
+	// Guardar la textura como un archivo PNG
+	FString TextureDirectory = FPaths::ProjectContentDir() + TEXT("ProceduralTextures/");
+	FString TextureFilename = TextureDirectory + name;
+
+	// Convert the texture to a PNG
+	FTexture2DMipMap& Mip = Texture->PlatformData->Mips[0];
+	uint8* Pixels = static_cast<uint8*>(Mip.BulkData.Lock(LOCK_READ_ONLY));
+	const TArray<FColor>& SrcData = reinterpret_cast<TArray<FColor>&>(Pixels);
+	TArray<uint8> CompressedPNG;
+	FImageUtils::CompressImageArray(Mip.SizeX, Mip.SizeY, SrcData, CompressedPNG);
+	Mip.BulkData.Unlock();
+
+	// Save the PNG to a file
+	FFileHelper::SaveArrayToFile(CompressedPNG, *TextureFilename);
+}
+
 
 void AMapGen::GenerateGrid()
 {
-    const float MFrequency = Setting->Frequency;
-    const float MAmplitude = Setting->Amplitude;
-    const float MLacunarity = Setting->Lacunarity;
-    const float MPersistence = Setting->Persistence;
-    
-    // Resize the ModuleNumbers array to match the GridSize
-    ModuleNumbers.SetNum(GridSize.X);
-    ModuleRotations.SetNum(GridSize.X);
-    
-    for (int i = 0; i < GridSize.X; i++)
-    {
-        ModuleNumbers[i].SetNum(GridSize.Y);
-        ModuleRotations[i].SetNum(GridSize.Y);
-    }
+	const float MFrequency = Setting->NoiseValues.Frequency;
+	const float MAmplitude = Setting->NoiseValues.Amplitude;
+	const float MLacunarity = Setting->NoiseValues.Lacunarity;
+	const float MPersistence = Setting->NoiseValues.Persistence;
 
-    // Fill the ModuleNumbers array with 0s and 1s based on Perlin noise
-    for (int x = 0; x < GridSize.X; x++)
-    {
-        for (int y = 0; y < GridSize.Y; y++)
-        {
-            if (x == 0 || y == 0 || x == GridSize.X - 1 || y == GridSize.Y - 1)
-            {
-                ModuleNumbers[x][y] = 0;
-                ModuleRotations[x][y] = 0;
-            }else
-            {
-                // Generate Perlin noise value based on cell position and seed
-                const float NoiseValue = FNoise::SimplexNoise((x / 10.0f) + Seed, (y / 10.0f) + Seed,MFrequency, MAmplitude, MLacunarity, MPersistence);
+	ModuleNumbers.SetNum(GridSize.X);
+	ModuleRotations.SetNum(GridSize.X);
 
-                // Map the noise value to the range [0, 1]
-                const float MappedValue = (NoiseValue + 1) / 2.0f; // This line is changed
 
-                // Set the corresponding cell in ModuleNumbers to 1 if noise value is greater than 0.5, otherwise 0
-                ModuleNumbers[x][y] = (MappedValue > 0.5) ? 1 : 0;
+	// GRID
+	for (int i = 0; i < GridSize.X; i++)
+	{
+		ModuleNumbers[i].SetNum(GridSize.Y);
+		ModuleRotations[i].SetNum(GridSize.Y);
+	}
 
-                ModuleRotations[x][y] = 0;
-            }
-            
-        }
-    }
-    
+	for (int x = 0; x < GridSize.X; x++)
+	{
+		for (int y = 0; y < GridSize.Y; y++)
+		{
+			float NoiseValue = FNoise::SimplexNoise((x / 10.0f) + Seed, (y / 10.0f) + Seed, MFrequency, MAmplitude,
+			                                        MLacunarity, MPersistence);
+
+			if (x == 0 || y == 0 || x == GridSize.X - 1 || y == GridSize.Y - 1)
+			{
+				ModuleNumbers[x][y] = 0;
+				ModuleRotations[x][y] = 0;
+			}
+			else
+			{
+				const float MappedValue = (NoiseValue + 1) / 2.0f;
+				ModuleNumbers[x][y] = (MappedValue > 0.5) ? 1 : 0;
+				ModuleRotations[x][y] = 0;
+			}
+		}
+	}
 }
 
+/**
+ * Deletes small plots from the map.
+ * Uses a depth-first search to find the largest island and keeps only that.
+ */
 void AMapGen::DeleteSmallPlots()
 {
-    if (!DeletePlots) return;
+	if (!DeletePlots) return;
 
-    const int Rows = GridSize.X;
-    const int Cols = GridSize.Y;
+	const int Rows = GridSize.X;
+	const int Cols = GridSize.Y;
 
-    // Step 1
-    TArray<TArray<bool>> Visited;
-    Visited.SetNum(Rows);
-    for (int i = 0; i < Rows; i++)
-    {
-        Visited[i].SetNum(Cols, false);
-    }
+	TArray<TArray<bool>> Visited;
+	Visited.SetNum(Rows);
+	for (int i = 0; i < Rows; i++)
+	{
+		Visited[i].SetNum(Cols, false);
+	}
 
-    // Step 2
-    int MaxSize = 0;
-    TArray<FVector2D> LargestIsland;
+	int MaxSize = 0;
+	TArray<FVector2D> LargestIsland;
 
-    // Step 3
-    for (int i = 0; i < Rows; i++)
-    {
-        for (int j = 0; j < Cols; j++)
-        {
-            if (!Visited[i][j] && ModuleNumbers[i][j] != 0)
-            {
-                TArray<FVector2D> CurrentIsland;
-                Dfs(i, j, Visited, CurrentIsland);
+	for (int i = 0; i < Rows; i++)
+	{
+		for (int j = 0; j < Cols; j++)
+		{
+			if (!Visited[i][j] && ModuleNumbers[i][j] != 0)
+			{
+				TArray<FVector2D> CurrentIsland;
+				Dfs(i, j, Visited, CurrentIsland);
 
-                // Step 6
-                if (CurrentIsland.Num() > MaxSize)
-                {
-                    MaxSize = CurrentIsland.Num();
-                    LargestIsland = CurrentIsland;
-                }
-            }
-        }
-    }
+				if (CurrentIsland.Num() > MaxSize)
+				{
+					MaxSize = CurrentIsland.Num();
+					LargestIsland = CurrentIsland;
+				}
+			}
+		}
+	}
 
-    // Step 7
-    for (int i = 0; i < Rows; i++)
-    {
-        for (int j = 0; j < Cols; j++)
-        {
-            if (!IsInLargestIsland(i, j, LargestIsland))
-            {
-                ModuleNumbers[i][j] = 0;
-            }
-        }
-    }
+	for (int i = 0; i < Rows; i++)
+	{
+		for (int j = 0; j < Cols; j++)
+		{
+			if (!IsInLargestIsland(i, j, LargestIsland))
+			{
+				ModuleNumbers[i][j] = 0;
+			}
+		}
+	}
 }
 
+/**
+ * Performs a depth-first search from the given cell.
+ * Used to find all cells in the same island.
+ */
 void AMapGen::Dfs(const int I, const int J, TArray<TArray<bool>>& Visited, TArray<FVector2D>& CurrentIsland)
 {
-    const int Rows = GridSize.X;
+	const int Rows = GridSize.X;
+	const int Cols = GridSize.Y;
 
-    // Check if (i, j) is a valid cell
-    if (const int Cols = GridSize.Y; I < 0 || I >= Rows || J < 0 || J >= Cols || Visited[I][J] || ModuleNumbers[I][J] == 0)
-    {
-        return;
-    }
+	if (I < 0 || I >= Rows || J < 0 || J >= Cols || Visited[I][J] || ModuleNumbers[I][J] == 0)
+	{
+		return;
+	}
 
-    // Step 4
-    Visited[I][J] = true;
-    CurrentIsland.Add(FVector2D(I, J));
+	Visited[I][J] = true;
+	CurrentIsland.Add(FVector2D(I, J));
 
-    // Step 5
-    Dfs(I - 1, J, Visited, CurrentIsland);
-    Dfs(I + 1, J, Visited, CurrentIsland);
-    Dfs(I, J - 1, Visited, CurrentIsland);
-    Dfs(I, J + 1, Visited, CurrentIsland);
+	Dfs(I - 1, J, Visited, CurrentIsland);
+	Dfs(I + 1, J, Visited, CurrentIsland);
+	Dfs(I, J - 1, Visited, CurrentIsland);
+	Dfs(I, J + 1, Visited, CurrentIsland);
 }
 
+/**
+ * Checks if a cell is in the largest island.
+ */
 bool AMapGen::IsInLargestIsland(const int I, const int J, const TArray<FVector2D>& LargestIsland)
 {
-    for (const FVector2D& Cell : LargestIsland)
-    {
-        if (Cell.X == I && Cell.Y == J)
-        {
-            return true;
-        }
-    }
-    return false;
+	for (const FVector2D& Cell : LargestIsland)
+	{
+		if (Cell.X == I && Cell.Y == J)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
+/**
+ * Figures out the position of the modules.
+ * Compares the neighbors of each cell with the predefined patterns.
+ * If a match is found, the module is spawned or merged.
+ */
 void AMapGen::FigureModulesPosition()
 {
-    const auto Start = std::chrono::high_resolution_clock::now();
+	const auto Start = std::chrono::high_resolution_clock::now();
 
-    if (ModuleNumbers.Num() == 0 || ModuleNumbers[0].Num() == 0) return;
-    
-    for (int x = 0; x < GridSize.X; x++)
-    {
-        for (int y = 0; y < GridSize.Y; y++)
-        {
-            if (ModuleNumbers[x][y] != 0)
-            {
-                const TArray<TArray<int>> Mat = MatrixFunctions.GetNeighbours(GridSize, x, y, ModuleNumbers);
-                int N = 0;
-                const TArray<int>& AllNums = MatrixFunctions.NeighborsNumbersMap[MatrixFunctions.GetNeighboursCount(Mat)]; // Get the corresponding numbers from the map
-                while (N < AllNums.Num() && !MatrixFunctions.CompareMatrix(Mat,AllNums[N],x,y,ModuleRotations)) N++;
-                if (N == AllNums.Num())
-                {
-                    UE_LOG(LogTemp, Error, TEXT("Module %d %d does not fit"), x, y);
-                    MatrixFunctions.PrintMatrix(Mat, true);
-                }
-                else
-                {
-                    ModuleNumbers[x][y] = AllNums[N];
-                    const FVector Position = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset;
-                    const FRotator Rotation = FRotator(0, 90 * ModuleRotations[x][y], 0);
-                    SpawnModule(AllNums[N],Position, Rotation);
-                }
-            }
-        }
-    }
+	if (ModuleNumbers.Num() == 0 || ModuleNumbers[0].Num() == 0) return;
 
-    const auto Stop = std::chrono::high_resolution_clock::now();
-    const auto Duration = std::chrono::duration_cast<std::chrono::microseconds>(Stop - Start);
+	for (int x = 0; x < GridSize.X; x++)
+	{
+		for (int y = 0; y < GridSize.Y; y++)
+		{
+			if (ModuleNumbers[x][y] != 0)
+			{
+				const TArray<TArray<int>> Mat = MatrixFunctions.GetNeighbours(GridSize, x, y, ModuleNumbers);
+				int N = 0;
+				const TArray<int>& AllNums = MatrixFunctions.NeighborsNumbersMap[MatrixFunctions.
+					GetNeighboursCount(Mat)];
+				while (N < AllNums.Num() && !MatrixFunctions.CompareMatrix(Mat, AllNums[N], x, y, ModuleRotations)) N++;
+				if (N == AllNums.Num())
+				{
+					MatrixFunctions.PrintMatrix(Mat, true);
+				}
+				else
+				{
+					ModuleNumbers[x][y] = AllNums[N];
+					const FVector Position = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset;
+					const FRotator Rotation = FRotator(0, 90 * ModuleRotations[x][y], 0);
 
-    UE_LOG(LogTemp, Warning, TEXT("Execution time: %lld microseconds"), Duration.count());
+					if (MergeMeshes)
+					{
+						MergeMesh(AllNums[N], Position, Rotation);
+					}
+					else
+					{
+						SpawnModule(AllNums[N], Position, Rotation);
+					}
+				}
+			}
+		}
+	}
+
+	const auto Stop = std::chrono::high_resolution_clock::now();
+	const auto Duration = std::chrono::duration_cast<std::chrono::microseconds>(Stop - Start);
+
+	UE_LOG(LogTemp, Warning, TEXT("Execution time: %lld microseconds"), Duration.count());
 }
 
+/**
+ * Spawns a module at the given position with the given rotation.
+ * The module's mesh and color are determined by the ModuleNumber.
+ */
 void AMapGen::SpawnModule(const int ModuleNumber, const FVector& Position, const FRotator& Rotation)
 {
-    
-    const FString ModuleName = FString::Printf(TEXT("Module[%d,%d]_%d"), static_cast<int>(Position.X), static_cast<int>(Position.Y), ModuleNumber);
-    
-    StaticMeshModule = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), FName(ModuleName));
-    if (StaticMeshModule)
-    {
-        StaticMeshModule->RegisterComponent();
-        StaticMeshModule->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-        StaticMeshModule->SetWorldLocation(Position);
-        StaticMeshModule->SetRelativeRotation(Rotation);
-        StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
+	const FString ModuleName = FString::Printf(TEXT("Module[%d,%d]_%d"), static_cast<int>(Position.X),
+	                                           static_cast<int>(Position.Y), ModuleNumber);
 
-        if (Setting->ModuleTiles->ModuleMesh.Contains(ModuleNumber) && Setting->ModuleTiles->ModuleMesh[ModuleNumber] != nullptr && UseMesh)
-        {
-            StaticMeshModule->SetStaticMesh(Setting->ModuleTiles->ModuleMesh[ModuleNumber]);
+	StaticMeshModule = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), FName(ModuleName));
+	if (StaticMeshModule)
+	{
+		StaticMeshModule->RegisterComponent();
+		StaticMeshModule->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+		StaticMeshModule->SetWorldLocation(Position);
+		StaticMeshModule->SetRelativeRotation(Rotation);
+		StaticMeshModule->CreationMethod = EComponentCreationMethod::Instance;
 
-        }
-        else
-        {
-            StaticMeshModule->SetStaticMesh(AuxiliarMesh);
-        }
-                    
-        UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
-                    
-        if (Setting->ModuleTiles->ModuleColor.Contains(ModuleNumber) && UseColor)
-        {
-            DynamicMaterial->SetVectorParameterValue("Color",Setting->ModuleTiles->ModuleColor[ModuleNumber]);
+		if (Setting->ModuleTiles->ModuleMesh.Contains(ModuleNumber) && Setting->ModuleTiles->ModuleMesh[ModuleNumber] !=
+			nullptr && UseMesh)
+		{
+			StaticMeshModule->SetStaticMesh(Setting->ModuleTiles->ModuleMesh[ModuleNumber]);
+		}
+		else
+		{
+			StaticMeshModule->SetStaticMesh(AuxiliarMesh);
+		}
 
-        }
-        else
-        {
-            DynamicMaterial->SetVectorParameterValue("Color", FColor::White);
-        }
-                    
-        StaticMeshModule->SetMaterial(0, DynamicMaterial);
-    }
-                
+		UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
+
+		if (Setting->ModuleTiles->ModuleColor.Contains(ModuleNumber) && UseColor)
+		{
+			DynamicMaterial->SetVectorParameterValue("Color", Setting->ModuleTiles->ModuleColor[ModuleNumber]);
+		}
+		else
+		{
+			DynamicMaterial->SetVectorParameterValue("Color", FColor::White);
+		}
+
+		StaticMeshModule->SetMaterial(0, DynamicMaterial);
+	}
 }
 
+/**
+ * Merges a module at the given position with the given rotation.
+ * The module's mesh is determined by the ModuleNumber.
+ * If ApplyPostNoise is true, the module's height is adjusted based on the noise value.
+ */
+void AMapGen::MergeMesh(const int ModuleNumber, const FVector& Position, const FRotator& Rotation)
+{
+	const float MFrequency = PostNoiseValues.Frequency;
+	const float MAmplitude = PostNoiseValues.Amplitude;
+	const float MLacunarity = PostNoiseValues.Lacunarity;
+	const float MPersistence = PostNoiseValues.Persistence;
+
+	FTransform ActorTransform = FTransform(Rotation, Position, FVector(1, 1, 1));
+	UStaticMesh* MeshToUse = Setting->ModuleTiles->ModuleMesh.Contains(ModuleNumber) && Setting->ModuleTiles->ModuleMesh
+	                         [ModuleNumber] != nullptr && UseMesh
+		                         ? Setting->ModuleTiles->ModuleMesh[ModuleNumber]
+		                         : AuxiliarMesh;
+
+	if (!MeshToUse) return;
+
+	FRawMesh RawMesh;
+	MeshToUse->GetSourceModel(0).LoadRawMesh(RawMesh);
+
+	TArray<FVector> VertexPositions;
+	TArray<int32> WedgeIndices;
+	TArray<FVector> WedgeTangentZ;
+	TArray<FVector2D> WedgeTexCoords;
+	TArray<FProcMeshTangent> WedgeTangentX;
+
+	for (const auto& Vertex : RawMesh.VertexPositions)
+	{
+		FVector TransformedVertex = ActorTransform.TransformPosition(
+			TArray<UE::Math::TVector<double>>::ElementType(Vertex));
+		if (ApplyPostNoise && TransformedVertex.Z <= ZThreshold)
+		{
+			const float NoiseValue = FNoise::SimplexNoise((TransformedVertex.X / 10.0f) + Seed,
+			                                              (TransformedVertex.Y / 10.0f) + Seed, MFrequency, MAmplitude,
+			                                              MLacunarity, MPersistence);
+			TransformedVertex.Z += NoiseValue * PostNoiseAmount;
+			UE_LOG(LogTemp, Warning, TEXT("Noise value: %f"), NoiseValue);
+		}
+		VertexPositions.Add(TransformedVertex);
+	}
+	for (const auto Index : RawMesh.WedgeIndices)
+	{
+		WedgeIndices.Add(static_cast<int32>(Index));
+	}
+	for (const auto& TangentZ : RawMesh.WedgeTangentZ)
+	{
+		WedgeTangentZ.Add(ActorTransform.TransformVector(TArray<UE::Math::TVector<double>>::ElementType(TangentZ)));
+	}
+	for (const auto& TexCoord : RawMesh.WedgeTexCoords[0])
+	{
+		WedgeTexCoords.Add(TArray<UE::Math::TVector2<double>>::ElementType(TexCoord));
+	}
+	for (const auto& TangentX : RawMesh.WedgeTangentX)
+	{
+		WedgeTangentX.Add(FProcMeshTangent(ActorTransform.TransformVector(FVector(TangentX)), false));
+	}
+
+	ProceduralMesh->CreateMeshSection_LinearColor(MeshSectionIndex, VertexPositions, WedgeIndices, WedgeTangentZ,
+	                                              WedgeTexCoords, TArray<FLinearColor>(), WedgeTangentX, true);
+	ProceduralMesh->SetMaterial(MeshSectionIndex, ModuleMaterial);
+
+	MeshSectionIndex++;
+}
+
+/**
+ * Generates extras for the map.
+ * Moves the player pawn to the nearest module with a number of 255.
+ */
 void AMapGen::GenerateExtras()
 {
-    // Get the player's pawn
-    APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
-    // If the player's pawn is not found, return immediately
-    if (!PlayerPawn) return;
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
+	if (!PlayerPawn) return;
 
-    // Initialize the minimum distance to the maximum possible float value
-    float MinDistance = FLT_MAX;
+	float MinDistance = FLT_MAX;
+	bool Found = false;
+	FVector NewPosition;
 
-    // Initialize the nearest module to (0,0,0)
-    FVector NearestModule = FVector(0,0,0);
-    // Initialize the found flag to false
-    bool Found = false;
-    // Initialize the new position
-    FVector NewPosition;
+	for (int x = 0; x < GridSize.X; x++)
+	{
+		for (int y = 0; y < GridSize.Y; y++)
+		{
+			if (ModuleNumbers[x][y] == 255)
+			{
+				const FVector Position = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset;
+				if (const float Distance = FVector::DistSquared(Position, FVector::ZeroVector); Distance < MinDistance)
+				{
+					MinDistance = Distance;
+					NewPosition = Position;
+					NewPosition.Z = 800;
+					Found = true;
+				}
+			}
+		}
+	}
 
-    // Iterate over the grid size in both x and y directions
-    for (int x = 0; x < GridSize.X; x++)
-    {
-        for (int y = 0; y < GridSize.Y; y++)
-        {
-            // If the module number at the current grid position is 255
-            if (ModuleNumbers[x][y] == 255)
-            {
-                // Calculate the position
-                const FVector Position = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset;
-
-                // Calculate the distance from the origin (0,0,0)
-                if (const float Distance = FVector::DistSquared(Position, FVector::ZeroVector); Distance < MinDistance)
-                {
-                    // If this distance is less than the current minimum distance
-                    // Update the minimum distance, the new position, the nearest module, and set the found flag to true
-                    MinDistance = Distance;
-                    NewPosition = Position;
-                    NewPosition.Z = 800;
-                    NearestModule = FVector(x, y, 0);
-                    Found = true;
-                }
-            }
-        }
-    }
-
-    // If a module was found (i.e., the found flag is true)
-    if (Found)
-    {
-        // Set the player pawn's location to the new position
-        FRotator(0, 90 * ModuleRotations[NearestModule.X][NearestModule.Y], 0);
-        PlayerPawn->SetActorLocation(NewPosition);
-    }
+	if (Found)
+	{
+		PlayerPawn->SetActorLocation(NewPosition);
+	}
 }
 
 
+/**
+ * Called after a property was changed in the editor.
+ * If the bGenerate property was changed, it calls the ExecuteGenerate function.
+ */
+#if WITH_EDITOR
+void AMapGen::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	if (PropertyChangedEvent.Property != nullptr && PropertyChangedEvent.Property->GetFName() ==
+		GET_MEMBER_NAME_CHECKED(AMapGen, bGenerate))
+	{
+		if (bGenerate)
+		{
+			ExecuteGenerate();
+			bGenerate = false;
+		}
+	}
+}
+#endif
