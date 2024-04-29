@@ -54,7 +54,9 @@ private:
     void SpawnModule(const int ModuleNumber, const FVector& Position, const FRotator& Rotation);
     void MergeMesh(const int ModuleNumber, const FVector& Position, const FRotator& Rotation);
     void GenerateExtras();
-    void GenerateTexture();
+    void SaveTexture(FString name);
+    void GenerateTexture(bool useOwnSettings);
+    void GenerateInMapTexture();
     void InitializeTexture();
     
 public:
@@ -76,7 +78,7 @@ public:
     
     //Material
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
-    UMaterial* ModuleMaterial;
+    UMaterialInstance* ModuleMaterial;
     
     
 //// Grid
@@ -89,6 +91,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
     int Seed;
 
+    UPROPERTY( EditAnywhere, BlueprintReadWrite,Category = "Grid", DisplayName = "Texture Noise Values")
+    FNoiseValues TextNoiseValues;
+    
     // Texture Quality
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grid")
     int32 ExtraDim = 10;

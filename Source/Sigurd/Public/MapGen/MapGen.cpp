@@ -60,12 +60,14 @@ void AMapGen::Generate()
 
 	GenerateGrid();
 	DeleteSmallPlots();
-	GenerateTexture();
+	//GenerateInMapTexture();
+	GenerateTexture(true);
+	GenerateTexture(false);
 	MeshSectionIndex = 0;
 
 	if (!GeneratedMap || !ProceduralMesh)
 	{
-		GeneratedMap = GetWorld()->SpawnActor<APackedLevelActor>(FVector::ZeroVector, FRotator::ZeroRotator);
+		GeneratedMap = GetWorld()->SpawnActor<APackedLevelActor>({500, 500, 0}, FRotator::ZeroRotator);
 	}
 
 	if (ProceduralMesh)
@@ -99,14 +101,62 @@ void AMapGen::InitializeTexture()
 	MipData = static_cast<FColor*>(Texture->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
 }
 
-void AMapGen::GenerateTexture()
+void AMapGen::GenerateTexture(bool useOwnSettings)
 {
 	InitializeTexture();
+
+	const float MFrequency = useOwnSettings ? TextNoiseValues.Frequency : Setting->NoiseValues.Frequency;
+	const float MAmplitude = useOwnSettings ? TextNoiseValues.Amplitude : Setting->NoiseValues.Amplitude;
+	const float MLacunarity = useOwnSettings ? TextNoiseValues.Lacunarity : Setting->NoiseValues.Lacunarity;
+	const float MPersistence = useOwnSettings ? TextNoiseValues.Persistence : Setting->NoiseValues.Persistence;
+
+	int32 ExtraDimLoc = useOwnSettings ? ExtraDim : ExtraDim/10;
+	FColor FillColor = FColor::White;
+	int32 Width = GridSize.X * ExtraDim;
+
+	// Recorrer ModuleNumbers
+	for (int x = 0; x < GridSize.X; x++)
+	{
+		for (int y = 0; y < GridSize.Y; y++)
+		{
+			for (int i = 0; i < ExtraDim; i++)
+			{
+				for (int j = 0; j < ExtraDim; j++)
+				{
+					const int32 CurPixelIndex = ((y * ExtraDim + j) * Width) + (x * ExtraDim + i);
+					// Calcular el valor de ruido
+					float NoiseValue = (FNoise::SimplexNoise(
+						((x * ExtraDim + i) / 10.0f) + Seed, ((y * ExtraDim + j) / 10.0f) + Seed, MFrequency,
+						MAmplitude, MLacunarity, MPersistence));
+
+
+					float minValue = -0.024097;
+					float maxValue = 0.024268;
+					NoiseValue = ((NoiseValue - minValue) / (maxValue - minValue)) * 255;
+					
+					FillColor = FColor::White;
+
+					FillColor.R += NoiseValue;
+					FillColor.G += NoiseValue;
+					FillColor.B += NoiseValue;
+
+					MipData[CurPixelIndex] = FillColor;
+				}
+			}
+		}
+	}
 	
-	const float MFrequency = Setting->NoiseValues.Frequency;
-	const float MAmplitude = Setting->NoiseValues.Amplitude;
-	const float MLacunarity = Setting->NoiseValues.Lacunarity;
-	const float MPersistence = Setting->NoiseValues.Persistence;
+	SaveTexture(useOwnSettings ? TEXT("MapTexture_Glob.png") : TEXT("MapTexture_Det.png"));
+}
+
+void AMapGen::GenerateInMapTexture()
+{
+	InitializeTexture();
+
+	const float MFrequency = TextNoiseValues.Frequency;
+	const float MAmplitude = TextNoiseValues.Amplitude;
+	const float MLacunarity = TextNoiseValues.Lacunarity;
+	const float MPersistence = TextNoiseValues.Persistence;
 
 	FColor FillColor = FColor::White;
 	const int32 Width = GridSize.X * ExtraDim;
@@ -125,11 +175,18 @@ void AMapGen::GenerateTexture()
 					{
 						const int32 CurPixelIndex = ((y * ExtraDim + j) * Width) + (x * ExtraDim + i);
 						// Calcular el valor de ruido
-						const float NoiseValue = (FNoise::SimplexNoise(
+						float NoiseValue = (FNoise::SimplexNoise(
 							((x * ExtraDim + i) / 10.0f) + Seed, ((y * ExtraDim + j) / 10.0f) + Seed, MFrequency,
-							MAmplitude, MLacunarity, MPersistence)) * 1000;
+							MAmplitude, MLacunarity, MPersistence));
+
+
+						float minValue = -0.024097;
+						float maxValue = 0.024268;
+						NoiseValue = ((NoiseValue - minValue) / (maxValue - minValue)) * 255;
+
 
 						FillColor = FColor::White;
+
 						FillColor.R += NoiseValue;
 						FillColor.G += NoiseValue;
 						FillColor.B += NoiseValue;
@@ -152,15 +209,18 @@ void AMapGen::GenerateTexture()
 			}
 		}
 	}
+	SaveTexture(TEXT("MapTexture_Masked.png"));
+}
 
-
+void AMapGen::SaveTexture(FString name)
+{
 	// Save the texture as a PNG file
 	Texture->PlatformData->Mips[0].BulkData.Unlock();
 	Texture->UpdateResource();
 
 	// Guardar la textura como un archivo PNG
 	FString TextureDirectory = FPaths::ProjectContentDir() + TEXT("ProceduralTextures/");
-	FString TextureFilename = TextureDirectory + TEXT("MapTexture.png");
+	FString TextureFilename = TextureDirectory + name;
 
 	// Convert the texture to a PNG
 	FTexture2DMipMap& Mip = Texture->PlatformData->Mips[0];
@@ -173,6 +233,7 @@ void AMapGen::GenerateTexture()
 	// Save the PNG to a file
 	FFileHelper::SaveArrayToFile(CompressedPNG, *TextureFilename);
 }
+
 
 void AMapGen::GenerateGrid()
 {
