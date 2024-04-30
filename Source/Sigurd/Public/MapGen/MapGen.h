@@ -54,10 +54,6 @@ private:
     void SpawnModule(const int ModuleNumber, const FVector& Position, const FRotator& Rotation);
     void MergeMesh(const int ModuleNumber, const FVector& Position, const FRotator& Rotation);
     void GenerateExtras();
-    void SaveTexture(FString name);
-    void GenerateTexture(bool useOwnSettings);
-    void GenerateInMapTexture();
-    void InitializeTexture();
     
 public:
     
