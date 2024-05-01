@@ -47,9 +47,26 @@ void AMapGen::Generate()
 		Seed = FMath::RandRange(0, 1000);
 	}
 
-	Setting = NoiseSettings.Setting.GetRow<FNoiseSetting>(
-		FString::Printf(TEXT("%s"), *NoiseSettings.Setting.RowName.ToString()));
+	Setting = NoiseSettingsTable.Setting.GetRow<FNoiseSetting>(
+		FString::Printf(TEXT("%s"), *NoiseSettingsTable.Setting.RowName.ToString()));
 
+	TextureSettings = TArray<FTextureSetting*>();
+	TextureSettings.Empty();
+	
+	for (auto& SettingHandle : TextureSettingsTable.Settings)
+	{
+		if (FTextureSetting* TmpSetting = SettingHandle.GetRow<FTextureSetting>(FString::Printf(TEXT("%s"), *SettingHandle.RowName.ToString())))
+	    {
+	        TextureSettings.Add(TmpSetting);
+	    }
+	}
+
+	if (TextureSettings.Num() == 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Texture settings not found"));
+		GenerateTextures = false;
+	}
+	
 	if (!Setting)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Noise setting not found"));
@@ -349,7 +366,7 @@ void AMapGen::MergeMesh(const int ModuleNumber, const FVector& Position, const F
 			                                              (TransformedVertex.Y / 10.0f) + Seed, MFrequency, MAmplitude,
 			                                              MLacunarity, MPersistence);
 			TransformedVertex.Z += NoiseValue * PostNoiseAmount;
-			UE_LOG(LogTemp, Warning, TEXT("Noise value: %f"), NoiseValue);
+			//UE_LOG(LogTemp, Warning, TEXT("Noise value: %f"), NoiseValue);
 		}
 		VertexPositions.Add(TransformedVertex);
 	}

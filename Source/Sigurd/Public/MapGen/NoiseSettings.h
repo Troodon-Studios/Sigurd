@@ -38,3 +38,15 @@ struct FNoiseSetting : public FTableRowBase
 
 };
 
+USTRUCT(BlueprintType)
+struct FTextureSetting : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, DisplayName = "Name")
+	FString Name = "Texture.png";
+	
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, DisplayName = "Noise Values")
+	FNoiseValues NoiseValues;
+
+};

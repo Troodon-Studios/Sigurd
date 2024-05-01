@@ -12,3 +12,12 @@ struct FNoiseSettingsTable: public FTableRowBase{
 	FDataTableRowHandle Setting;
 
 };
+
+USTRUCT(BlueprintType)
+struct FTextureSettingsTable: public FTableRowBase{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FDataTableRowHandle> Settings;
+
+};

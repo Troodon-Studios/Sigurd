@@ -39,6 +39,7 @@ private:
     FMatrixFunctions MatrixFunctions = FMatrixFunctions();
     FVector Offset;
     const FNoiseSetting* Setting;
+	TArray<FTextureSetting*> TextureSettings;
     UStaticMeshComponent* StaticMeshModule;
     FVector ModulesSize;
     AActor* GeneratedMap;
@@ -138,9 +139,16 @@ public:
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings", meta=(DisplayName = "Use Color", ToolTip = "Use a different color for each module type / Use ModuleMaterial Default"))
     bool UseColor = false;
-    
+
+    // Use color on each module
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Texture Generation", meta = (EditCondition = "MergeMeshes", EditConditionHides, DisplayName = "Generate Noise Textures"))
+    bool GenerateTextures = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Texture Generation", meta = (EditCondition = "MergeMeshes && GenerateTextures", EditConditionHides, DisplayName = "Texture Settings"))
+    FTextureSettingsTable TextureSettingsTable;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-    FNoiseSettingsTable NoiseSettings;
+    FNoiseSettingsTable NoiseSettingsTable;
     
 //// Editor Buttons
     
