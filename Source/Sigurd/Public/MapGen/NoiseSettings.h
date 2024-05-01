@@ -44,7 +44,16 @@ struct FTextureSetting : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, DisplayName = "Name")
-	FString Name = "Texture.png";
+	FString Name = "Texture";
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, DisplayName = "Extra Pixels Dimension")
+	int ExtraDim = 25;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, DisplayName = "Opacity", meta = (ClampMin = "1.0", ClampMax = "100.0"))
+	float Opacity = 100;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite, DisplayName = "Scatter", meta = (ClampMin = "1.0", ClampMax = "100.0"))
+	float Scatter = 10;
 	
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, DisplayName = "Noise Values")
 	FNoiseValues NoiseValues;

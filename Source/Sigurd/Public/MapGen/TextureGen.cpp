@@ -3,7 +3,7 @@
 #include "ImageUtils.h"
 #include "NoiseGenerator.h"
 
-void FTextureGen::NewTexture(const FVector2D& GridSize, const int ExtraDim, const int Seed, const FString& Name, const FNoiseValues& TextNoiseValues)
+void FTextureGen::NewTexture(const FVector2D& GridSize, const int ExtraDim, const int Seed, const FString& Name, const FNoiseValues& TextNoiseValues, const float Scatter)
 {
 	// Crear una textura
 	// print generating a new texture and the name
@@ -15,8 +15,17 @@ void FTextureGen::NewTexture(const FVector2D& GridSize, const int ExtraDim, cons
 	// Acceder a los datos de la textura
 	FColor* MipData = static_cast<FColor*>(Texture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
 
-	GenerateTexture(TextNoiseValues, ExtraDim, Seed, GridSize, MipData);
+	GenerateTexture(TextNoiseValues, ExtraDim, Seed, GridSize, MipData, Scatter);
 	SaveTexture(Texture, Name);
+}
+
+void FTextureGen::GenerateTextures(const FVector2D& GridSize, TArray<FTextureSetting*> TextureSettings)
+{
+	// Recorrer TextureSettings
+	for (const FTextureSetting* TextureSetting : TextureSettings)
+	{
+		NewTexture(GridSize, TextureSetting->ExtraDim, FMath::RandRange(0, 1000), TextureSetting->Name + "_procText.png", TextureSetting->NoiseValues, TextureSetting->Scatter);
+	}
 }
 
 void FTextureGen::SaveTexture(UTexture2D* Texture, const FString& Name)
@@ -41,12 +50,12 @@ void FTextureGen::SaveTexture(UTexture2D* Texture, const FString& Name)
 	FFileHelper::SaveArrayToFile(CompressedPNG, *TextureFilename);
 }
 
-void FTextureGen::GenerateTexture(const FNoiseValues& TextNoiseValues,const int ExtraDim, const int Seed, const FVector2D& GridSize,FColor* MipData)
+void FTextureGen::GenerateTexture(const FNoiseValues& TextNoiseValues,const int ExtraDim, const int Seed, const FVector2D& GridSize,FColor* MipData,const float Scatter)
 {
-	const float MFrequency = TextNoiseValues.Frequency;
+	const float MFrequency = TextNoiseValues.Frequency/Scatter;
 	const float MAmplitude = TextNoiseValues.Amplitude;
 	const float MLacunarity = TextNoiseValues.Lacunarity;
-	const float MPersistence = TextNoiseValues.Persistence ;
+	const float MPersistence = TextNoiseValues.Persistence/Scatter;
 
 	int32 ExtraDimLoc = ExtraDim;
 	FColor FillColor = FColor::White;

@@ -402,8 +402,7 @@ void AMapGen::GenerateExtras()
 {
 
 	// Generate Textures
-	FTextureGen::NewTexture(GridSize, ExtraDim, Seed, "MapTexture_Det.png", Setting->NoiseValues);
-	FTextureGen::NewTexture(GridSize, ExtraDim, Seed, "MapTexture_Glob.png", TextNoiseValues);
+	FTextureGen::GenerateTextures(GridSize, TextureSettings);
 	
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
 	if (!PlayerPawn) return;
