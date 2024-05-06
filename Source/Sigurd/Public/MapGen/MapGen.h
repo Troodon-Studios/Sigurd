@@ -57,11 +57,15 @@ private:
     void GenerateExtras();
     
 public:
-    
-    // Called every frame
-    virtual void Tick(const float DeltaTime) override
+
+    UFUNCTION(BlueprintCallable, Category = "MapGen")
+    FVector GetPlayerPosition()
     {
-        Super::Tick(DeltaTime);
+        if (const APawn* Actor = UGameplayStatics::GetPlayerPawn(this, 0))
+        {
+            return Actor->GetActorLocation();            
+        }
+        return FVector(0,0,0);
     }
 
     // Sets default values for this actor's properties
