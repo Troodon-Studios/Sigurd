@@ -49,23 +49,7 @@ void AMapGen::Generate()
 
 	Setting = NoiseSettingsTable.Setting.GetRow<FNoiseSetting>(
 		FString::Printf(TEXT("%s"), *NoiseSettingsTable.Setting.RowName.ToString()));
-
-	TextureSettings = TArray<FTextureSetting*>();
-	TextureSettings.Empty();
 	
-	for (auto& SettingHandle : TextureSettingsTable.Settings)
-	{
-		if (FTextureSetting* TmpSetting = SettingHandle.GetRow<FTextureSetting>(FString::Printf(TEXT("%s"), *SettingHandle.RowName.ToString())))
-	    {
-	        TextureSettings.Add(TmpSetting);
-	    }
-	}
-
-	if (TextureSettings.Num() == 0)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Texture settings not found"));
-		GenerateTextures = false;
-	}
 	
 	if (!Setting)
 	{
@@ -78,6 +62,25 @@ void AMapGen::Generate()
 
 	GenerateGrid();
 	DeleteSmallPlots();
+
+	if(ModuleMaterial && !ProceduralMat)
+	{
+		ProceduralMat = UMaterialInstanceDynamic::Create(ModuleMaterial, this);
+	}
+
+	// Texture and material generation
+	FTextureGen::GenerateTextures(GridSize,TextureSettingsTable);
+	FTextureGen::SetMaterialTextures(ProceduralMat,TextureSetsDataTable);
+	auto TextureParameterInfos = TArray<FMaterialParameterInfo>();
+	auto TextureParameterValues = TArray<FGuid>();
+	ProceduralMat->GetAllTextureParameterInfo(TextureParameterInfos, TextureParameterValues);
+
+	// print the texture parameter infos
+	for (int i = 0; i < TextureParameterInfos.Num(); i++)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Texture Parameter Info: %s"), *TextureParameterInfos[i].Name.ToString());
+	}
+	
 	MeshSectionIndex = 0;
 
 	if (!GeneratedMap || !ProceduralMesh)
@@ -389,7 +392,7 @@ void AMapGen::MergeMesh(const int ModuleNumber, const FVector& Position, const F
 
 	ProceduralMesh->CreateMeshSection_LinearColor(MeshSectionIndex, VertexPositions, WedgeIndices, WedgeTangentZ,
 	                                              WedgeTexCoords, TArray<FLinearColor>(), WedgeTangentX, true);
-	ProceduralMesh->SetMaterial(MeshSectionIndex, ModuleMaterial);
+	ProceduralMesh->SetMaterial(MeshSectionIndex, ProceduralMat);
 
 	MeshSectionIndex++;
 }
@@ -400,9 +403,7 @@ void AMapGen::MergeMesh(const int ModuleNumber, const FVector& Position, const F
  */
 void AMapGen::GenerateExtras()
 {
-
-	// Generate Textures
-	FTextureGen::GenerateTextures(GridSize, TextureSettings);
+	
 	
 	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
 	if (!PlayerPawn) return;

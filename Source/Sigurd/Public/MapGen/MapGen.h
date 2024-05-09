@@ -39,13 +39,13 @@ private:
     FMatrixFunctions MatrixFunctions = FMatrixFunctions();
     FVector Offset;
     const FNoiseSetting* Setting;
-	TArray<FTextureSetting*> TextureSettings;
     UStaticMeshComponent* StaticMeshModule;
     FVector ModulesSize;
     AActor* GeneratedMap;
     UProceduralMeshComponent* ProceduralMesh;
     FColor* MipData;
     UTexture2D* Texture;
+    UMaterialInstanceDynamic* ProceduralMat;
     
     // Functions
     void DeleteSmallPlots();
@@ -79,8 +79,10 @@ public:
     
     //Material
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
-    UMaterialInstance* ModuleMaterial;
-    
+    UMaterial* ModuleMaterial;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
+    UDataTable* TextureSetsDataTable;
     
 //// Grid
 
@@ -150,7 +152,7 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Texture Generation", meta = (EditCondition = "MergeMeshes && GenerateTextures", EditConditionHides, DisplayName = "Texture Settings"))
     FTextureSettingsTable TextureSettingsTable;
-
+    
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
     FNoiseSettingsTable NoiseSettingsTable;
     

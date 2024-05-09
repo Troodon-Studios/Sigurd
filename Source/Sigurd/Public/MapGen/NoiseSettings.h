@@ -43,11 +43,8 @@ struct FTextureSetting : public FTableRowBase
 {
 	GENERATED_BODY()
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, DisplayName = "Name")
+	//UPROPERTY( EditAnywhere, BlueprintReadOnly, DisplayName = "Name")
 	FString Name = "Texture";
-
-	UPROPERTY( EditAnywhere, BlueprintReadWrite, DisplayName = "Extra Pixels Dimension")
-	int ExtraDim = 25;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, DisplayName = "Opacity", meta = (ClampMin = "1.0", ClampMax = "100.0"))
 	float Opacity = 100;
@@ -58,4 +55,64 @@ struct FTextureSetting : public FTableRowBase
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, DisplayName = "Noise Values")
 	FNoiseValues NoiseValues;
 
+};
+
+USTRUCT(BlueprintType)
+struct FElementsValue : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Grass = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Gravel = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Metal = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Rug = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Sand = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Snow = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Stone = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Water = 0.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "100.0"))
+	float Wood = 0.0f;
+};
+
+UENUM(BlueprintType)
+enum class EMaterialTextureType : uint8
+{
+	Base,
+	Detail,
+	Extra,
+	Any
+};
+
+
+USTRUCT(BlueprintType)
+struct FMaterialTextures : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* Diffuse;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* ARM;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* Normal;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0"))
+	float Scale = 0.1f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EMaterialTextureType Type;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FElementsValue ElementsValue;
+	
 };
