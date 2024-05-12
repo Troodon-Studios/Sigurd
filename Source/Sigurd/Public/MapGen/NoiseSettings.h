@@ -114,5 +114,7 @@ struct FMaterialTextures : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FElementsValue ElementsValue;
+
+	FColor* MipData;
 	
 };

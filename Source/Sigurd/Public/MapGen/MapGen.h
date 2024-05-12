@@ -30,6 +30,8 @@ class AMapGen : public AActor
 protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
+    // Called every frame
+    virtual void Tick(float DeltaTime) override;
 
 private:
     
@@ -72,6 +74,10 @@ public:
     AMapGen();
     
 //// Modules
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")
+    FElementsValue PlayerElements;
+
     
     // static mesh
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modules")

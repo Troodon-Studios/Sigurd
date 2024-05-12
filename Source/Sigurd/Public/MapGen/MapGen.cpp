@@ -33,6 +33,12 @@ void AMapGen::BeginPlay()
 	Generate();
 }
 
+void AMapGen::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	PlayerElements = FTextureGen::GetSoundValues(UGameplayStatics::GetPlayerPawn(this, 0));
+}
+
 /**
  * Generates the map.
  * If RandomizeSeed is true, a random seed is generated.
