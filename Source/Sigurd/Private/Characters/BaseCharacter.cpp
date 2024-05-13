@@ -1,5 +1,7 @@
 ﻿#include "Characters/BaseCharacter.h"
 
+#include "MapGen/TextureGen.h"
+
 ABaseCharacter::ABaseCharacter(){
 	 StaminaComponent = CreateDefaultSubobject<UStaminaComponent>(TEXT("StaminaComponent"));
 	 CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
@@ -51,6 +53,12 @@ UConditionComponent* ABaseCharacter::GetConditionComponent() const{
 
 UTokenComponent* ABaseCharacter::GetTokenComponent() const{
 	return TokenComponent;
+}
+
+FElementsValue ABaseCharacter::UpdateAudioValues()
+{
+	AudioValues = FTextureGen::GetSoundValues(this);
+	return AudioValues;
 }
 
 

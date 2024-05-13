@@ -8,6 +8,7 @@
 #include "Components/HealthComponent.h"
 #include "Components/StaminaComponent.h"
 #include "Components/TokenComponent.h"
+#include "MapGen/NoiseSettings.h"
 
 #include "BaseCharacter.generated.h"
 
@@ -33,6 +34,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	UTokenComponent* TokenComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Audio", meta = (AllowPrivateAccess = "true"))
+	FElementsValue AudioValues;	
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -44,4 +48,7 @@ public:
 	UHealthComponent* GetHealthComponent() const;
 	UConditionComponent* GetConditionComponent() const;
 	UTokenComponent* GetTokenComponent() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Audio")
+	FElementsValue UpdateAudioValues();
 };
