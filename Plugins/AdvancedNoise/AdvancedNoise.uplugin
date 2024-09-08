@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "AdvancedNoise",
+	"Description": "",
+	"Category": "Other",
+	"CreatedBy": "Mario GC",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "AdvancedNoise",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

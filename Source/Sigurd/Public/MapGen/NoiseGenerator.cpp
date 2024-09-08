@@ -65,11 +65,11 @@ float FNoise::SimplexNoise(const float X, const float Y, float Frequency, float 
 }
 
 // CalcContribution function calculates the contribution of a given point (x, y) in the noise generation.
-float FNoise::CalcContribution(const int32_t I, int32_t j, const float X, const float Y) {
+float FNoise::CalcContribution(const int32_t I, int32_t J, const float X, const float Y) {
     if (float t = 0.5f - X*X - Y*Y; t < 0.0f) {
         return 0.0f;
     } else {
-        const int GI = Hash(I + Hash(j));
+        const int GI = Hash(I + Hash(J));
         t *= t;
         return t * t * Grad(GI, X, Y);
     }
