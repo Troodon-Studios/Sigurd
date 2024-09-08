@@ -30,7 +30,7 @@ void AMapGen::BeginPlay()
 {
 	Super::BeginPlay();
 	RandomizeSeed = false;
-	Generate();
+	//Generate();
 }
 
 void AMapGen::Tick(float DeltaTime)
@@ -247,12 +247,13 @@ bool AMapGen::IsInLargestIsland(const int I, const int J, const TArray<FVector2D
  * Compares the neighbors of each cell with the predefined patterns.
  * If a match is found, the module is spawned or merged.
  */
+
 void AMapGen::FigureModulesPosition()
 {
 	const auto Start = std::chrono::high_resolution_clock::now();
 
 	if (ModuleNumbers.Num() == 0 || ModuleNumbers[0].Num() == 0) return;
-
+	
 	for (int x = 0; x < GridSize.X; x++)
 	{
 		for (int y = 0; y < GridSize.Y; y++)
@@ -273,20 +274,21 @@ void AMapGen::FigureModulesPosition()
 					ModuleNumbers[x][y] = AllNums[N];
 					const FVector Position = FVector(x * ModulesSize.X, y * ModulesSize.Y, 0) - Offset;
 					const FRotator Rotation = FRotator(0, 90 * ModuleRotations[x][y], 0);
-
-					if (MergeMeshes)
-					{
-						MergeMesh(AllNums[N], Position, Rotation);
-					}
-					else
-					{
-						SpawnModule(AllNums[N], Position, Rotation);
-					}
+					
+						if (MergeMeshes)
+						{
+							MergeMesh(AllNums[N], Position, Rotation);
+						}
+						else
+						{
+							SpawnModule(AllNums[N], Position, Rotation);
+						}
 				}
 			}
 		}
 	}
 
+	
 	const auto Stop = std::chrono::high_resolution_clock::now();
 	const auto Duration = std::chrono::duration_cast<std::chrono::microseconds>(Stop - Start);
 
@@ -375,7 +377,6 @@ void AMapGen::MergeMesh(const int ModuleNumber, const FVector& Position, const F
 			                                              (TransformedVertex.Y / 10.0f) + Seed, MFrequency, MAmplitude,
 			                                              MLacunarity, MPersistence);
 			TransformedVertex.Z += NoiseValue * PostNoiseAmount;
-			//UE_LOG(LogTemp, Warning, TEXT("Noise value: %f"), NoiseValue);
 		}
 		VertexPositions.Add(TransformedVertex);
 	}

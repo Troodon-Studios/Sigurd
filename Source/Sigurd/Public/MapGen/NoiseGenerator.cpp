@@ -23,7 +23,6 @@ static const uint8_t GPerm[256] = {
     138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180
 };
 
-
 // Hash function is used to generate a hash value from an integer.
 static inline uint8_t Hash(const int32_t I) {
     return GPerm[static_cast<uint8_t>(I)];

@@ -109,15 +109,41 @@ FElementsValue FTextureGen::GetSoundValues(const AActor* Actor)
 	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red, FString::Printf(TEXT("ExtraColor: %f"), ExtraColor));
 
 
-	SoundValues.Grass = TerrainColor * TerrainElements.Grass/100 + DetailColor * DetailElements.Grass/100 + ExtraColor * ExtraElements.Grass/100;
-	SoundValues.Gravel = TerrainColor * TerrainElements.Gravel/100 + DetailColor * DetailElements.Gravel/100 + ExtraColor * ExtraElements.Gravel/100;
-	SoundValues.Metal = TerrainColor * TerrainElements.Metal/100 + DetailColor * DetailElements.Metal/100 + ExtraColor * ExtraElements.Metal/100;
-	SoundValues.Rug = TerrainColor * TerrainElements.Rug/100 + DetailColor * DetailElements.Rug/100 + ExtraColor * ExtraElements.Rug/100;
-	SoundValues.Sand = TerrainColor * TerrainElements.Sand/100 + DetailColor * DetailElements.Sand/100 + ExtraColor * ExtraElements.Sand/100;
-	SoundValues.Snow = TerrainColor * TerrainElements.Snow/100 + DetailColor * DetailElements.Snow/100 + ExtraColor * ExtraElements.Snow/100;
-	SoundValues.Stone = TerrainColor * TerrainElements.Stone/100 + DetailColor * DetailElements.Stone/100 + ExtraColor * ExtraElements.Stone/100;
-	SoundValues.Water = TerrainColor * TerrainElements.Water/100 + DetailColor * DetailElements.Water/100 + ExtraColor * ExtraElements.Water/100;
-	SoundValues.Wood = TerrainColor * TerrainElements.Wood/100 + DetailColor * DetailElements.Wood/100 + ExtraColor * ExtraElements.Wood/100;
+SoundValues.Grass = TerrainColor * TerrainElements.Grass/100 * (1 - DetailColor/100) * (1 - ExtraColor/100) 
+                  + DetailColor * DetailElements.Grass/100 * (1 - ExtraColor/100)
+                  + ExtraColor * ExtraElements.Grass/100;
+
+SoundValues.Gravel = TerrainColor * TerrainElements.Gravel/100 * (1 - DetailColor/100) * (1 - ExtraColor/100) 
+                   + DetailColor * DetailElements.Gravel/100 * (1 - ExtraColor/100)
+                   + ExtraColor * ExtraElements.Gravel/100;
+
+SoundValues.Metal = TerrainColor * TerrainElements.Metal/100 * (1 - DetailColor/100) * (1 - ExtraColor/100) 
+                  + DetailColor * DetailElements.Metal/100 * (1 - ExtraColor/100)
+                  + ExtraColor * ExtraElements.Metal/100;
+
+SoundValues.Rug = TerrainColor * TerrainElements.Rug/100 * (1 - DetailColor/100) * (1 - ExtraColor/100) 
+                + DetailColor * DetailElements.Rug/100 * (1 - ExtraColor/100)
+                + ExtraColor * ExtraElements.Rug/100;
+
+SoundValues.Sand = TerrainColor * TerrainElements.Sand/100 * (1 - DetailColor/100) * (1 - ExtraColor/100) 
+                 + DetailColor * DetailElements.Sand/100 * (1 - ExtraColor/100)
+                 + ExtraColor * ExtraElements.Sand/100;
+
+SoundValues.Snow = TerrainColor * TerrainElements.Snow/100 * (1 - DetailColor/100) * (1 - ExtraColor/100) 
+                 + DetailColor * DetailElements.Snow/100 * (1 - ExtraColor/100)
+                 + ExtraColor * ExtraElements.Snow/100;
+
+SoundValues.Stone = TerrainColor * TerrainElements.Stone/100 * (1 - DetailColor/100) * (1 - ExtraColor/100) 
+                  + DetailColor * DetailElements.Stone/100 * (1 - ExtraColor/100)
+                  + ExtraColor * ExtraElements.Stone/100;
+
+SoundValues.Water = TerrainColor * TerrainElements.Water/100 * (1 - DetailColor/100) * (1 - ExtraColor/100) 
+                  + DetailColor * DetailElements.Water/100 * (1 - ExtraColor/100)
+                  + ExtraColor * ExtraElements.Water/100;
+
+SoundValues.Wood = TerrainColor * TerrainElements.Wood/100 * (1 - DetailColor/100) * (1 - ExtraColor/100) 
+                 + DetailColor * DetailElements.Wood/100 * (1 - ExtraColor/100)
+                 + ExtraColor * ExtraElements.Wood/100;
 	
 
 
@@ -136,7 +162,6 @@ float FTextureGen::GetTextureColorAtActorPosition(const FVector& ActorPosition, 
 	
 	TextureCoords.X = FMath::Clamp(TextureCoords.X , 0.0f, (TextureSize.X * ExtraDim) - 1);
 	TextureCoords.Y = FMath::Clamp(TextureCoords.Y, 0.0f, (TextureSize.Y * ExtraDim) - 1);
-
 	
 	// Calculate the index into the texture data
 	const int32 Index = static_cast<int32>(TextureCoords.Y) * (TextureSize.X * ExtraDim) + static_cast<int32>(TextureCoords.X);
@@ -171,9 +196,9 @@ void FTextureGen::SetMaterialTextures(UMaterialInstanceDynamic* ProceduralMat, c
 			}
 			else
 			{
-				//BaseSets.Add(*Set);
-				//DetailSets.Add(*Set);
-				//ExtraSets.Add(*Set);
+				BaseSets.Add(*Set);
+				DetailSets.Add(*Set);
+				ExtraSets.Add(*Set);
 			}
 		}
 	}

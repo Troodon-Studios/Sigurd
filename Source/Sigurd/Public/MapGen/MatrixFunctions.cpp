@@ -117,7 +117,6 @@ bool FMatrixFunctions::CompareMatrix(TArray<TArray<int>> Matrix1, const int Plot
 		{
 			for (int k = 0; k < Matrix1[j].Num(); k++)
 			{
-				// If the element is 0 or 1, then check if they are equal
 				if ((Matrix2[j][k] == 0 || Matrix2[j][k] == 1) && Matrix1[j][k] != Matrix2[j][k])
 				{
 					bIsEqual = false;
@@ -136,6 +135,5 @@ bool FMatrixFunctions::CompareMatrix(TArray<TArray<int>> Matrix1, const int Plot
 		}
 		Matrix2 = RotateMatrix(Matrix2);
 	}
-
 	return false;
 }

@@ -10,7 +10,7 @@ struct FNoiseValues : public FTableRowBase
 {
 	GENERATED_BODY()
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "1.0"), DisplayName = "Frequency")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "10.0"), DisplayName = "Frequency")
 	float Frequency = 0.5f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0.0", ClampMax = "1.0"), DisplayName = "Amplitude")
