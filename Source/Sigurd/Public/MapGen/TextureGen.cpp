@@ -5,15 +5,15 @@
 #include "ImageUtils.h"
 #include "NoiseGenerator.h"
 
-FColor* FTextureGen::TerrainData = nullptr;
-FColor* FTextureGen::DetailData = nullptr;
-FColor* FTextureGen::ExtraData = nullptr;
+FColor* UTextureGen::TerrainData = nullptr;
+FColor* UTextureGen::DetailData = nullptr;
+FColor* UTextureGen::ExtraData = nullptr;
 
-FElementsValue FTextureGen::TerrainElements = FElementsValue();
-FElementsValue FTextureGen::DetailElements = FElementsValue();
-FElementsValue FTextureGen::ExtraElements = FElementsValue();
+FElementsValue UTextureGen::TerrainElements = FElementsValue();
+FElementsValue UTextureGen::DetailElements = FElementsValue();
+FElementsValue UTextureGen::ExtraElements = FElementsValue();
 
-void FTextureGen::NewTexture(const FVector2D& GridSize, const int Seed, const FString& Name, const FNoiseValues& TextNoiseValues, const float Scatter)
+void UTextureGen::NewTexture(const FVector2D& GridSize, const int Seed, const FString& Name, const FNoiseValues& TextNoiseValues, const float Scatter)
 {
 	// Crear una textura
 	// print generating a new texture and the name
@@ -42,7 +42,7 @@ void FTextureGen::NewTexture(const FVector2D& GridSize, const int Seed, const FS
 	}
 }
 
-void FTextureGen::SetRandomTexture(UMaterialInstanceDynamic* ProceduralMat, TArray<FMaterialTextures> Set, const FString& Type)
+void UTextureGen::SetRandomTexture(UMaterialInstanceDynamic* ProceduralMat, TArray<FMaterialTextures> Set, const FString& Type)
 {
 	const FString Diff = "Diffuse_" + Type;
 	const FString ARM = "ARM_" + Type;
@@ -87,7 +87,7 @@ void FTextureGen::SetRandomTexture(UMaterialInstanceDynamic* ProceduralMat, TArr
 
 }
 
-FElementsValue FTextureGen::GetSoundValues(const AActor* Actor)
+FElementsValue UTextureGen::GetSoundValues(const AActor* Actor)
 {
 
 	FElementsValue SoundValues = FElementsValue();
@@ -96,12 +96,12 @@ FElementsValue FTextureGen::GetSoundValues(const AActor* Actor)
 	//print the actor position on screen
 	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red, FString::Printf(TEXT("ActorPosition: %f, %f"), ActorPosition.X - 500, ActorPosition.Y - 500));
 	
-	const FVector2D TextureSize(FTextureGen::ExtraDim, FTextureGen::ExtraDim); 
+	const FVector2D TextureSize(UTextureGen::ExtraDim, UTextureGen::ExtraDim); 
 	constexpr float WorldSize = 15000.0f;
 
-	const auto TerrainColor = GetTextureColorAtActorPosition(ActorPosition, FTextureGen::TerrainData, TextureSize, WorldSize);
-	const auto DetailColor = GetTextureColorAtActorPosition(ActorPosition, FTextureGen::DetailData, TextureSize, WorldSize);
-	const auto ExtraColor = GetTextureColorAtActorPosition(ActorPosition, FTextureGen::ExtraData, TextureSize, WorldSize);
+	const auto TerrainColor = GetTextureColorAtActorPosition(ActorPosition, UTextureGen::TerrainData, TextureSize, WorldSize);
+	const auto DetailColor = GetTextureColorAtActorPosition(ActorPosition, UTextureGen::DetailData, TextureSize, WorldSize);
+	const auto ExtraColor = GetTextureColorAtActorPosition(ActorPosition, UTextureGen::ExtraData, TextureSize, WorldSize);
 
 	//print all color values ON SCREEN
 	GEngine->AddOnScreenDebugMessage(-1, 0, FColor::Red, FString::Printf(TEXT("TerrainColor: %f"), TerrainColor));
@@ -154,7 +154,7 @@ SoundValues.Wood = TerrainColor * TerrainElements.Wood/100 * (1 - DetailColor/10
 	return SoundValues;
 }
 
-float FTextureGen::GetTextureColorAtActorPosition(const FVector& ActorPosition, const FColor* TextureData,
+float UTextureGen::GetTextureColorAtActorPosition(const FVector& ActorPosition, const FColor* TextureData,
 	const FVector2D& TextureSize, const float WorldSize)
 {
 	// Convert the actor's position to texture coordinates
@@ -171,7 +171,7 @@ float FTextureGen::GetTextureColorAtActorPosition(const FVector& ActorPosition, 
 }
 
 
-void FTextureGen::SetMaterialTextures(UMaterialInstanceDynamic* ProceduralMat, const UDataTable* TextureSetsDataTable)
+void UTextureGen::SetMaterialTextures(UMaterialInstanceDynamic* ProceduralMat, const UDataTable* TextureSetsDataTable)
 {
 
 	auto DTNames = TextureSetsDataTable->GetRowNames();
@@ -209,7 +209,7 @@ void FTextureGen::SetMaterialTextures(UMaterialInstanceDynamic* ProceduralMat, c
 	
 }
 
-void FTextureGen::GenerateTextures(const FVector2D& GridSize, TArray<FTextureSetting*> TextureSettings)
+void UTextureGen::GenerateTextures(const FVector2D& GridSize, TArray<FTextureSetting*> TextureSettings)
 {
 	// Recorrer TextureSettings
 	for (const FTextureSetting* TextureSetting : TextureSettings)
@@ -218,12 +218,12 @@ void FTextureGen::GenerateTextures(const FVector2D& GridSize, TArray<FTextureSet
 	}
 }
 
-void FTextureGen::GenerateTextures(const FVector2D& GridSize, const FTextureSetting& TextureSetting)
+void UTextureGen::GenerateTextures(const FVector2D& GridSize, const FTextureSetting& TextureSetting)
 {
 	NewTexture(GridSize, FMath::RandRange(0, 1000), TextureSetting.Name + "_procText.png", TextureSetting.NoiseValues, TextureSetting.Scatter);
 }
 
-void FTextureGen::GenerateTextures(const FVector2D& GridSize, const FTextureSettingsTable& TextureSettingsTable)
+void UTextureGen::GenerateTextures(const FVector2D& GridSize, const FTextureSettingsTable& TextureSettingsTable)
 {
 	
 	auto TextureSettings = TextureSettingsTable.BaseSettings.GetRow<FTextureSetting>(FString::Printf(TEXT("%s"), *TextureSettingsTable.BaseSettings.RowName.ToString()));
@@ -238,7 +238,7 @@ void FTextureGen::GenerateTextures(const FVector2D& GridSize, const FTextureSett
 }
 
 
-void FTextureGen::SaveTexture(UTexture2D* Texture, const FString& Name)
+void UTextureGen::SaveTexture(UTexture2D* Texture, const FString& Name)
 {
 	// Save the texture as a PNG file
 	Texture->GetPlatformData()->Mips[0].BulkData.Unlock();
@@ -260,7 +260,7 @@ void FTextureGen::SaveTexture(UTexture2D* Texture, const FString& Name)
 	FFileHelper::SaveArrayToFile(CompressedPNG, *TextureFilename);
 }
 
-void FTextureGen::GenerateTexture(const FNoiseValues& TextNoiseValues, const int Seed, const FVector2D& GridSize,FColor* MipData,const float Scatter)
+void UTextureGen::GenerateTexture(const FNoiseValues& TextNoiseValues, const int Seed, const FVector2D& GridSize,FColor* MipData,const float Scatter)
 {
 	const float MFrequency = TextNoiseValues.Frequency/Scatter;
 	const float MAmplitude = TextNoiseValues.Amplitude;

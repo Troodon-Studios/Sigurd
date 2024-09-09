@@ -57,7 +57,7 @@ UTokenComponent* ABaseCharacter::GetTokenComponent() const{
 
 FElementsValue ABaseCharacter::UpdateAudioValues()
 {
-	AudioValues = FTextureGen::GetSoundValues(this);
+	AudioValues = UTextureGen::GetSoundValues(this);
 	return AudioValues;
 }
 

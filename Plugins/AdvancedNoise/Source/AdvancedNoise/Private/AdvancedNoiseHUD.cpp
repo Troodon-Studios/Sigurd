@@ -3,6 +3,7 @@
 #include "AdvancedNoiseHUD.h"
 
 #include "AdvancedNoiseSettings.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Components/Border.h"
 #include "Components/Button.h"
 #include "Components/CheckBox.h"
@@ -11,11 +12,9 @@
 #include "Components/SinglePropertyView.h"
 #include "Components/SpinBox.h"
 #include "Texture/TextureGen.h"
+#include "UObject/SavePackage.h"
 
-void UAdvancedNoiseHUD::OnRandomizeSeedCheckChanged(const bool bIsChecked)
-{
-    SeedSpinBox->SetIsEnabled(!bIsChecked);
-}
+
 
 void UAdvancedNoiseHUD::NativePreConstruct()
 {
@@ -28,6 +27,7 @@ void UAdvancedNoiseHUD::NativePreConstruct()
             NoiseParametersTable = Cast<UDataTable>(Settings->NoiseParametersTable.TryLoad());
         }
     }
+    
     if (IsValid(NoiseParametersTable))
     {
         if (NoiseParametersTable->RowStruct != FNoiseParameters::StaticStruct())
@@ -92,10 +92,28 @@ void UAdvancedNoiseHUD::NativePreConstruct()
     InitializeSpinBox(TextureSizeYSpinBox, 0.0f, 5000.0f, 512);
 }
 
+void UAdvancedNoiseHUD::NativeConstruct()
+{
+    if (const UAdvancedNoiseSettings* Settings = GetMutableDefault<UAdvancedNoiseSettings>())
+    {
+        TextureSizeXSpinBox->SetValue(Settings->TextureSize.X);
+        TextureSizeYSpinBox->SetValue(Settings->TextureSize.Y);
+        ExportPath.Path = Settings->ExportPath.Path;
+        
+        FrequencySpinBox->SetValue(Settings->Frequency);
+        AmplitudeSpinBox->SetValue(Settings->Amplitude);
+        LacunaritySpinBox->SetValue(Settings->Lacunarity);
+        PersistenceSpinBox->SetValue(Settings->Persistence);
+    }
+    
+    UpdateTable();
+}
+
+
 /**
  * Initializes a SpinBox with specified min, max, and optional default values.
  */
-void UAdvancedNoiseHUD::InitializeSpinBox(USpinBox* SpinBox, float MinValue, float MaxValue, float DefaultValue = 0.0f)
+void UAdvancedNoiseHUD::InitializeSpinBox(USpinBox* SpinBox, const float MinValue, const float MaxValue, const float DefaultValue = 0.0f)
 {
     if (SpinBox)
     {
@@ -112,9 +130,6 @@ void UAdvancedNoiseHUD::InitializeSpinBox(USpinBox* SpinBox, float MinValue, flo
 void UAdvancedNoiseHUD::GenerateNoise()
 {
     if (bIsGenerating) return;
-
-    bIsGenerating = true;
-    LoadingBorder->SetVisibility(ESlateVisibility::Visible);
     
     // Validate export path
     if (ExportPath.Path.IsEmpty())
@@ -137,7 +152,10 @@ void UAdvancedNoiseHUD::GenerateNoise()
         UE_LOG(LogTemp, Warning, TEXT("No texture name specified"));
         return;
     }
-
+    
+    bIsGenerating = true;
+    LoadingBorder->SetVisibility(ESlateVisibility::Visible);
+    
     if (RandomizeSeedCheck->IsChecked())
     {
         SeedSpinBox->SetValue(FMath::RandRange(0, 1000));
@@ -146,25 +164,68 @@ void UAdvancedNoiseHUD::GenerateNoise()
     // Generate noise texture
     const FNoiseParameters NoiseParams = FNoiseParameters(FrequencySpinBox->GetValue(), AmplitudeSpinBox->GetValue(),
                                                           LacunaritySpinBox->GetValue(), PersistenceSpinBox->GetValue());
-    FTextureGen::NewTexture(FVector2D(TextureSizeXSpinBox->GetValue(), TextureSizeYSpinBox->GetValue()),
+    UTextureGen::NewTexture(FVector2D(TextureSizeXSpinBox->GetValue(), TextureSizeYSpinBox->GetValue()),
                             SeedSpinBox->GetValue(), TextureNameEditableText->GetText().ToString() + ".png",
                             ExportPath.Path + "/", NoiseParams, 1);
 
     bIsGenerating = false;
     LoadingBorder->SetVisibility(ESlateVisibility::Collapsed);
+
+    // Save the settings
+    UAdvancedNoiseSettings* Settings = GetMutableDefault<UAdvancedNoiseSettings>();
+    if (!Settings) return;
+    
+    Settings->TextureSize = FVector2f(TextureSizeXSpinBox->GetValue(), TextureSizeYSpinBox->GetValue());
+    Settings->ExportPath = ExportPath;
+    
+    Settings->Frequency = FrequencySpinBox->GetValue();
+    Settings->Amplitude = AmplitudeSpinBox->GetValue();
+    Settings->Lacunarity = LacunaritySpinBox->GetValue();
+    Settings->Persistence = PersistenceSpinBox->GetValue();
+    
+    Settings->SaveConfig();
+}
+
+bool UAdvancedNoiseHUD::SaveToAsset(const UObject* ObjectToSave)
+{
+    UPackage* Package = ObjectToSave->GetPackage();
+    const FString PackageName = Package->GetName();
+    const FString PackageFileName = FPackageName::LongPackageNameToFilename(PackageName, FPackageName::GetAssetPackageExtension());
+
+    FSavePackageArgs SaveArgs;
+    SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
+    SaveArgs.SaveFlags = SAVE_NoError;
+
+    if (const bool bSucceeded = UPackage::SavePackage(Package, nullptr, *PackageFileName, SaveArgs); !bSucceeded)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Package '%s' wasn't saved!"), *PackageName);
+        return false;
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("Package '%s' was successfully saved"), *PackageName);
+    return true;
 }
 
 void UAdvancedNoiseHUD::SaveParameters()
 {
     if (!NoiseParametersTable) return;
-    
+
     const FNoiseParameters NoiseParameters = FNoiseParameters(FrequencySpinBox->GetValue(),
                                                               AmplitudeSpinBox->GetValue(),
                                                               LacunaritySpinBox->GetValue(),
                                                               PersistenceSpinBox->GetValue());
+
     NoiseParametersTable->AddRow(FName(*SettingsToSaveNameEditableText->GetText().ToString()), NoiseParameters);
+    
+    UPackage* Package = NoiseParametersTable->GetOutermost();
+
+    FAssetRegistryModule::AssetCreated(NoiseParametersTable);
+    Package->SetDirtyFlag(true);
+    SaveToAsset(NoiseParametersTable);
     UpdateTable();
 }
+
+
 
 void UAdvancedNoiseHUD::LoadParameters(const FString SelectedItem, ESelectInfo::Type SelectionType)
 {
@@ -206,5 +267,9 @@ void UAdvancedNoiseHUD::PostEditChangeProperty(struct FPropertyChangedEvent& Eve
         UpdateTable();
     }
     Super::PostEditChangeProperty(Event);
-    
+}
+
+void UAdvancedNoiseHUD::OnRandomizeSeedCheckChanged(const bool bIsChecked)
+{
+    SeedSpinBox->SetIsEnabled(!bIsChecked);
 }

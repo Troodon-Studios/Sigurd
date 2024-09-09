@@ -14,11 +14,28 @@ class ADVANCEDNOISE_API UAdvancedNoiseSettings : public UObject
 {
 	GENERATED_UCLASS_BODY()
 	
-	/** The DataTable for storing saved noise parameters */ 
 	UPROPERTY(EditAnywhere, Config, Category = "Noise Settings", meta = (AllowedClasses = "DataTable", RowStructure = "/Script/AdvancedNoise.NoiseParameters"))
 	FSoftObjectPath NoiseParametersTable;
 
-	///Script/AdvancedNoise.NoiseParameters
+	UPROPERTY(EditAnywhere, Config, Category = "Export Settings")
+	FVector2f TextureSize = FVector2f(512, 512);
+
+	UPROPERTY(EditAnywhere, Config, Category = "Export Settings")
+	FDirectoryPath ExportPath;
+
+	// Last used noise parameters
+	UPROPERTY(Config)
+	float Frequency = 0.1f;
+
+	UPROPERTY(Config)
+	float Amplitude = 0.6f;
+
+	UPROPERTY(Config)
+	float Lacunarity = 2.0f;
+
+	UPROPERTY(Config)
+	float Persistence = 0.5f;
+	
 private:
 	// UObject interface
 	virtual void PostInitProperties() override;

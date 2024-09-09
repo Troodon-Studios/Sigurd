@@ -4,7 +4,7 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Noise/NoiseGenerator.h"
 
-void FTextureGen::NewTexture(const FVector2D& GridSize, const int Seed, const FString& Name, const FString& TextureDirectory, const FNoiseParameters& TextNoiseValues, const float Scatter)
+void UTextureGen::NewTexture(const FVector2D& GridSize, const int Seed, const FString& Name, const FString& TextureDirectory, const FNoiseParameters& TextNoiseValues, const float Scatter)
 {
 	const int32 Width = GridSize.X;
 	const int32 Height = GridSize.Y;
@@ -16,7 +16,7 @@ void FTextureGen::NewTexture(const FVector2D& GridSize, const int Seed, const FS
 	SaveTexture(Texture, Name, TextureDirectory);
 }
 
-void FTextureGen::SaveTexture(UTexture2D* Texture, const FString& Name, const FString& TextureDirectory)
+void UTextureGen::SaveTexture(UTexture2D* Texture, const FString& Name, const FString& TextureDirectory)
 {
 	
 	Texture->GetPlatformData()->Mips[0].BulkData.Unlock();
@@ -41,7 +41,7 @@ void FTextureGen::SaveTexture(UTexture2D* Texture, const FString& Name, const FS
 	
 }
 
-void FTextureGen::GenerateTexture(const FNoiseParameters& TextNoiseValues, const FVector2D& GridSize, FColor* MipData, const float Scatter, const int Seed)
+void UTextureGen::GenerateTexture(const FNoiseParameters& TextNoiseValues, const FVector2D& GridSize, FColor* MipData, const float Scatter, const int Seed)
 {
 	const float MFrequency = TextNoiseValues.Frequency / Scatter;
 	const float MAmplitude = TextNoiseValues.Amplitude;

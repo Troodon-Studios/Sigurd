@@ -36,7 +36,7 @@ void AMapGen::BeginPlay()
 void AMapGen::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	PlayerElements = FTextureGen::GetSoundValues(UGameplayStatics::GetPlayerPawn(this, 0));
+	PlayerElements = UTextureGen::GetSoundValues(UGameplayStatics::GetPlayerPawn(this, 0));
 }
 
 /**
@@ -75,8 +75,8 @@ void AMapGen::Generate()
 	}
 
 	// Texture and material generation
-	FTextureGen::GenerateTextures(GridSize,TextureSettingsTable);
-	FTextureGen::SetMaterialTextures(ProceduralMat,TextureSetsDataTable);
+	UTextureGen::GenerateTextures(GridSize,TextureSettingsTable);
+	UTextureGen::SetMaterialTextures(ProceduralMat,TextureSetsDataTable);
 	auto TextureParameterInfos = TArray<FMaterialParameterInfo>();
 	auto TextureParameterValues = TArray<FGuid>();
 	ProceduralMat->GetAllTextureParameterInfo(TextureParameterInfos, TextureParameterValues);

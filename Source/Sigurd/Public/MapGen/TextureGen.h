@@ -3,7 +3,7 @@
 #include "NoiseSettings.h"
 #include "NoiseSettingsTable.h"
 using namespace std;
-class FTextureGen
+class UTextureGen
 {
 	static void SaveTexture(UTexture2D* Texture, const FString& Name);
 	static void GenerateTexture(const FNoiseValues& TextNoiseValues, const int Seed, const FVector2D& GridSize,FColor* MipData,const float Scatter);

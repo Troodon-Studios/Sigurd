@@ -103,10 +103,12 @@ private:
 	// Functions
 	/** Called before the widget is constructed */
 	virtual void NativePreConstruct() override;
+	virtual void NativeConstruct() override;
 
 	/** Generates noise based on the configured parameters */
 	UFUNCTION(BlueprintCallable, Category = "Advanced Noise")
 	void GenerateNoise();
+	static bool SaveToAsset(const UObject* ObjectToSave);
 
 	/** Generates noise based on the configured parameters */
 	UFUNCTION(BlueprintCallable, Category = "Advanced Noise")
@@ -121,8 +123,6 @@ private:
 	void UpdateTable();
 	
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& Event) override;
-
-	
 	static void InitializeSpinBox(USpinBox* SpinBox, float MinValue, float MaxValue, float DefaultValue);
 
 };
