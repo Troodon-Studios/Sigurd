@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <cstddef>
 
-class FNoise {
+class UAdvancedNoise {
 public:
 
     // 2D Perlin simplex noise

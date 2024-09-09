@@ -7,13 +7,13 @@
 void FTextureGen::NewTexture(const FVector2D& GridSize, const int Seed, const FString& Name, const FString& TextureDirectory, const FNoiseParameters& TextNoiseValues, const float Scatter)
 {
 
-	const int32 Width = GridSize.X * ExtraDim;
-	const int32 Height = GridSize.Y * ExtraDim;
+	const int32 Width = GridSize.X;
+	const int32 Height = GridSize.Y;
 	UTexture2D* Texture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
 
 	FColor* MipData = static_cast<FColor*>(Texture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
 
-	GenerateTexture(TextNoiseValues, Seed, GridSize, MipData, Scatter);
+	GenerateTexture(TextNoiseValues, GridSize, MipData, Scatter, Seed);
 	SaveTexture(Texture, Name, TextureDirectory);
 }
 
@@ -42,42 +42,35 @@ void FTextureGen::SaveTexture(UTexture2D* Texture, const FString& Name, const FS
 	
 }
 
-void FTextureGen::GenerateTexture(const FNoiseParameters& TextNoiseValues, const int Seed, const FVector2D& GridSize,FColor* MipData,const float Scatter)
+void FTextureGen::GenerateTexture(const FNoiseParameters& TextNoiseValues, const FVector2D& GridSize, FColor* MipData, const float Scatter,const int Seed)
 {
-	const float MFrequency = TextNoiseValues.Frequency/Scatter;
+	const float MFrequency = TextNoiseValues.Frequency / Scatter;
 	const float MAmplitude = TextNoiseValues.Amplitude;
 	const float MLacunarity = TextNoiseValues.Lacunarity;
-	const float MPersistence = TextNoiseValues.Persistence/Scatter;
+	const float MPersistence = TextNoiseValues.Persistence / Scatter;
 
-	const int32 Width = GridSize.X * ExtraDim;
+	const int32 Width = GridSize.X;
 
 	for (int x = 0; x < GridSize.X; x++)
 	{
 		for (int y = 0; y < GridSize.Y; y++)
 		{
-			for (int i = 0; i < ExtraDim; i++)
-			{
-				for (int j = 0; j < ExtraDim; j++)
-				{
-					const int32 CurPixelIndex = ((y * ExtraDim + j) * Width) + (x * ExtraDim + i);
+			const int32 CurPixelIndex = (y * Width) + x;
 
-					float NoiseValue = (FNoise::SimplexNoise(
-						((x * ExtraDim + i) / 10.0f) + Seed, ((y * ExtraDim + j) / 10.0f) + Seed, MFrequency,
-						MAmplitude, MLacunarity, MPersistence));
-					
-					constexpr float MinValue = -0.024097;
-					constexpr float MaxValue = 0.024268;
-					NoiseValue = ((NoiseValue - MinValue) / (MaxValue - MinValue)) * 255;
-					
-					FColor FillColor = FColor::White;
+			float NoiseValue = UAdvancedNoise::SimplexNoise(
+				(x / 10.0f), (y / 10.0f), MFrequency, MAmplitude, MLacunarity, MPersistence, Seed);
+            
+			constexpr float MinValue = -0.024097f;
+			constexpr float MaxValue = 0.024268f;
+			NoiseValue = ((NoiseValue - MinValue) / (MaxValue - MinValue)) * 255;
 
-					FillColor.R += NoiseValue;
-					FillColor.G += NoiseValue;
-					FillColor.B += NoiseValue;
+			FColor FillColor = FColor::White;
 
-					MipData[CurPixelIndex] = FillColor;
-				}
-			}
+			FillColor.R += NoiseValue;
+			FillColor.G += NoiseValue;
+			FillColor.B += NoiseValue;
+
+			MipData[CurPixelIndex] = FillColor;
 		}
 	}
 }

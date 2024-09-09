@@ -282,7 +282,7 @@ void FTextureGen::GenerateTexture(const FNoiseValues& TextNoiseValues, const int
 				{
 					const int32 CurPixelIndex = ((y * ExtraDim + j) * Width) + (x * ExtraDim + i);
 					// Calcular el valor de ruido
-					float NoiseValue = (FNoise::SimplexNoise(
+					float NoiseValue = (UAdvancedNoise::SimplexNoise(
 						((x * ExtraDim + i) / 10.0f) + Seed, ((y * ExtraDim + j) / 10.0f) + Seed, MFrequency,
 						MAmplitude, MLacunarity, MPersistence));
 

@@ -5,11 +5,17 @@
 #include "AdvancedNoiseSettings.h"
 #include "Components/Border.h"
 #include "Components/Button.h"
+#include "Components/CheckBox.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
 #include "Components/SinglePropertyView.h"
 #include "Components/SpinBox.h"
 #include "Texture/TextureGen.h"
+
+void UAdvancedNoiseHUD::OnRandomizeSeedCheckChanged(const bool bIsChecked)
+{
+    SeedSpinBox->SetIsEnabled(!bIsChecked);
+}
 
 void UAdvancedNoiseHUD::NativePreConstruct()
 {
@@ -72,6 +78,10 @@ void UAdvancedNoiseHUD::NativePreConstruct()
         LoadParametersCombobox->OnSelectionChanged.AddDynamic(this, &UAdvancedNoiseHUD::LoadParameters);
     }
 
+    if (RandomizeSeedCheck)
+    {
+        RandomizeSeedCheck->OnCheckStateChanged.AddDynamic(this, &UAdvancedNoiseHUD::OnRandomizeSeedCheckChanged);
+    }
     
     // Initialize SpinBoxes with default values and ranges
     InitializeSpinBox(FrequencySpinBox, 0.0f, 10.0f, 0.5f);
@@ -128,11 +138,17 @@ void UAdvancedNoiseHUD::GenerateNoise()
         return;
     }
 
+    if (RandomizeSeedCheck->IsChecked())
+    {
+        SeedSpinBox->SetValue(FMath::RandRange(0, 1000));
+    }
+    
     // Generate noise texture
     const FNoiseParameters NoiseParams = FNoiseParameters(FrequencySpinBox->GetValue(), AmplitudeSpinBox->GetValue(),
                                                           LacunaritySpinBox->GetValue(), PersistenceSpinBox->GetValue());
     FTextureGen::NewTexture(FVector2D(TextureSizeXSpinBox->GetValue(), TextureSizeYSpinBox->GetValue()),
-                            0, TextureNameEditableText->GetText().ToString() + ".png", ExportPath.Path + "/", NoiseParams, 1);
+                            SeedSpinBox->GetValue(), TextureNameEditableText->GetText().ToString() + ".png",
+                            ExportPath.Path + "/", NoiseParams, 1);
 
     bIsGenerating = false;
     LoadingBorder->SetVisibility(ESlateVisibility::Collapsed);

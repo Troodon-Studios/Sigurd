@@ -135,7 +135,7 @@ void AMapGen::GenerateGrid()
 	{
 		for (int y = 0; y < GridSize.Y; y++)
 		{
-			float NoiseValue = FNoise::SimplexNoise((x / 10.0f) + Seed, (y / 10.0f) + Seed, MFrequency, MAmplitude,
+			float NoiseValue = UAdvancedNoise::SimplexNoise((x / 10.0f) + Seed, (y / 10.0f) + Seed, MFrequency, MAmplitude,
 			                                        MLacunarity, MPersistence);
 
 			if (x == 0 || y == 0 || x == GridSize.X - 1 || y == GridSize.Y - 1)
@@ -373,7 +373,7 @@ void AMapGen::MergeMesh(const int ModuleNumber, const FVector& Position, const F
 			TArray<UE::Math::TVector<double>>::ElementType(Vertex));
 		if (ApplyPostNoise && TransformedVertex.Z <= ZThreshold)
 		{
-			const float NoiseValue = FNoise::SimplexNoise((TransformedVertex.X / 10.0f) + Seed,
+			const float NoiseValue = UAdvancedNoise::SimplexNoise((TransformedVertex.X / 10.0f) + Seed,
 			                                              (TransformedVertex.Y / 10.0f) + Seed, MFrequency, MAmplitude,
 			                                              MLacunarity, MPersistence);
 			TransformedVertex.Z += NoiseValue * PostNoiseAmount;

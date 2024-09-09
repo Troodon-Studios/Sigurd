@@ -17,29 +17,7 @@ class ADVANCEDNOISE_API UAdvancedNoiseHUD : public UEditorUtilityWidget
 	GENERATED_BODY()
 
 public:
-
-	// Functions
-	/** Called before the widget is constructed */
-	virtual void NativePreConstruct() override;
-
-	/** Generates noise based on the configured parameters */
-	UFUNCTION(BlueprintCallable, Category = "Advanced Noise")
-	void GenerateNoise();
-
-	/** Generates noise based on the configured parameters */
-	UFUNCTION(BlueprintCallable, Category = "Advanced Noise")
-	void SaveParameters();
-
-	/** Generates noise based on the configured parameters */
-	UFUNCTION(BlueprintCallable, Category = "Advanced Noise")
-	void LoadParameters(FString SelectedItem, ESelectInfo::Type SelectionType);
-
-	/** Generates noise based on the configured parameters */
-	UFUNCTION(BlueprintCallable, Category = "Advanced Noise")
-	void UpdateTable();
 	
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& Event) override;
-
 	// Elements
 	/** Button to trigger noise generation */
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
@@ -97,6 +75,14 @@ public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UEditableTextBox* SettingsToSaveNameEditableText;
 
+	/** Editable text box for save the settings */
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	class UCheckBox* RandomizeSeedCheck;
+
+	/** Editable text box for save the settings */
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	class USpinBox* SeedSpinBox;
+	
 	// Properties
 	/** Path where the generated texture will be exported */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -110,6 +96,33 @@ public:
 	TObjectPtr<UDataTable> NoiseParametersTable;
 
 private:
+
+	UFUNCTION()
+	void OnRandomizeSeedCheckChanged(bool bIsChecked);
+
+	// Functions
+	/** Called before the widget is constructed */
+	virtual void NativePreConstruct() override;
+
+	/** Generates noise based on the configured parameters */
+	UFUNCTION(BlueprintCallable, Category = "Advanced Noise")
+	void GenerateNoise();
+
+	/** Generates noise based on the configured parameters */
+	UFUNCTION(BlueprintCallable, Category = "Advanced Noise")
+	void SaveParameters();
+
+	/** Generates noise based on the configured parameters */
+	UFUNCTION(BlueprintCallable, Category = "Advanced Noise")
+	void LoadParameters(FString SelectedItem, ESelectInfo::Type SelectionType);
+
+	/** Generates noise based on the configured parameters */
+	UFUNCTION(BlueprintCallable, Category = "Advanced Noise")
+	void UpdateTable();
+	
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& Event) override;
+
+	
 	static void InitializeSpinBox(USpinBox* SpinBox, float MinValue, float MaxValue, float DefaultValue);
 
 };

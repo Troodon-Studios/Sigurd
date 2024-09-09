@@ -37,7 +37,7 @@ static float Grad(const int32_t Hash, const float X, const float Y) {
 }
 
 // SimplexNoise function generates simplex noise for a given point (X, Y) and parameters frequency, amplitude, lacunarity, and persistence.
-float FNoise::SimplexNoise(const float X, const float Y, float Frequency, float Amplitude, const float Lacunarity, const float Persistence) {
+float UAdvancedNoise::SimplexNoise(const float X, const float Y, float Frequency, float Amplitude, const float Lacunarity, const float Persistence) {
     float Total = 0.0f;
 
     for (int i = 0; i < 4; ++i) {
@@ -65,7 +65,7 @@ float FNoise::SimplexNoise(const float X, const float Y, float Frequency, float 
 }
 
 // CalcContribution function calculates the contribution of a given point (x, y) in the noise generation.
-float FNoise::CalcContribution(const int32_t I, int32_t J, const float X, const float Y) {
+float UAdvancedNoise::CalcContribution(const int32_t I, int32_t J, const float X, const float Y) {
     if (float t = 0.5f - X*X - Y*Y; t < 0.0f) {
         return 0.0f;
     } else {
