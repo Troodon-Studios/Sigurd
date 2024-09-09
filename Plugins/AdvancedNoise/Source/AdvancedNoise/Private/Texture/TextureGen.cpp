@@ -6,7 +6,6 @@
 
 void FTextureGen::NewTexture(const FVector2D& GridSize, const int Seed, const FString& Name, const FString& TextureDirectory, const FNoiseParameters& TextNoiseValues, const float Scatter)
 {
-
 	const int32 Width = GridSize.X;
 	const int32 Height = GridSize.Y;
 	UTexture2D* Texture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
@@ -42,7 +41,7 @@ void FTextureGen::SaveTexture(UTexture2D* Texture, const FString& Name, const FS
 	
 }
 
-void FTextureGen::GenerateTexture(const FNoiseParameters& TextNoiseValues, const FVector2D& GridSize, FColor* MipData, const float Scatter,const int Seed)
+void FTextureGen::GenerateTexture(const FNoiseParameters& TextNoiseValues, const FVector2D& GridSize, FColor* MipData, const float Scatter, const int Seed)
 {
 	const float MFrequency = TextNoiseValues.Frequency / Scatter;
 	const float MAmplitude = TextNoiseValues.Amplitude;
@@ -50,27 +49,28 @@ void FTextureGen::GenerateTexture(const FNoiseParameters& TextNoiseValues, const
 	const float MPersistence = TextNoiseValues.Persistence / Scatter;
 
 	const int32 Width = GridSize.X;
+	const int32 Height = GridSize.Y;
 
-	for (int x = 0; x < GridSize.X; x++)
+	constexpr float MinValue = -0.024097f;
+	constexpr float MaxValue = 0.024268f;
+	constexpr float ValueRange = MaxValue - MinValue;
+
+	ParallelFor(Width * Height, [&](const int32 Index)
 	{
-		for (int y = 0; y < GridSize.Y; y++)
-		{
-			const int32 CurPixelIndex = (y * Width) + x;
+		const int32 x = Index % Width;
+		const int32 y = Index / Width;
+		const int32 CurPixelIndex = (y * Width) + x;
 
-			float NoiseValue = UAdvancedNoise::SimplexNoise(
-				(x / 10.0f), (y / 10.0f), MFrequency, MAmplitude, MLacunarity, MPersistence, Seed);
-            
-			constexpr float MinValue = -0.024097f;
-			constexpr float MaxValue = 0.024268f;
-			NoiseValue = ((NoiseValue - MinValue) / (MaxValue - MinValue)) * 255;
+		float NoiseValue = UAdvancedNoise::SimplexNoise(
+			(x / 10.0f), (y / 10.0f), MFrequency, MAmplitude, MLacunarity, MPersistence, Seed);
 
-			FColor FillColor = FColor::White;
+		NoiseValue = ((NoiseValue - MinValue) / ValueRange) * 255.0f;
 
-			FillColor.R += NoiseValue;
-			FillColor.G += NoiseValue;
-			FillColor.B += NoiseValue;
+		FColor FillColor = FColor::White;
+		FillColor.R += NoiseValue;
+		FillColor.G += NoiseValue;
+		FillColor.B += NoiseValue;
 
-			MipData[CurPixelIndex] = FillColor;
-		}
-	}
+		MipData[CurPixelIndex] = FillColor;
+	}, EParallelForFlags::Unbalanced);
 }
