@@ -26,6 +26,10 @@ public:
 	/** Button to trigger noise generation */
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class UButton* SaveParametersButton;
+
+	/** Combobox with parameter options */
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	class UComboBoxString* NoiseTypeCombobox;
 	
 	/** Combobox with parameter options */
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
@@ -59,6 +63,10 @@ public:
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class USpinBox* PersistenceSpinBox;
 
+	/** SpinBox for setting the noise persistence */
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	class USpinBox* CellSizeSpinBox;
+	
 	/** SpinBox for setting the texture width */
 	UPROPERTY(EditAnywhere, meta = (BindWidget))
 	class USpinBox* TextureSizeXSpinBox;
@@ -100,6 +108,8 @@ private:
 	UFUNCTION()
 	void OnRandomizeSeedCheckChanged(bool bIsChecked);
 
+	UFUNCTION()
+	void OnNoiseTypeChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 	// Functions
 	/** Called before the widget is constructed */
 	virtual void NativePreConstruct() override;

@@ -35,6 +35,12 @@ class ADVANCEDNOISE_API UAdvancedNoiseSettings : public UObject
 
 	UPROPERTY(Config)
 	float Persistence = 0.5f;
+
+	UPROPERTY(Config)
+	float CellSize = 1.0f;
+
+	UPROPERTY(Config)
+	uint8 NoiseType = 0;
 	
 private:
 	// UObject interface
