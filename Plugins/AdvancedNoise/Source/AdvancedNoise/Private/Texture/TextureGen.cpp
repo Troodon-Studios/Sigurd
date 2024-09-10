@@ -4,7 +4,7 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Noise/NoiseGenerator.h"
 
-void UTextureGen::NewTexture(const FVector2D& GridSize, const int Seed, const FString& Name, const FString& TextureDirectory, const FNoiseParameters& TextNoiseValues, const float Scatter, const ENoiseType NoiseType)
+void UTextureGen::NewTexture(const FVector2D& GridSize, const int Seed, const FString& Name, const FString& TextureDirectory, const FNoiseParameters& TextNoiseValues, const float Scatter, const EAdvancedNoiseType NoiseType)
 {
     const int32 Width = GridSize.X;
     const int32 Height = GridSize.Y;
@@ -39,13 +39,12 @@ void UTextureGen::SaveTexture(UTexture2D* Texture, const FString& Name, const FS
     Texture->PostEditChange();
 }
 
-void UTextureGen::GenerateTexture(const FNoiseParameters& TextNoiseValues, const FVector2D& GridSize, FColor* MipData, const float Scatter, const int Seed, const ENoiseType NoiseType)
+void UTextureGen::GenerateTexture(const FNoiseParameters& TextNoiseValues, const FVector2D& GridSize, FColor* MipData, const float Scatter, const int Seed, const EAdvancedNoiseType NoiseType)
 {
     const float MFrequency = TextNoiseValues.Frequency / Scatter;
     const float MAmplitude = TextNoiseValues.Amplitude;
     const float MLacunarity = TextNoiseValues.Lacunarity;
     const float MPersistence = TextNoiseValues.Persistence / Scatter;
-    const float MCellSize = TextNoiseValues.CellSize;
 
     const int32 Width = GridSize.X;
     const int32 Height = GridSize.Y;
@@ -63,17 +62,17 @@ void UTextureGen::GenerateTexture(const FNoiseParameters& TextNoiseValues, const
         float NoiseValue = 0.0f;
         switch (NoiseType)
         {
-        case ENoiseType::Simplex:
+        case EAdvancedNoiseType::Simplex:
             NoiseValue = UAdvancedNoise::SimplexNoise(
                 (x / 10.0f), (y / 10.0f), MFrequency, MAmplitude, MLacunarity, MPersistence, Seed);
             break;
-        case ENoiseType::Perlin:
+        case EAdvancedNoiseType::Perlin:
             NoiseValue = UAdvancedNoise::PerlinNoise(
                 (x / 10.0f), (y / 10.0f),MFrequency, MAmplitude, Seed);
             break;
-        case ENoiseType::Voronoi:
+        case EAdvancedNoiseType::Voronoi:
             NoiseValue = UAdvancedNoise::VoronoiNoise(
-                (x / 10.0f), (y / 10.0f), MCellSize, Seed);
+                (x / 10.0f), (y / 10.0f), MFrequency, MAmplitude, Seed, Width, Height);
             break;
         }
 

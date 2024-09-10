@@ -42,27 +42,23 @@ void UAdvancedNoiseHUD::NativePreConstruct()
     
     LoadingBorder->SetVisibility(ESlateVisibility::Collapsed);
 
-    // Set default export path if not specified
     if (ExportPath.Path.IsEmpty())
     {
         ExportPath.Path = FPaths::ConvertRelativePathToFull(FPaths::ProjectContentDir());
     }
 
-    // Initialize ExportPathPropertyView
     if (ExportPathPropertyView)
     {
         ExportPathPropertyView->SetObject(this);
         ExportPathPropertyView->SetPropertyName("ExportPath");
     }
 
-    // Initialize ExportPathPropertyView
     if (SaveDatatablePropertyView)
     {
         SaveDatatablePropertyView->SetObject(this);
         SaveDatatablePropertyView->SetPropertyName("NoiseParametersTable");
     }
     
-    // Bind GenerateNoiseButton click event
     if (GenerateNoiseButton)
     {
         GenerateNoiseButton->OnClicked.AddDynamic(this, &UAdvancedNoiseHUD::GenerateNoise);
@@ -96,7 +92,8 @@ void UAdvancedNoiseHUD::NativeConstruct()
     {
         NoiseTypeCombobox->AddOption(TEXT("Simplex"));
         NoiseTypeCombobox->AddOption(TEXT("Perlin"));
-        NoiseTypeCombobox->AddOption(TEXT("Voronoi"));
+        // TODO: Implement Voronoi noise
+        //NoiseTypeCombobox->AddOption(TEXT("Voronoi"));
     }
     
     if (const UAdvancedNoiseSettings* Settings = GetMutableDefault<UAdvancedNoiseSettings>())
@@ -119,7 +116,6 @@ void UAdvancedNoiseHUD::NativeConstruct()
         InitializeSpinBox(PersistenceSpinBox, 0.0f, 1.0f, Settings->Persistence);
         InitializeSpinBox(TextureSizeXSpinBox, 0.0f, 5000.0f, Settings->TextureSize.X);
         InitializeSpinBox(TextureSizeYSpinBox, 0.0f, 5000.0f, Settings->TextureSize.Y);
-        InitializeSpinBox(CellSizeSpinBox, 0.0f, 5000.0f, Settings->CellSize);
     }
     
     UpdateTable();
@@ -179,11 +175,10 @@ void UAdvancedNoiseHUD::GenerateNoise()
     
     // Generate noise texture
     const FNoiseParameters NoiseParams = FNoiseParameters(FrequencySpinBox->GetValue(), AmplitudeSpinBox->GetValue(),
-                                                          LacunaritySpinBox->GetValue(), PersistenceSpinBox->GetValue(),
-                                                          CellSizeSpinBox->GetValue());
+                                                          LacunaritySpinBox->GetValue(), PersistenceSpinBox->GetValue());
     UTextureGen::NewTexture(FVector2D(TextureSizeXSpinBox->GetValue(), TextureSizeYSpinBox->GetValue()),
                             SeedSpinBox->GetValue(), TextureNameEditableText->GetText().ToString() + ".png",
-                            ExportPath.Path + "/", NoiseParams, 1, static_cast<ENoiseType>(NoiseTypeCombobox->GetSelectedIndex()));
+                            ExportPath.Path + "/", NoiseParams, 1, static_cast<EAdvancedNoiseType>(NoiseTypeCombobox->GetSelectedIndex()));
 
     bIsGenerating = false;
     LoadingBorder->SetVisibility(ESlateVisibility::Collapsed);
@@ -230,8 +225,7 @@ void UAdvancedNoiseHUD::SaveParameters()
     const FNoiseParameters NoiseParameters = FNoiseParameters(FrequencySpinBox->GetValue(),
                                                               AmplitudeSpinBox->GetValue(),
                                                               LacunaritySpinBox->GetValue(),
-                                                              PersistenceSpinBox->GetValue(),
-                                                              CellSizeSpinBox->GetValue());
+                                                              PersistenceSpinBox->GetValue());
 
     NoiseParametersTable->AddRow(FName(*SettingsToSaveNameEditableText->GetText().ToString()), NoiseParameters);
     
@@ -299,7 +293,6 @@ void UAdvancedNoiseHUD::OnNoiseTypeChanged(FString SelectedItem, ESelectInfo::Ty
 
     if (SelectedItem == "Simplex")
     {
-        CellSizeSpinBox->SetIsEnabled(false);
         AmplitudeSpinBox->SetIsEnabled(true);
         FrequencySpinBox->SetIsEnabled(true);
         LacunaritySpinBox->SetIsEnabled(true);
@@ -308,7 +301,6 @@ void UAdvancedNoiseHUD::OnNoiseTypeChanged(FString SelectedItem, ESelectInfo::Ty
     }
     if (SelectedItem == "Perlin")
     {
-        CellSizeSpinBox->SetIsEnabled(false);
         AmplitudeSpinBox->SetIsEnabled(true);
         FrequencySpinBox->SetIsEnabled(true);
         LacunaritySpinBox->SetIsEnabled(false);
@@ -317,8 +309,7 @@ void UAdvancedNoiseHUD::OnNoiseTypeChanged(FString SelectedItem, ESelectInfo::Ty
     }
     if (SelectedItem == "Voronoi")
     {
-        CellSizeSpinBox->SetIsEnabled(true);
-        AmplitudeSpinBox->SetIsEnabled(false);
+        AmplitudeSpinBox->SetIsEnabled(true);
         FrequencySpinBox->SetIsEnabled(false);
         LacunaritySpinBox->SetIsEnabled(false);
         PersistenceSpinBox->SetIsEnabled(false);

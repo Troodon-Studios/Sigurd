@@ -1,5 +1,7 @@
 ﻿#include "Noise/NoiseGenerator.h"
 
+#include "Math/UnrealMathUtility.h"
+
 /** Common Functions **/
 // Permutation table for hash values.
 static const uint8_t GPerm[256] = {
@@ -91,20 +93,6 @@ float UAdvancedNoise::SimplexNoise(float X, float Y, float Frequency, float Ampl
     return Total;
 }
 
-static float DotGrad(int hash, float x, float y) {
-    switch (hash & 7) {
-    case 0: return x + y;
-    case 1: return x;
-    case 2: return x - y;
-    case 3: return -y;
-    case 4: return -x - y;
-    case 5: return -x;
-    case 6: return -x + y;
-    case 7: return y;
-    default: return 0.0f;
-    }
-}
-
 // Calculates the contribution of a given point (X, Y) in noise generation.
 float UAdvancedNoise::PerlinNoise(float X, float Y,const float Frequency,const float Amplitude, const int Seed) {
 
@@ -153,36 +141,8 @@ float UAdvancedNoise::PerlinNoise(float X, float Y,const float Frequency,const f
     return Lerp(v, lerpX0, lerpX1) * Amplitude;
 }
 
-
-// Voronoi distance function.
-static float VoronoiDistance(const FVector2D& Point, const FVector2D& Site) {
-    return (Point - Site).Size(); // Calculate the Euclidean distance
-}
-
-// Update Voronoi minima.
-static float UpdateVoronoiMinima(const float Minima, const float Distance) {
-    return FMath::Min(Minima, Distance); // Update the minimum distance
-}
-
-// Voronoi noise generation function.
-static float VoronoiNoise(float X, float Y, float Frequency, int Seed){
-    const FVector2D& Position = FVector2D(X, Y);
-    const int32_t I0 = Fastfloor(Position.X * Frequency);
-    const int32_t J0 = Fastfloor(Position.Y * Frequency);
-
-    float Minima = FLT_MAX; // Initialize minima with the maximum possible float value
-
-    for (int32_t u = -1; u <= 1; ++u) {
-        for (int32_t v = -1; v <= 1; ++v) {
-            const int32_t HashValue = Hash(I0 + u + Hash(J0 + v));
-            const FVector2D Site(
-                (u + HashValue % 256) * Frequency, 
-                (v + HashValue % 256) * Frequency
-            ); // Generate site coordinates
-            float Distance = VoronoiDistance(Position, Site);
-            Minima = UpdateVoronoiMinima(Minima, Distance);
-        }
-    }
-
-    return Minima; // Return the minimum distance as noise value
+float UAdvancedNoise::VoronoiNoise(float X, float Y, float CellSize, float Amplitude, int Seed, int Width, int Height)
+{
+    //TODO: Implement Voronoi noise
+    return 0.0f;
 }

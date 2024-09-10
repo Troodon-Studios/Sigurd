@@ -18,121 +18,223 @@ class ADVANCEDNOISE_API UAdvancedNoiseHUD : public UEditorUtilityWidget
 
 public:
 	
-	// Elements
-	/** Button to trigger noise generation */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class UButton* GenerateNoiseButton;
+// Elements
 
-	/** Button to trigger noise generation */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class UButton* SaveParametersButton;
+/** 
+ * Button to trigger noise generation 
+ * @property GenerateNoiseButton
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class UButton* GenerateNoiseButton;
 
-	/** Combobox with parameter options */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class UComboBoxString* NoiseTypeCombobox;
-	
-	/** Combobox with parameter options */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class UComboBoxString* LoadParametersCombobox;
+/** 
+ * Button to save noise parameters 
+ * @property SaveParametersButton
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class UButton* SaveParametersButton;
 
-	/** Border displayed while noise is being generated */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class UBorder* LoadingBorder;
+/** 
+ * Combobox for selecting noise type 
+ * @property NoiseTypeCombobox
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class UComboBoxString* NoiseTypeCombobox;
 
-	/** View for selecting the export path */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class USinglePropertyView* ExportPathPropertyView;
+/** 
+ * Combobox for loading saved parameters 
+ * @property LoadParametersCombobox
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class UComboBoxString* LoadParametersCombobox;
 
-	/** View for selecting the export path */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class USinglePropertyView* SaveDatatablePropertyView;
-	
-	/** SpinBox for setting the noise frequency */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class USpinBox* FrequencySpinBox;
+/** 
+ * Border displayed while noise is being generated 
+ * @property LoadingBorder
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class UBorder* LoadingBorder;
 
-	/** SpinBox for setting the noise amplitude */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class USpinBox* AmplitudeSpinBox;
+/** 
+ * View for selecting the export path 
+ * @property ExportPathPropertyView
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class USinglePropertyView* ExportPathPropertyView;
 
-	/** SpinBox for setting the noise lacunarity */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class USpinBox* LacunaritySpinBox;
+/** 
+ * View for selecting the datatable save path 
+ * @property SaveDatatablePropertyView
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class USinglePropertyView* SaveDatatablePropertyView;
 
-	/** SpinBox for setting the noise persistence */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class USpinBox* PersistenceSpinBox;
+/** 
+ * SpinBox for setting the noise frequency 
+ * @property FrequencySpinBox
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class USpinBox* FrequencySpinBox;
 
-	/** SpinBox for setting the noise persistence */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class USpinBox* CellSizeSpinBox;
-	
-	/** SpinBox for setting the texture width */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class USpinBox* TextureSizeXSpinBox;
+/** 
+ * SpinBox for setting the noise amplitude 
+ * @property AmplitudeSpinBox
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class USpinBox* AmplitudeSpinBox;
 
-	/** SpinBox for setting the texture height */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class USpinBox* TextureSizeYSpinBox;
+/** 
+ * SpinBox for setting the noise lacunarity 
+ * @property LacunaritySpinBox
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class USpinBox* LacunaritySpinBox;
 
-	/** Editable text box for setting the texture name */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class UEditableTextBox* TextureNameEditableText;
+/** 
+ * SpinBox for setting the noise persistence 
+ * @property PersistenceSpinBox
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class USpinBox* PersistenceSpinBox;
 
-	/** Editable text box for save the settings */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class UEditableTextBox* SettingsToSaveNameEditableText;
+/** 
+ * SpinBox for setting the texture width 
+ * @property TextureSizeXSpinBox
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class USpinBox* TextureSizeXSpinBox;
 
-	/** Editable text box for save the settings */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class UCheckBox* RandomizeSeedCheck;
+/** 
+ * SpinBox for setting the texture height 
+ * @property TextureSizeYSpinBox
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class USpinBox* TextureSizeYSpinBox;
 
-	/** Editable text box for save the settings */
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-	class USpinBox* SeedSpinBox;
-	
-	// Properties
-	/** Path where the generated texture will be exported */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FDirectoryPath ExportPath;
+/** 
+ * Editable text box for setting the texture name 
+ * @property TextureNameEditableText
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class UEditableTextBox* TextureNameEditableText;
 
-	/** Flag indicating whether noise generation is in progress */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool bIsGenerating = false;
+/** 
+ * Editable text box for saving the settings 
+ * @property SettingsToSaveNameEditableText
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class UEditableTextBox* SettingsToSaveNameEditableText;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TObjectPtr<UDataTable> NoiseParametersTable;
+/** 
+ * Checkbox for randomizing the seed 
+ * @property RandomizeSeedCheck
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class UCheckBox* RandomizeSeedCheck;
+
+/** 
+ * SpinBox for setting the seed value 
+ * @property SeedSpinBox
+ */
+UPROPERTY(EditAnywhere, Category = "Noise Generation", meta = (BindWidget))
+class USpinBox* SeedSpinBox;
+
+// Properties
+
+/** 
+ * Path where the generated texture will be exported 
+ * @property ExportPath
+ */
+UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise Generation")
+FDirectoryPath ExportPath;
+
+/** 
+ * Flag indicating whether noise generation is in progress 
+ * @property bIsGenerating
+ */
+UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise Generation")
+bool bIsGenerating = false;
+
+/** 
+ * Table containing noise parameters 
+ * @property NoiseParametersTable
+ */
+UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Noise Generation")
+TObjectPtr<UDataTable> NoiseParametersTable;
 
 private:
+/**
+ * Called when the randomize seed checkbox state changes.
+ * @param bIsChecked - Whether the checkbox is checked.
+ */
+UFUNCTION()
+void OnRandomizeSeedCheckChanged(bool bIsChecked);
 
-	UFUNCTION()
-	void OnRandomizeSeedCheckChanged(bool bIsChecked);
+/**
+ * Called when the noise type is changed in the combobox.
+ * @param SelectedItem - The selected noise type.
+ * @param SelectionType - The type of selection.
+ */
+UFUNCTION()
+void OnNoiseTypeChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 
-	UFUNCTION()
-	void OnNoiseTypeChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
-	// Functions
-	/** Called before the widget is constructed */
-	virtual void NativePreConstruct() override;
-	virtual void NativeConstruct() override;
+// Functions
 
-	/** Generates noise based on the configured parameters */
-	UFUNCTION(BlueprintCallable, Category = "Advanced Noise")
-	void GenerateNoise();
-	static bool SaveToAsset(const UObject* ObjectToSave);
+/**
+ * Called before the widget is constructed.
+ */
+virtual void NativePreConstruct() override;
 
-	/** Generates noise based on the configured parameters */
-	UFUNCTION(BlueprintCallable, Category = "Advanced Noise")
-	void SaveParameters();
+/**
+ * Called when the widget is constructed.
+ */
+virtual void NativeConstruct() override;
 
-	/** Generates noise based on the configured parameters */
-	UFUNCTION(BlueprintCallable, Category = "Advanced Noise")
-	void LoadParameters(FString SelectedItem, ESelectInfo::Type SelectionType);
+/**
+ * Generates noise based on the configured parameters.
+ */
+UFUNCTION(BlueprintCallable, Category = "Noise Generation")
+void GenerateNoise();
 
-	/** Generates noise based on the configured parameters */
-	UFUNCTION(BlueprintCallable, Category = "Advanced Noise")
-	void UpdateTable();
-	
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& Event) override;
-	static void InitializeSpinBox(USpinBox* SpinBox, float MinValue, float MaxValue, float DefaultValue);
+/**
+ * Saves the specified object to an asset.
+ * @param ObjectToSave - The object to save.
+ * @return True if the asset was saved successfully, false otherwise.
+ */
+static bool SaveToAsset(const UObject* ObjectToSave);
 
+/**
+ * Saves the current noise parameters.
+ */
+UFUNCTION(BlueprintCallable, Category = "Noise Generation")
+void SaveParameters();
+
+/**
+ * Loads the selected noise parameters.
+ * @param SelectedItem - The selected item from the combobox.
+ * @param SelectionType - The type of selection.
+ */
+UFUNCTION(BlueprintCallable, Category = "Noise Generation")
+void LoadParameters(FString SelectedItem, ESelectInfo::Type SelectionType);
+
+/**
+ * Updates the noise parameters table.
+ */
+UFUNCTION(BlueprintCallable, Category = "Noise Generation")
+void UpdateTable();
+
+/**
+ * Called when a property is edited in the editor.
+ * @param Event - The property change event.
+ */
+virtual void PostEditChangeProperty(struct FPropertyChangedEvent& Event) override;
+
+/**
+ * Initializes a SpinBox with specified min, max, and optional default values.
+ * @param SpinBox - The SpinBox to initialize.
+ * @param MinValue - The minimum value for the SpinBox.
+ * @param MaxValue - The maximum value for the SpinBox.
+ * @param DefaultValue - The default value for the SpinBox.
+ */
+static void InitializeSpinBox(USpinBox* SpinBox, float MinValue, float MaxValue, float DefaultValue);
 };

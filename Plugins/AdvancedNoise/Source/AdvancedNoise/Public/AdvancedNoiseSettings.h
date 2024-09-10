@@ -18,29 +18,26 @@ class ADVANCEDNOISE_API UAdvancedNoiseSettings : public UObject
 	FSoftObjectPath NoiseParametersTable;
 
 	UPROPERTY(EditAnywhere, Config, Category = "Export Settings")
-	FVector2f TextureSize = FVector2f(512, 512);
+	FVector2f TextureSize;
 
 	UPROPERTY(EditAnywhere, Config, Category = "Export Settings")
 	FDirectoryPath ExportPath;
 
 	// Last used noise parameters
 	UPROPERTY(Config)
-	float Frequency = 0.1f;
+	float Frequency;
 
 	UPROPERTY(Config)
-	float Amplitude = 0.6f;
+	float Amplitude;
 
 	UPROPERTY(Config)
-	float Lacunarity = 2.0f;
+	float Lacunarity;
 
 	UPROPERTY(Config)
-	float Persistence = 0.5f;
+	float Persistence;
 
 	UPROPERTY(Config)
-	float CellSize = 1.0f;
-
-	UPROPERTY(Config)
-	uint8 NoiseType = 0;
+	uint8 NoiseType;
 	
 private:
 	// UObject interface

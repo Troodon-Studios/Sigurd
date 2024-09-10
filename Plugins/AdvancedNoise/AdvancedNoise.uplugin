@@ -2,11 +2,11 @@
 	"FileVersion": 3,
 	"Version": 1,
 	"VersionName": "1.0",
-	"FriendlyName": "AdvancedNoise",
+	"FriendlyName": "Advanced Noise",
 	"Description": "",
 	"Category": "Other",
 	"CreatedBy": "Mario GC",
-	"CreatedByURL": "",
+	"CreatedByURL": "https://github.com/Ie-Karma",
 	"DocsURL": "",
 	"MarketplaceURL": "",
 	"SupportURL": "",
@@ -17,8 +17,14 @@
 	"Modules": [
 		{
 			"Name": "AdvancedNoise",
-			"Type": "Runtime",
+			"Type": "Editor",
 			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "EditorScriptingUtilities",
+			"Enabled": true
 		}
 	]
 }

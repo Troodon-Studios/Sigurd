@@ -12,16 +12,14 @@ public class AdvancedNoise : ModuleRules
 			new string[] {
 				// ... add public include paths required here ...
 			}
-			);
+		);
 				
-		
 		PrivateIncludePaths.AddRange(
 			new string[] {
 				// ... add other private include paths required here ...
 			}
-			);
+		);
 			
-		
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
@@ -30,29 +28,39 @@ public class AdvancedNoise : ModuleRules
 				"Slate",
 				"SlateCore",
 				"DeveloperSettings",
+				"EditorScriptingUtilities"
 				// ... add other public dependencies that you statically link with here ...
 			}
-			);
+		);
 			
-		
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
 				"CoreUObject",
 				"Engine",
-				"UnrealEd",
-				"Blutility",
-				"UMGEditor",
-				"ScriptableEditorWidgets" 
-                }
-			);
+				// No editor-specific modules here
+			}
+		);
 		
+		if (Target.bBuildEditor)
+		{
+			PrivateDependencyModuleNames.AddRange(
+				new string[]
+				{
+					"UnrealEd",
+					"Blutility",
+					"UMGEditor",
+					"ScriptableEditorWidgets",
+					"EditorScriptingUtilities"
+				}
+			);
+		}
 		
 		DynamicallyLoadedModuleNames.AddRange(
 			new string[]
 			{
 				// ... add any modules that your module loads dynamically here ...
 			}
-			);
+		);
 	}
 }
