@@ -9,8 +9,16 @@
 class FAdvancedNoiseModule : public IModuleInterface
 {
 public:
-
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+
+	void PluginButtonClicked();
+
+private:
+
+	void RegisterMenus();
+	TSharedPtr<class FUICommandList> PluginCommands;
+	bool IsPluginWindowOpen();
+	
 };

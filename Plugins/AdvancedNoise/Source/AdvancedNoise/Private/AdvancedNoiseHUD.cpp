@@ -161,7 +161,13 @@ void UAdvancedNoiseHUD::GenerateNoise()
     // Validate texture name
     if (TextureNameEditableText->GetText().IsEmpty())
     {
-        UE_LOG(LogTemp, Warning, TEXT("No texture name specified"));
+        UE_LOG(LogTemp, Error, TEXT("Advanced Noise Generator: No texture name specified"));
+        return;
+    }
+
+    if (TextureSizeXSpinBox->GetValue() <= 0 || TextureSizeYSpinBox->GetValue() <= 0)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Advanced Noise Generator: Invalid texture size"));
         return;
     }
     

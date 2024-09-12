@@ -17,7 +17,7 @@ The **Advanced Noise Plugin** is a custom Unreal Engine plugin designed to gener
 ### Widget
 
 1. **Open the Advanced Noise HUD**
-    - In the Unreal Engine editor, navigate to the **Window** menu and select **Advanced Noise HUD** to open the custom editor utility widget.
+    - In the Unreal Engine editor, navigate to the **Tools** menu and select **Advanced Noise** to open the custom editor utility widget.
 
 2. **Configure Noise Parameters**
     - **Frequency**: Set the frequency of the noise.

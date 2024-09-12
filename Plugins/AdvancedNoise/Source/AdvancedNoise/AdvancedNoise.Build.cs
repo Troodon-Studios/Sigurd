@@ -29,7 +29,6 @@ public class AdvancedNoise : ModuleRules
 				"SlateCore",
 				"DeveloperSettings",
 				"EditorScriptingUtilities"
-				// ... add other public dependencies that you statically link with here ...
 			}
 		);
 			
@@ -38,23 +37,21 @@ public class AdvancedNoise : ModuleRules
 			{
 				"CoreUObject",
 				"Engine",
-				// No editor-specific modules here
+				"SlateCore",
+				"EditorStyle",
+				"Blutility",
+				"UMGEditor",
+				"UMG",
+				"UnrealEd",
+				"ToolMenus",
+				"EditorFramework",
+				"ScriptableEditorWidgets",
+				"EditorScriptingUtilities",
+				"Projects",
+				"InputCore",
+				"Slate"
 			}
 		);
-		
-		if (Target.bBuildEditor)
-		{
-			PrivateDependencyModuleNames.AddRange(
-				new string[]
-				{
-					"UnrealEd",
-					"Blutility",
-					"UMGEditor",
-					"ScriptableEditorWidgets",
-					"EditorScriptingUtilities"
-				}
-			);
-		}
 		
 		DynamicallyLoadedModuleNames.AddRange(
 			new string[]
