@@ -1,4 +1,6 @@
-﻿#include "Noise/NoiseGenerator.h"
+﻿// Copyright 2024 Mario GC. All Rights Reserved.
+
+#include "Noise/NoiseGenerator.h"
 
 #include "Math/UnrealMathUtility.h"
 

@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// Copyright 2024 Mario GC. All Rights Reserved.
+
+#pragma once
 
 #include "../Common.h"
 

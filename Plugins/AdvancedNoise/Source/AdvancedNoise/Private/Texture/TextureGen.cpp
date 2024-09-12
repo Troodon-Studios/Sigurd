@@ -1,4 +1,6 @@
-﻿#include "Texture/TextureGen.h"
+﻿// Copyright 2024 Mario GC. All Rights Reserved.
+
+#include "Texture/TextureGen.h"
 
 #include "ImageUtils.h"
 #include "AssetRegistry/AssetRegistryModule.h"

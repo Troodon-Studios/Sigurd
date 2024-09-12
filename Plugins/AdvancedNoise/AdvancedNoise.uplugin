@@ -3,22 +3,30 @@
 	"Version": 1,
 	"VersionName": "1.0",
 	"FriendlyName": "Advanced Noise",
-	"Description": "",
+	"Description": "Generate noise textures with different noise algorithms.",
 	"Category": "Other",
 	"CreatedBy": "Mario GC",
 	"CreatedByURL": "https://github.com/Ie-Karma",
 	"DocsURL": "",
-	"MarketplaceURL": "",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/9672fc39c2c94c5a83092110f3809bf7",
 	"SupportURL": "",
 	"CanContainContent": true,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": true,
+	"SupportedTargetPlatforms": [
+		"Win64"
+	],
 	"Modules": [
 		{
 			"Name": "AdvancedNoise",
 			"Type": "Editor",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"PlatformAllowList": [
+				"Win64",
+				"Mac",
+				"Linux"
+			]
 		}
 	],
 	"Plugins": [
